@@ -1,0 +1,663 @@
+openapi: 3.0.3
+info:
+  title: Volunteer & Donor Management API
+  version: 1.0.0
+  description: API contract for Volunteers, Donors, Staff, Finance, and Admin operations.
+
+servers:
+  - url: http://localhost:3000/api/v1
+
+paths:
+  # Volunteer APIs
+  /volunteers:
+    post:
+      summary: Create Volunteer Profile
+      tags: [Volunteer]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Volunteer"
+      responses:
+        "201":
+          description: Volunteer profile successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    patch:
+      summary: Update Volunteer Profile
+      tags: [Volunteer]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Volunteer"
+      responses:
+        "200":
+          description: Volunteer profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /volunteers/{id}/documents:
+    post:
+      summary: Submit Volunteer Document
+      tags: [Volunteer]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerDocument"
+      responses:
+        "201":
+          description: Document submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerDocumentResponse"
+
+  /volunteers/{id}/registration:
+    post:
+      summary: Volunteer Registration Form
+      tags: [Volunteer]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Volunteer"
+      responses:
+        "201":
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /projects/{project_id}/rsvp:
+    post:
+      summary: RSVP for Project
+      tags: [Volunteer]
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RSVP"
+      responses:
+        "201":
+          description: RSVP submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Donor APIs
+  /donors:
+    get:
+      summary: Query Donor Information
+      tags: [Donor]
+      parameters:
+        - name: search
+          in: query
+          description: Search term for donor name, email, or other fields
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Donor data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Donor"
+    post:
+      summary: Create Donor Profile
+      tags: [Donor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Donor"
+      responses:
+        "201":
+          description: Donor profile created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    patch:
+      summary: Update Donor Profile
+      tags: [Donor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Donor"
+      responses:
+        "200":
+          description: Donor profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /donors/{id}/payment-options:
+    post:
+      summary: Save One-Click Payment Option
+      tags: [Donor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payment_method:
+                  type: string
+      responses:
+        "201":
+          description: Payment option saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /donors/{id}/wishlist:
+    post:
+      summary: Request More Donation Modes
+      tags: [Donor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode:
+                  type: string
+      responses:
+        "201":
+          description: Wishlist submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /donations:
+    post:
+      summary: Make Donation
+      tags: [Donor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Donation"
+      responses:
+        "201":
+          description: Donation recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DonationResponse"
+
+  /donations/{id}/send-receipt:
+    post:
+      summary: Send Receipt Email
+      tags: [Donor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Receipt sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /donations/{id}/send-thank-you:
+    post:
+      summary: Send Thank-You Email
+      tags: [Donor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thank-you email sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /donors/{id}/reminders:
+    post:
+      summary: Send Reminder
+      tags: [Donor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Reminder sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Staff APIs
+  /attendance:
+    post:
+      summary: Volunteer Attendance Tracking
+      tags: [Staff]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Attendance"
+      responses:
+        "201":
+          description: Attendance recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /volunteers/{id}/onboarding:
+    get:
+      summary: Get Volunteer Onboarding Progress
+      tags: [Staff]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Onboarding status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  onboarding_status:
+                    type: string
+
+  /matching:
+    post:
+      summary: Volunteer-Project Matching Engine
+      tags: [Staff]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchingRequest"
+      responses:
+        "200":
+          description: Recommended projects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchingResponse"
+
+  /schedule:
+    get:
+      summary: Get Schedule Table
+      tags: [Staff]
+      responses:
+        "200":
+          description: Schedule retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+    patch:
+      summary: Update Schedule Table
+      tags: [Staff]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Schedule updated
+
+  /expertise:
+    post:
+      summary: Configure Volunteers’ Expertise
+      tags: [Staff]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Expertise"
+      responses:
+        "200":
+          description: Expertise configured
+
+  /donations/config:
+    patch:
+      summary: Configure Donations
+      tags: [Staff]
+      responses:
+        "200":
+          description: Donations configuration updated
+
+  # Finance APIs
+  /finance/dashboard:
+    get:
+      summary: View Donation Dashboard
+      tags: [Finance]
+      responses:
+        "200":
+          description: Dashboard data
+
+  /finance/reports:
+    get:
+      summary: Generate Financial Reports
+      tags: [Finance]
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+        - name: end_date
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Report data
+
+  /finance/reminders:
+    post:
+      summary: Send Reminders
+      tags: [Finance]
+      responses:
+        "200":
+          description: Reminder sent
+
+  /finance/receipts:
+    post:
+      summary: Send Receipts
+      tags: [Finance]
+      responses:
+        "200":
+          description: Receipt sent
+
+  /donations/{id}/receipt:
+    get:
+      summary: View Donation Receipt
+      tags: [Finance]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Receipt data
+
+  # Volunteer Manager APIs
+  /volunteers/pending:
+    get:
+      summary: View Pending Volunteers
+      tags: [VolunteerManager]
+      responses:
+        "200":
+          description: Pending volunteers list
+
+  /volunteers/{id}/approve:
+    patch:
+      summary: Approve Volunteer
+      tags: [VolunteerManager]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Volunteer approved
+
+  # Super Admin APIs
+  /admin/users:
+    post:
+      summary: Create Admin User
+      tags: [SuperAdmin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Admin user created
+
+  /admin/users/{id}:
+    delete:
+      summary: Delete Admin User
+      tags: [SuperAdmin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Admin user deleted
+
+  /admin/logs:
+    get:
+      summary: Get Admin Logs
+      tags: [SuperAdmin]
+      responses:
+        "200":
+          description: Logs retrieved
+
+# Components (Schemas)
+components:
+  schemas:
+    Volunteer:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        contact_number: { type: string }
+        phone: { type: string }
+        address: { type: string }
+        nationality: { type: string }
+        gender: { type: string }
+        dob: { type: string, format: date }
+        highest_education: { type: string }
+        occupation: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        availability: { type: integer }
+        onboarding_status: { type: string }
+        weekly_frequency: { type: string }
+        duration: { type: string }
+        hours: { type: number }
+        last_four_NRIC: { type: string }
+
+    Donor:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        payment_method: { type: string }
+        frequency_of_donations: { type: string }
+        donation_history:
+          type: array
+          items:
+            type: object
+        personal_details:
+          type: object
+          properties:
+            name: { type: string }
+            contact_number: { type: string }
+            address: { type: string }
+            nationality: { type: string }
+        donation_amount: { type: number }
+
+    VolunteerDocument:
+      type: object
+      properties:
+        id: { type: string }
+        document_type: { type: string }
+        file_url: { type: string }
+
+    VolunteerDocumentResponse:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending, approved, rejected] }
+
+    RSVP:
+      type: object
+      properties:
+        volunteer_id: { type: string }
+        status: { type: string, enum: [yes, no, maybe] }
+
+    Donation:
+      type: object
+      properties:
+        donor_id: { type: string }
+        amount: { type: number }
+        type:
+          { type: string, enum: [individual, corporate, fundraising events] }
+        payment_method: { type: string }
+        project_id: { type: string }
+        date: { type: string }
+
+    DonationResponse:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [confirmed, pending, failed] }
+        receipt_url: { type: string }
+
+    Attendance:
+      type: object
+      properties:
+        volunteer_id: { type: string }
+        project_id: { type: string }
+        status: { type: string, enum: [present, absent] }
+        date: { type: string, format: date }
+
+    MatchingRequest:
+      type: object
+      properties:
+        volunteer_id: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        availability: { type: string }
+
+    MatchingResponse:
+      type: object
+      properties:
+        recommended_projects:
+          type: array
+          items:
+            type: object
+            properties:
+              project_id: { type: string }
+              match_score: { type: number }
+
+    Expertise:
+      type: object
+      properties:
+        volunteer_id: { type: string }
+        expertise:
+          type: array
+          items: { type: string }
+
+    SuccessResponse:
+      type: object
+      properties:
+        id: { type: string }
+        message: { type: string }
+
+    ErrorResponse:
+      type: object
+      properties:
+        error_code: { type: string }
+        message: { type: string }
+        details: { type: string }
