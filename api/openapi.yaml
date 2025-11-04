@@ -8,7 +8,7 @@ servers:
   - url: http://localhost:3000/api/v1
 
 paths:
-  # Volunteer APIs
+  # Volunteer APIs (Sample APIs - Update accordingly)
   /volunteers:
     post:
       summary: Create Volunteer Profile
@@ -75,7 +75,7 @@ paths:
 
   /volunteers/{id}/registration:
     post:
-      summary: Volunteer Registration Form
+      summary: Submit Volunteer Registration Form
       tags: [Volunteer]
       parameters:
         - name: id
@@ -121,7 +121,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
-  # Donor APIs
+  # Donor APIs (Sample APIs - Update accordingly)
   /donors:
     get:
       summary: Query Donor Information
@@ -307,113 +307,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
-  # Staff APIs
-  /attendance:
-    post:
-      summary: Volunteer Attendance Tracking
-      tags: [Staff]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Attendance"
-      responses:
-        "201":
-          description: Attendance recorded
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SuccessResponse"
-
-  /volunteers/{id}/onboarding:
-    get:
-      summary: Get Volunteer Onboarding Progress
-      tags: [Staff]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Onboarding status retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  onboarding_status:
-                    type: string
-
-  /matching:
-    post:
-      summary: Volunteer-Project Matching Engine
-      tags: [Staff]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MatchingRequest"
-      responses:
-        "200":
-          description: Recommended projects
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MatchingResponse"
-
-  /schedule:
-    get:
-      summary: Get Schedule Table
-      tags: [Staff]
-      responses:
-        "200":
-          description: Schedule retrieved
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-    patch:
-      summary: Update Schedule Table
-      tags: [Staff]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Schedule updated
-
-  /expertise:
-    post:
-      summary: Configure Volunteers’ Expertise
-      tags: [Staff]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Expertise"
-      responses:
-        "200":
-          description: Expertise configured
-
-  /donations/config:
-    patch:
-      summary: Configure Donations
-      tags: [Staff]
-      responses:
-        "200":
-          description: Donations configuration updated
-
-  # Finance APIs
+  # Finance APIs (Sample APIs - Update accordingly)
   /finance/dashboard:
     get:
       summary: View Donation Dashboard
@@ -469,7 +363,7 @@ paths:
         "200":
           description: Receipt data
 
-  # Volunteer Manager APIs
+  # Volunteer Manager APIs (Sample APIs - Update accordingly)
   /volunteers/pending:
     get:
       summary: View Pending Volunteers
@@ -492,7 +386,7 @@ paths:
         "200":
           description: Volunteer approved
 
-  # Super Admin APIs
+  # Super Admin APIs (Sample APIs - Update accordingly)
   /admin/users:
     post:
       summary: Create Admin User
@@ -529,52 +423,90 @@ paths:
         "200":
           description: Logs retrieved
 
-# Components (Schemas)
+# Components (Schemas) (Sample - Update accordingly)
 components:
   schemas:
     Volunteer:
       type: object
       properties:
         id: { type: string }
-        name: { type: string }
-        email: { type: string }
+        full_name: { type: string }
+        nric_fin: { type: string }
+        passport_number: { type: string }
         contact_number: { type: string }
-        phone: { type: string }
-        address: { type: string }
-        nationality: { type: string }
-        gender: { type: string }
-        dob: { type: string, format: date }
-        highest_education: { type: string }
         occupation: { type: string }
-        skills:
+        languages_spoken:
           type: array
           items: { type: string }
-        availability: { type: integer }
-        onboarding_status: { type: string }
-        weekly_frequency: { type: string }
-        duration: { type: string }
-        hours: { type: number }
-        last_four_NRIC: { type: string }
+        highest_education: { type: string }
+        volunteering_duration:
+          { type: string, enum: [ad_hoc, long_term, short_term] }
+        email: { type: string }
+        address: { type: string }
+        nationality: { type: string }
+        gender: { type: string, enum: [male, female, other] }
+        dob: { type: string, format: date }
+        volunteer_interest:
+          type: array
+          items: { type: string }
+        volunteer_expertise:
+          type: object
+          properties:
+            is_first_time: { type: boolean }
+            past_experience:
+              type: array
+              items: { type: string, enum: [elderly, family, children, pwids] }
+            years: { type: integer, minimum: 0, maximum: 50 }
+            strengths:
+              type: array
+              items: { type: string }
+            weaknesses:
+              type: array
+              items: { type: string }
+        availability:
+          type: object
+          properties:
+            days:
+              type: array
+              items:
+                {
+                  type: string,
+                  enum:
+                    [
+                      monday,
+                      tuesday,
+                      wednesday,
+                      thursday,
+                      friday,
+                      saturday,
+                      sunday,
+                    ],
+                }
+            timings:
+              type: array
+              items: { type: string }
+            specific_dates:
+              type: array
+              items: { type: string, format: date }
+        lifetime_hours_volunteered: { type: integer }
+        projects_of_interest:
+          type: array
+          items: { type: string }
 
     Donor:
       type: object
       properties:
         id: { type: string }
+        full_name: { type: string }
+        nric_fin: { type: string }
         email: { type: string }
-        payment_method: { type: string }
-        frequency_of_donations: { type: string }
-        donation_history:
-          type: array
-          items:
-            type: object
-        personal_details:
-          type: object
-          properties:
-            name: { type: string }
-            contact_number: { type: string }
-            address: { type: string }
-            nationality: { type: string }
+        contact_number: { type: string }
+        address: { type: string }
         donation_amount: { type: number }
+        preferred_cause: { type: string }
+        donation_type: { type: string, enum: [one_time, recurring] }
+        payment_method: { type: string }
+        is_tax_deductable: { type: boolean }
 
     VolunteerDocument:
       type: object
@@ -620,34 +552,6 @@ components:
         project_id: { type: string }
         status: { type: string, enum: [present, absent] }
         date: { type: string, format: date }
-
-    MatchingRequest:
-      type: object
-      properties:
-        volunteer_id: { type: string }
-        skills:
-          type: array
-          items: { type: string }
-        availability: { type: string }
-
-    MatchingResponse:
-      type: object
-      properties:
-        recommended_projects:
-          type: array
-          items:
-            type: object
-            properties:
-              project_id: { type: string }
-              match_score: { type: number }
-
-    Expertise:
-      type: object
-      properties:
-        volunteer_id: { type: string }
-        expertise:
-          type: array
-          items: { type: string }
 
     SuccessResponse:
       type: object
