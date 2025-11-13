@@ -56,3 +56,4 @@ pids/
 
 # Yarn Integrity file
 .yarn-integrity
+/src/generated/prisma
