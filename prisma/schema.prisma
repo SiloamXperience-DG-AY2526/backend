@@ -1,5 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Use the Previewer: https://github.com/BOCOVO/db-schema-visualizer
 
 generator client {
   provider = "prisma-client-js"
@@ -12,8 +13,41 @@ datasource db {
 
 model User {
   id    String @id @default(uuid())
+  created_at  DateTime @default(now()) @db.Timestamptz
+  username    String
+  email       String   @unique
+  password_hash String
   name  String
-  email String @unique
 
   @@map("users")
 }
+
+model Role {
+  id          String   @id @default(uuid())
+  name    String
+  description String
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+
+  @@map("permissions")
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  user_id String
+  role_id String
+  user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id])
+  @@map("user_role")
+}
+
+
+
