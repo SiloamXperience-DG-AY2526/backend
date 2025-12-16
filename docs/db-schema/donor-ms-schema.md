@@ -8,7 +8,7 @@ This document outlines the Entity-Relationship Diagram (ERD) for the database re
 
 ## Questions
 
-- Should Donor Table combine with User?
+-
 
 ## Constraints
 
@@ -27,7 +27,7 @@ erDiagram
     }
     DONOR {
         uuid id PK
-        uuid form_submission_id PK
+        uuid form_submission_id FK
     }
     RECURRING_DONATION {
         uuid id PK
@@ -35,13 +35,13 @@ erDiagram
         uuid project_id FK
         string type "individual, fundraising, corporate etc."
         string payment_mode
+        decimal scheduled_amount
         enum frequency "daily, weekly, biweekly, monthly"
         date start_date
         date next_date
         boolean is_active
         boolean is_auto_deducted "E.g. GIRO, Scheduled Transfers"
-        string auto "OPTIONAL"
-
+        string status
     }
     DONATION_TRANSACTION {
         uuid id PK
@@ -54,5 +54,6 @@ erDiagram
         uuid recurring_donation_id FK
         string receipt_number
         boolean is_thank_you_sent
+        string status
     }
 ```

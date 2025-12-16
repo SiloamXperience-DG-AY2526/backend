@@ -1,0 +1,163 @@
+enum VolunteerStatus {
+  PENDING
+  AVAILABLE
+  ASSIGNED
+  REJECTED
+}
+
+enum ProjectStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  FINISHED
+}
+
+enum RSVPStatus {
+  YES
+  NO
+  MAYBE
+}
+
+model Volunteer {
+  id               String @id @default(uuid())
+  user             User   @relation(fields: [userId], references: [id])
+  userId           String @unique
+
+  formSubmission   Submission @relation(fields: [formSubmissionId], references: [id])
+  formSubmissionId String
+  status           VolunteerStatus
+
+  volunteerSessions VolunteerSession[]
+  volunteerProjects VolunteerProject[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("volunteers")
+}
+
+model Project {
+  id              String @id @default(uuid())
+  title           String
+  description     String
+  totalAllocatedFunds Decimal
+  timePeriod      String?
+  isRecurring     Boolean @default(false)
+  frequency       String?
+  startDate       DateTime
+  nextDate        DateTime?
+  status          ProjectStatus
+  hasVolunteering Boolean @default(false)
+  hasDonations    Boolean @default(false)
+
+  sessions         Session[]
+  volunteerProjects VolunteerProject[]
+  disbursements    Disbursement[]
+  feedbacks        Feedback[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id])
+
+  sessionDate DateTime
+  name        String
+  startTime   DateTime
+  endTime     DateTime
+
+  volunteerSessions VolunteerSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model VolunteerSession {
+  id           String @id @default(uuid())
+  volunteerId  String
+  sessionId    String
+
+  volunteer Volunteer @relation(fields: [volunteerId], references: [id])
+  session   Session   @relation(fields: [sessionId], references: [id])
+
+  approvedAt DateTime?
+  approvedBy String?
+  approver   User? @relation(fields: [approvedBy], references: [id])
+
+  rsvp        RSVPStatus
+  attendance  Boolean?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([volunteerId, sessionId])
+  @@map("volunteer_sessions")
+}
+
+model VolunteerProject {
+  id          String @id @default(uuid())
+  volunteerId String
+  projectId   String
+
+  volunteer Volunteer @relation(fields: [volunteerId], references: [id])
+  project   Project   @relation(fields: [projectId], references: [id])
+
+  approvedAt    DateTime?
+  approvedBy    String?
+  approver      User? @relation(fields: [approvedBy], references: [id])
+
+  approvalNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([volunteerId, projectId])
+  @@map("volunteer_projects")
+}
+
+model Disbursement {
+  id          String   @id @default(uuid())
+  amount      Decimal
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+
+  description String?
+
+  createdById String
+  approvedById String?
+
+  createdBy User @relation("created_by", fields: [createdById], references: [id])
+  approvedBy User? @relation("approved_by", fields: [approvedById], references: [id])
+
+  approvedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("disbursements")
+}
+
+model Feedback {
+  id        String @id @default(uuid())
+  fromUserId String
+  toUserId   String
+  projectId  String
+
+  fromUser User @relation("feedback_from", fields: [fromUserId], references: [id])
+  toUser   User @relation("feedback_to", fields: [toUserId], references: [id])
+  project  Project @relation(fields: [projectId], references: [id])
+
+  feedback String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("feedback")
+}

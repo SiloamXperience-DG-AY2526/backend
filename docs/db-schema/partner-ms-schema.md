@@ -44,8 +44,6 @@ erDiagram
 
     PARTNER {
         uuid id PK
-        string form_details
-        string indemnity_form
-        string other_forms
+        uuid form_submission_id FK
     }
 ```

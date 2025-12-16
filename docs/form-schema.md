@@ -3,28 +3,33 @@
 ```mermaid
 erDiagram
     direction TB
-    FORM ||--o{ QUESTION : contains
-    QUESTION ||--o{ OPTION : has
+    FORM ||--o{ FIELD : contains
+    FIELD ||--o{ OPTION : has
     FORM ||--o{ SUBMISSION : receives
     SUBMISSION ||--o{ RESPONSE : has
-    QUESTION ||--o{ RESPONSE : answered_by
+    FIELD ||--o{ RESPONSE : answered_by
     OPTION ||--o{ RESPONSE : selected_by
     SUBMISSION ||--|| USER : submitted_by
 
     FORM {
         int id PK
         text title
+        text slug
     }
-    QUESTION {
+    FIELD {
         int id PK
         int form_id FK
-        text question_text
-        text question_type "single, multi, text"
+        text field_title "e.g Please provide your first name"
+        text field_alias "e.g. first_name"
+        text field_type "single, multi, text"
+        int sort_order "controls field order; unique per form"
     }
     OPTION {
         int id PK
-        int question_id FK
-        text option_text
+        int field_id FK
+        text option_title "e.g. yes I can make it"
+        text option_alias "e.g. agree"
+        int sort_order "controls field order; unique per field"
     }
     SUBMISSION {
         int id PK
@@ -35,7 +40,7 @@ erDiagram
     RESPONSE {
         int id PK
         int submission_id FK
-        int question_id FK
+        int field_id FK
         int option_id FK
         text value
     }

@@ -1,0 +1,82 @@
+enum FieldType {
+  TEXT
+  SINGLE
+  MULTI
+}
+
+
+model Form {
+  id          String       @id @default(uuid())
+  title       String
+  slug        String
+  fields      Field[]
+  submissions Submission[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("forms")
+}
+
+model Field {
+  id         String      @id @default(uuid())
+  form       Form        @relation(fields: [formId], references: [id])
+  formId     String
+  fieldTitle  String
+  fieldAlias String
+  fieldType  FieldType
+  sortOrder  Int
+
+  options    Option[]
+  responses  Response[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([formId, sortOrder])
+  @@map("fields")
+}
+
+model Option {
+  id        String      @id @default(uuid())
+  field     Field       @relation(fields: [fieldId], references: [id])
+  fieldId   String
+  optionTitle String
+  optionAlias String
+  sortOrder Int
+
+  responses Response[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([fieldId, sortOrder])
+  @@map("options")
+}
+
+model Submission {
+  id          String     @id @default(uuid())
+  form        Form       @relation(fields: [formId], references: [id])
+  formId      String
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String
+  submittedAt DateTime   @default(now())
+  updatedAt DateTime @updatedAt
+
+  responses   Response[]
+
+  @@map("submissions")
+}
+
+model Response {
+  id           String       @id @default(uuid())
+  submission   Submission   @relation(fields: [submissionId], references: [id])
+  submissionId String
+  field        Field        @relation(fields: [fieldId], references: [id])
+  fieldId      String
+  option       Option?      @relation(fields: [optionId], references: [id])
+  optionId     String?
+  value        String?
+
+  @@map("responses")
+}

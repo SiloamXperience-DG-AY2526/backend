@@ -10,14 +10,10 @@ This document outlines the Entity-Relationship Diagram (ERD) for the database re
 
 ## Questions
 
-- Should Volunteer Table combine with User?
+-
 
 ## Constraints
 
-- Trigger to manage only one volunteer profile per user
-- Trigger to manage user approval of Volunteer_Project by role access
-- Trigger to manage Projects created
-- Trigger to ensure disbursement is created only after someone approves
 - Scheduled Job / Trigger for Data retention for donations/receipts >= 7 years (configurable) with purge/anonymisation logs
 
 ## ERD Diagram
@@ -45,9 +41,11 @@ erDiagram
     }
     VOLUNTEER {
         uuid id PK
-        uuid form_submission_id PK
-        string form_details
+        uuid user_id FK
+        uuid form_submission_id FK
         string status "pending, available, assigned, rejected"
+        timestamptz createdAt
+        timestamptz updatedAt
     }
     SESSION {
         uuid id PK
@@ -56,6 +54,8 @@ erDiagram
         string name
         timestamptz start_time
         timestamptz end_time
+        timestamptz createdAt
+        timestamptz updatedAt
     }
     VOLUNTEER_SESSION {
         uuid id PK
@@ -65,19 +65,24 @@ erDiagram
         uuid approved_by FK
         string rsvp
         boolean attendance
+        timestamptz createdAt
+        timestamptz updatedAt
     }
     VOLUNTEER_PROJECT {
         uuid id PK
         uuid volunteer_id FK
         uuid project_id FK
         timestamptz approved_at
-        uuid approved_by FK "GM or higher"
+        uuid approved_by FK
         string approval_notes
+        timestamptz createdAt
+        timestamptz updatedAt
     }
     PROJECT {
         uuid id PK
         string title
         string description
+        decimal total_allocated_funds
         string time_period
         boolean is_recurring
         string frequency
@@ -86,16 +91,19 @@ erDiagram
         enum status "draft, pending, approved, rejected, finished"
         boolean has_volunteering
         boolean has_donations
+        timestamptz createdAt
+        timestamptz updatedAt
     }
     DISBURSEMENT {
         uuid id PK
         decimal amount
-        timestamptz disbursed_at
         uuid project_id FK
         string description
         uuid created_by FK
-        uuid approved_by FK "approver cannot be the same as creator"
+        uuid approved_by FK
         timestamptz approved_at
+        timestamptz createdAt
+        timestamptz updatedAt
     }
     FEEDBACK {
         uuid id PK
@@ -103,5 +111,7 @@ erDiagram
         uuid to_user FK
         uuid project_id FK
         string feedback
+        timestamptz createdAt
+        timestamptz updatedAt
     }
 ```
