@@ -1,0 +1,26 @@
+model User {
+  id           String @id @default(uuid())
+  name         String
+  email        String @unique
+  passwordHash String
+
+  roles   UserRole[]
+
+  createdDisbursements  Disbursement[] @relation("created_by")
+  approvedDisbursements Disbursement[] @relation("approved_by")
+
+  feedbackGiven    Feedback[] @relation("feedback_from")
+  feedbackReceived Feedback[] @relation("feedback_to")
+
+  submissions Submission[]
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  Partner          Partner?
+  Donor            Donor?
+  Volunteer        Volunteer?
+  VolunteerSession VolunteerSession[]
+  VolunteerProject VolunteerProject[]
+
+  @@map("users")
+}

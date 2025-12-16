@@ -1,0 +1,93 @@
+enum DonationFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum DonationType {
+  INDIVIDUAL
+  FUNDRAISING
+  CORPORATE
+  OTHER
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  CHARGEBACK
+  FAILED
+}
+
+enum RecurringDonationStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  COMPLETED
+}
+
+model Donor {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  formSubmissionId String
+  formSubmission   Submission @relation(fields: [formSubmissionId], references: [id])
+
+  recurringDonations RecurringDonation[]
+  transactions       DonationTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("donors")
+}
+
+model RecurringDonation {
+  id              String                  @id @default(uuid())
+  donorId         String
+  projectId       String
+  type            DonationType
+  paymentMode     String
+  scheduledAmount Decimal
+  frequency       DonationFrequency
+  startDate       DateTime
+  nextDate        DateTime?
+  status          RecurringDonationStatus
+  isAutoDeducted  Boolean                 @default(false)
+
+  donor        Donor                 @relation(fields: [donorId], references: [id])
+  project      Project               @relation(fields: [projectId], references: [id])
+  transactions DonationTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("recurring_donations")
+}
+
+model DonationTransaction {
+  id                  String         @id @default(uuid())
+  donorId             String
+  projectId           String
+  recurringDonationId String? // null if one-off
+  type                DonationType
+  paymentMode         String
+  date                DateTime       @default(now())
+  amount              Decimal
+  receiptNumber       String?
+  isThankYouSent      Boolean        @default(false)
+  status              DonationStatus
+
+  donor             Donor              @relation(fields: [donorId], references: [id])
+  project           Project            @relation(fields: [projectId], references: [id])
+  recurringDonation RecurringDonation? @relation(fields: [recurringDonationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("donation_transactions")
+}
