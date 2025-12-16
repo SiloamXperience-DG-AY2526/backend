@@ -1,12 +1,11 @@
 model User {
-  id          String       @id @default(uuid())
-  name        String
-  email       String       @unique
+  id           String @id @default(uuid())
+  name         String
+  email        String @unique
   passwordHash String
 
-  roles UserRole[]
-  partner Partner?
-  
+  roles   UserRole[]
+
   createdDisbursements  Disbursement[] @relation("created_by")
   approvedDisbursements Disbursement[] @relation("approved_by")
 
@@ -15,8 +14,13 @@ model User {
 
   submissions Submission[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  Partner          Partner?
+  Donor            Donor?
+  Volunteer        Volunteer?
+  VolunteerSession VolunteerSession[]
+  VolunteerProject VolunteerProject[]
 
   @@map("users")
 }

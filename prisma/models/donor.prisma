@@ -29,17 +29,16 @@ enum RecurringDonationStatus {
   COMPLETED
 }
 
-
 model Donor {
-  id               String     @id @default(uuid())
-  userId           String     @unique
-  user             User       @relation(fields: [userId], references: [id])
-  
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
   formSubmissionId String
   formSubmission   Submission @relation(fields: [formSubmissionId], references: [id])
 
   recurringDonations RecurringDonation[]
-  transactions      DonationTransaction[]
+  transactions       DonationTransaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,20 +47,20 @@ model Donor {
 }
 
 model RecurringDonation {
-  id         String   @id @default(uuid())
-  donorId    String
-  projectId  String
-  type       DonationType
-  paymentMode String
+  id              String                  @id @default(uuid())
+  donorId         String
+  projectId       String
+  type            DonationType
+  paymentMode     String
   scheduledAmount Decimal
-  frequency  DonationFrequency
-  startDate  DateTime
-  nextDate   DateTime?
-  status   RecurringDonationStatus
-  isAutoDeducted Boolean @default(false)
+  frequency       DonationFrequency
+  startDate       DateTime
+  nextDate        DateTime?
+  status          RecurringDonationStatus
+  isAutoDeducted  Boolean                 @default(false)
 
-  donor      Donor   @relation(fields: [donorId], references: [id])
-  project    Project @relation(fields: [projectId], references: [id])
+  donor        Donor                 @relation(fields: [donorId], references: [id])
+  project      Project               @relation(fields: [projectId], references: [id])
   transactions DonationTransaction[]
 
   createdAt DateTime @default(now())
@@ -71,20 +70,20 @@ model RecurringDonation {
 }
 
 model DonationTransaction {
-  id                 String   @id @default(uuid())
-  donorId            String
-  projectId          String
+  id                  String         @id @default(uuid())
+  donorId             String
+  projectId           String
   recurringDonationId String? // null if one-off
-  type               DonationType
-  paymentMode        String
-  date               DateTime @default(now())
-  amount             Decimal
-  receiptNumber      String?
-  isThankYouSent     Boolean @default(false)
-  status             DonationStatus
+  type                DonationType
+  paymentMode         String
+  date                DateTime       @default(now())
+  amount              Decimal
+  receiptNumber       String?
+  isThankYouSent      Boolean        @default(false)
+  status              DonationStatus
 
-  donor   Donor   @relation(fields: [donorId], references: [id])
-  project Project @relation(fields: [projectId], references: [id])
+  donor             Donor              @relation(fields: [donorId], references: [id])
+  project           Project            @relation(fields: [projectId], references: [id])
   recurringDonation RecurringDonation? @relation(fields: [recurringDonationId], references: [id])
 
   createdAt DateTime @default(now())
