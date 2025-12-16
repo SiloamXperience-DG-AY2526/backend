@@ -271,19 +271,3 @@ npx prisma migrate reset
 
 # Env Issues: Check DATABASE_URL in .env
 ```
-
-Contact the team lead for questions!
-
-## 📝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Run linting and fix any issues
-7. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the ISC License.
