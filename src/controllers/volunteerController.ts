@@ -67,18 +67,28 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
 
     // match the response to the form fields
     const responsesData = volunteerForm.fields
-      .map(f => {
+      .map((f) => {
         switch (f.fieldAlias) {
-          case 'project_title': return { fieldId: f.id, value: project.title };
-          case 'volunteer_position': return { fieldId: f.id, value: projectPosition.title };
-          case 'date_time': return { fieldId: f.id, value: project.startDate.toISOString() };
-          case 'name': return { fieldId: f.id, value: name };
-          case 'gender': return { fieldId: f.id, value: gender };
-          case 'contact_number': return { fieldId: f.id, value: contactNumber };
-          default: return null;
+        case 'project_title':
+          return { fieldId: f.id, value: project.title };
+        case 'volunteer_position':
+          return { fieldId: f.id, value: projectPosition.title };
+        case 'date_time':
+          return { fieldId: f.id, value: project.startDate.toISOString() };
+        case 'name':
+          return { fieldId: f.id, value: name };
+        case 'gender':
+          return { fieldId: f.id, value: gender };
+        case 'contact_number':
+          return { fieldId: f.id, value: contactNumber };
+        default:
+          return null;
         }
       })
-      .filter((r): r is { fieldId: string; value: string } => r !== null);
+      .filter(
+        (r): r is { fieldId: string; value: string } => r !== null
+      );
+
 
     // submit the volunteer application
     const newSubmission = await prisma.submission.create({
@@ -140,7 +150,7 @@ export const getVolunteerApplications = async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    // check status based on approved at
+    //check status based on approved atved at
     const applications = volunteerProjects.map(vp => ({
       projectId: vp.projectId,
       projectTitle: vp.project.title,
