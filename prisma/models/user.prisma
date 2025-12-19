@@ -4,7 +4,7 @@ model User {
   email        String @unique
   passwordHash String
 
-  roles   UserRole[]
+  roles UserRole[]
 
   createdDisbursements  Disbursement[] @relation("created_by")
   approvedDisbursements Disbursement[] @relation("approved_by")

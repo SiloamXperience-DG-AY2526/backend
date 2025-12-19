@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
-import { submitVolunteerApplication } from '../controllers/volunteerController';
+import { submitVolunteerApplication, getVolunteerApplications } from '../controllers/volunteerController';
 
 
 const router = Router();
@@ -11,5 +11,7 @@ router.get('/', getRoot);
 // GET /health - Health check endpoint
 router.get('/health', getHealth);
 router.post('/volunteer/application', submitVolunteerApplication);
+router.get('/volunteer/application/:userId', getVolunteerApplications);
+
 
 export default router;
