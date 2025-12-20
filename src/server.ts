@@ -29,6 +29,7 @@ class Server {
   }
 
   private initializeRoutes(): void {
+    // Root routes
     this.app.use('/', rootRoutes);
   }
 
