@@ -19,6 +19,15 @@ enum RSVPStatus {
   MAYBE
 }
 
+enum FundStatus {
+  DRAFT
+  PENDING
+  APPROVAL
+  RELEASED
+  REJECTED
+}
+
+
 model Volunteer {
   id     String @id @default(uuid())
   user   User   @relation(fields: [userId], references: [id])
@@ -41,7 +50,6 @@ model Project {
   id                  String        @id @default(uuid())
   title               String
   description         String
-  totalAllocatedFunds Decimal
   timePeriod          String?
   isRecurring         Boolean       @default(false)
   frequency           String?
@@ -54,6 +62,7 @@ model Project {
   sessions          Session[]
   volunteerProjects VolunteerProject[]
   disbursements     Disbursement[]
+  commitments     CommittedFund[]
   feedbacks         Feedback[]
 
   createdAt           DateTime              @default(now())
@@ -125,13 +134,15 @@ model VolunteerProject {
   @@map("volunteer_projects")
 }
 
-model Disbursement {
+model CommittedFund {
   id        String  @id @default(uuid())
   amount    Decimal
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
 
   description String?
+  fiscalYear  Int
+  status      FundStatus
 
   createdById  String
   approvedById String?
@@ -143,6 +154,31 @@ model Disbursement {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("commitments")
+}
+
+model Disbursement {
+  id        String  @id @default(uuid())
+  amount    Decimal
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  description String?
+  fiscalYear  Int
+  status      FundStatus
+
+  createdById  String
+  approvedById String?
+
+  createdBy  User  @relation("created_by", fields: [createdById], references: [id])
+  approvedBy User? @relation("approved_by", fields: [approvedById], references: [id])
+
+  approvedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  disbursedAt DateTime?
 
   @@map("disbursements")
 }

@@ -28,9 +28,12 @@ erDiagram
     PROJECT ||--|{ VOLUNTEER_PROJECT : managed_by
     PROJECT ||--o{ SESSION : organises
     USER ||--|| VOLUNTEER_PROJECT : approves
+    USER ||--o{ COMMITTED_FUND : creates
+    USER ||--o{ COMMITTED_FUND : approves
+    COMMITTED_FUND }o--|| PROJECT : funds
     USER ||--o{ DISBURSEMENT : creates
     USER |o--o{ DISBURSEMENT : approves
-    DISBURSEMENT }o--|| PROJECT : funds
+    DISBURSEMENT }o--|| PROJECT : spent_by
     USER ||--o{ FEEDBACK : make
     USER ||--o{ FEEDBACK : receive
     FEEDBACK }o--|| PROJECT : after
@@ -82,7 +85,6 @@ erDiagram
         uuid id PK
         string title
         string description
-        decimal total_allocated_funds
         string time_period
         boolean is_recurring
         string frequency
@@ -94,16 +96,31 @@ erDiagram
         timestamptz createdAt
         timestamptz updatedAt
     }
-    DISBURSEMENT {
+    COMMITTED_FUND {
         uuid id PK
         decimal amount
         uuid project_id FK
         string description
+        int fiscal_year
+        string status
         uuid created_by FK
         uuid approved_by FK
         timestamptz approved_at
         timestamptz createdAt
         timestamptz updatedAt
+    }
+    DISBURSEMENT {
+        uuid id PK
+        decimal amount
+        uuid project_id FK
+        string description
+        int fiscal_year
+        uuid created_by FK
+        uuid approved_by FK
+        timestamptz approved_at
+        timestamptz createdAt
+        timestamptz updatedAt
+        timestamptz disbursedAt
     }
     FEEDBACK {
         uuid id PK
