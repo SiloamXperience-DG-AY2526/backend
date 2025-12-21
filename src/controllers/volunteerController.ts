@@ -109,16 +109,16 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
         projectPositionId: projectPosition.id,
       },
     });
-//send email
+    //send email
     sendVolunteerApplicationEmail({
-  to: 'tasmiyahwork@gmail.com' , //should be user's email, used personal for testing
-  name,
-  projectTitle: project.title,
-  positionTitle: projectPosition.title,
-  startDate: project.startDate,
-}).catch((err) => {
-  console.error('Email sending failed:', err);
-});
+      to: 'tasmiyahwork@gmail.com' , //should be user's email, used personal for testing
+      name,
+      projectTitle: project.title,
+      positionTitle: projectPosition.title,
+      startDate: project.startDate,
+    }).catch((err) => {
+      console.error('Email sending failed:', err);
+    });
 
     return res.status(201).json({
       message: 'Volunteer application submitted successfully',

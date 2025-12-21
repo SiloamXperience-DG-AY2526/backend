@@ -22,7 +22,7 @@ export const sendVolunteerApplicationEmail = async ({
   startDate: Date;
 }) => {
 
-const formattedDate = `${startDate.getDate().toString().padStart(2, '0')} ${startDate.toLocaleString('en-US', { month: 'short' })} ${startDate.getFullYear()} (${startDate.toLocaleDateString('en-US', { weekday: 'long' })})`;
+  const formattedDate = `${startDate.getDate().toString().padStart(2, '0')} ${startDate.toLocaleString('en-US', { month: 'short' })} ${startDate.getFullYear()} (${startDate.toLocaleDateString('en-US', { weekday: 'long' })})`;
 
   await transporter.sendMail({
     from: `"Volunteer Team" <${process.env.SMTP_FROM}>`,
@@ -36,7 +36,7 @@ const formattedDate = `${startDate.getDate().toString().padStart(2, '0')} ${star
       <p>
         <strong>Project:</strong> ${projectTitle}<br/>
         <strong>Position:</strong> ${positionTitle}<br/>
-        <strong>Start Date:</strong>  ${formattedDate}
+        <strong>Start Date:</strong> ${formattedDate}
       </p>
 
       <p>Your application has been received and is currently under review.</p>
