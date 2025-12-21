@@ -165,16 +165,17 @@ export const getVolunteerApplications = async (req: Request, res: Response) => {
     });
 
     //check status based on approved at field
-    const applications = volunteerProjects.map(vp => ({
-      projectId: vp.projectId,
-      projectTitle: vp.project.title,
-      position: vp.projectPosition.title,
-      submittedAt: vp.createdAt,
-      status: vp.approvedAt ? 'PROCESSED' : 'PENDING',
-      approvedAt: vp.approvedAt,
-      approvedBy: vp.approver?.name ?? null,
-      approvalNotes: vp.approvalNotes,
-    }));
+    const applications = volunteerProjects.map(
+      (vp: typeof volunteerProjects[number]) => ({
+        projectId: vp.projectId,
+        projectTitle: vp.project.title,
+        position: vp.projectPosition.title,
+        submittedAt: vp.createdAt,
+        status: vp.approvedAt ? 'PROCESSED' : 'PENDING',
+        approvedAt: vp.approvedAt,
+        approvedBy: vp.approver?.name ?? null,
+        approvalNotes: vp.approvalNotes,
+      }));
 
     return res.status(200).json({
       userId,
