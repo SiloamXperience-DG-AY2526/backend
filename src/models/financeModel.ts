@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import {
   CreateCommitment,
@@ -18,16 +17,6 @@ interface FinanceAggregatesResult {
   committedByYear: FinanceAggregateByYear[];
   disbursedByYear: FinanceAggregateByYear[];
 }
-
-type CommittedByYear = {
-  fiscalYear: number;
-  _sum?: { amount?: Prisma.Decimal | null };
-};
-
-type DisbursedByYear = {
-  fiscalYear: number;
-  _sum?: { amount?: Prisma.Decimal | null };
-};
 
 /**
  *
@@ -58,11 +47,11 @@ export const getAggregatesByYear = async (
       orderBy: { fiscalYear: 'asc' },
     }),
   ]);
-  const committedByYear = committedRaw.map((c: CommittedByYear) => ({
+  const committedByYear = committedRaw.map((c: any) => ({
     fiscalYear: c.fiscalYear,
     amount: c._sum?.amount?.toNumber() ?? 0,
   }));
-  const disbursedByYear = disbursedRaw.map((d: DisbursedByYear) => ({
+  const disbursedByYear = disbursedRaw.map((d: any) => ({
     fiscalYear: d.fiscalYear,
     amount: d._sum?.amount?.toNumber() ?? 0,
   }));
