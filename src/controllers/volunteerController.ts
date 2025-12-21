@@ -1,6 +1,8 @@
-import { PrismaClient, FieldType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { FieldType } from '../types/formType'; 
 import { Request, Response } from 'express';
 import { sendVolunteerApplicationEmail } from '../utils/email';
+import { ProjectPosition } from '../types/volunteerType';
 
 const prisma = new PrismaClient();
 
@@ -69,7 +71,7 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
       });
     }
 
-    // match the response to the form fields
+    // match the response to the form fields 
     const responsesData = volunteerForm.fields
       .map((f: typeof volunteerForm.fields[number]) => {
         switch (f.fieldAlias) {
@@ -90,7 +92,7 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
         }
       })
       .filter(
-        (r): r is { fieldId: string; value: string } => r !== null
+        (r: { fieldId: string; value: string } | null): r is { fieldId: string; value: string } => r !== null
       );
 
 
@@ -235,7 +237,7 @@ export const getAvailableVolunteerActivities = async (
     const availableProjects = projects
       .map((project: typeof projects[number]) => {
         const availablePositions = project.projectPositions.filter(
-          (pos) => pos.filled < pos.slots
+          (pos: ProjectPosition) => pos.filled < pos.slots 
         );
 
         if (availablePositions.length === 0) return null;
@@ -262,7 +264,7 @@ export const getAvailableVolunteerActivities = async (
       title: project.title,
       description: project.description,
       startDate: project.startDate,
-      positions: project.projectPositions.map(pos => ({
+      positions: project.projectPositions.map((pos: ProjectPosition)  => ({
         id: pos.id,
         title: pos.title,
         slots: pos.slots,
