@@ -6,16 +6,10 @@ const getAggregateOverview = async (projectId?: string) => {
     await financeModel.getAggregatesByYear(projectId);
 
   const committedDict = Object.fromEntries(
-    committedByYear.map((c) => [
-      c.fiscalYear,
-      c._sum?.amount ?? 0, // safely handle undefined _sum and amount
-    ])
+    committedByYear.map((c) => [c.fiscalYear, c.amount])
   );
   const disbursedDict = Object.fromEntries(
-    disbursedByYear.map((d) => [
-      d.fiscalYear,
-      d._sum?.amount ?? 0, // safely handle undefined _sum and amount
-    ])
+    disbursedByYear.map((d) => [d.fiscalYear, d.amount])
   );
 
   const allYears = Array.from(
