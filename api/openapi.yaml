@@ -423,6 +423,77 @@ paths:
         "200":
           description: Logs retrieved
 
+  # Donation APIs (Sample APIs - Update accordingly)
+  /donations/home:
+    get:
+      summary: Get Donation Homepage Data
+      tags: [Donation]
+      responses:
+        "200":
+          description: Donation homepage data
+  /donations/projects:
+    get:
+      summary: Get All Donation Projects
+      tags: [Donation]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of donation projects
+  /donations/applications:
+    post:
+      summary: Submit Donation Application
+      tags: [Donation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Donation application submitted
+  /donations/partners/donations:
+    get:
+      summary: Get Partner's Donation History
+      tags: [Donation]
+      responses:
+        "200":
+          description: Partner's donation history
+  /donations/{donationId}:
+    get:
+      summary: Get Donation Detail
+      tags: [Donation]
+      parameters:
+        - name: donationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Donation detail
+  /donations/{donationId}/receipt:
+    get:
+      summary: Download Donation Receipt
+      tags: [Donation]
+      parameters:
+        - name: donationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Donation receipt
+
 # Components (Schemas) (Sample - Update accordingly)
 components:
   schemas:
