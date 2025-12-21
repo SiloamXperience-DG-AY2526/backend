@@ -2,6 +2,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import { logger } from './middlewares/logger';
 import rootRoutes from './routes';
+import donationRoutes from './routes/donations';
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +32,8 @@ class Server {
   private initializeRoutes(): void {
     // Root routes
     this.app.use('/', rootRoutes);
+    // Donation routes
+    this.app.use('/api/v1/donations', donationRoutes);
   }
 
   private initializeErrorHandling(): void {
