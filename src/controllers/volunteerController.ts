@@ -1,5 +1,6 @@
 import { PrismaClient, FieldType } from '@prisma/client';
 import { Request, Response } from 'express';
+import { sendVolunteerApplicationEmail } from '../utils/email';
 
 const prisma = new PrismaClient();
 
@@ -108,6 +109,16 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
         projectPositionId: projectPosition.id,
       },
     });
+//send email
+    sendVolunteerApplicationEmail({
+  to: 'tasmiyahwork@gmail.com' , //should be user's email, used personal for testing
+  name,
+  projectTitle: project.title,
+  positionTitle: projectPosition.title,
+  startDate: project.startDate,
+}).catch((err) => {
+  console.error('Email sending failed:', err);
+});
 
     return res.status(201).json({
       message: 'Volunteer application submitted successfully',
@@ -150,7 +161,7 @@ export const getVolunteerApplications = async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    //check status based on approved atved at
+    //check status based on approved at field
     const applications = volunteerProjects.map(vp => ({
       projectId: vp.projectId,
       projectTitle: vp.project.title,
@@ -175,3 +186,101 @@ export const getVolunteerApplications = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getAvailableVolunteerActivities = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { page = '1', limit = '10', search } = req.query; //adjustable
+
+    const pageNumber = Number(page);
+    const pageSize = Number(limit);
+
+    if (pageNumber < 1 || pageSize < 1) {
+      return res.status(400).json({ error: 'Invalid pagination values' });
+    }
+
+    // check for future projects available
+    const now = new Date();
+
+    // Fetch projects that can have volunteering and start date is today onwards
+
+    const projects = await prisma.project.findMany({
+      where: {
+        hasVolunteering: true,
+        startDate: {
+          gte: now,
+        },
+        ...(search && {
+          title: {
+            contains: search as string,
+            mode: 'insensitive',
+          },
+        }),
+      },
+      include: {
+        projectPositions: true,
+      },
+      orderBy: {
+        startDate: 'asc',
+      },
+    });
+
+    // check if project has slots
+    const availableProjects = projects
+      .map(project => {
+        const availablePositions = project.projectPositions.filter(
+          pos => pos.filled < pos.slots
+        );
+
+        if (availablePositions.length === 0) return null;
+
+        return {
+          ...project,
+          projectPositions: availablePositions,
+        };
+      })
+      .filter(Boolean) as typeof projects;
+
+    // pagination after filtering
+    const total = availableProjects.length;
+    const totalPages = Math.ceil(total / pageSize);
+
+    const paginated = availableProjects.slice(
+      (pageNumber - 1) * pageSize,
+      pageNumber * pageSize
+    );
+
+    // return data
+    const data = paginated.map(project => ({
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      startDate: project.startDate,
+      positions: project.projectPositions.map(pos => ({
+        id: pos.id,
+        title: pos.title,
+        slots: pos.slots,
+        filled: pos.filled,
+        availableSlots: pos.slots - pos.filled,
+      })),
+    }));
+
+    return res.status(200).json({
+      page: pageNumber,
+      limit: pageSize,
+      total,
+      totalPages,
+      data,
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({
+      error: 'Internal server error',
+      details: error.message,
+    });
+  }
+};
+
+
