@@ -33,8 +33,11 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
     });
 
     const getResponseValue = (alias: string) => {
-      return submission?.responses.find(r => r.field.fieldAlias === alias)?.value || '';
+      return submission?.responses.find(
+        (r: typeof submission.responses[number]) => r.field.fieldAlias === alias
+      )?.value || '';
     };
+
     // get necessary fields for application from sign up form
     const name = getResponseValue('name');
     const gender = getResponseValue('gender');
@@ -68,7 +71,7 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
 
     // match the response to the form fields
     const responsesData = volunteerForm.fields
-      .map((f) => {
+      .map((f: typeof volunteerForm.fields[number]) => {
         switch (f.fieldAlias) {
         case 'project_title':
           return { fieldId: f.id, value: project.title };
@@ -229,9 +232,9 @@ export const getAvailableVolunteerActivities = async (
 
     // check if project has slots
     const availableProjects = projects
-      .map(project => {
+      .map((project: typeof projects[number]) => {
         const availablePositions = project.projectPositions.filter(
-          pos => pos.filled < pos.slots
+          (pos) => pos.filled < pos.slots
         );
 
         if (availablePositions.length === 0) return null;
@@ -253,7 +256,7 @@ export const getAvailableVolunteerActivities = async (
     );
 
     // return data
-    const data = paginated.map(project => ({
+    const data = paginated.map((project: typeof paginated[number]) => ({
       id: project.id,
       title: project.title,
       description: project.description,
