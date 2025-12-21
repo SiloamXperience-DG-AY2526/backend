@@ -74,6 +74,11 @@ export async function signupPartnerWithOnboarding(
       },
     });
 
+    // Check if partner creation was successful
+    if (!partner) {
+      throw new Error('Partner creation failed');
+    }
+
     // Create token for the new user
     const token = signToken({
       userId: user.id,
