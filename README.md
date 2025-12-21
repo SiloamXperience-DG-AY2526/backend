@@ -58,7 +58,10 @@ A comprehensive Express.js backend built with TypeScript, featuring modern tooli
 
    # Run Prisma migrations
    npx prisma migrate dev --name init
+   # Populate with required forms
+   npm run seed
    npx prisma generate
+   
    ```## 🏃‍♂️ Development
    ````
 
