@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import { partnerSignupSchema } from "../middlewares/authMiddleware";
-import { signupPartnerWithOnboarding } from "../services/authService";
+import { Request, Response } from 'express';
+import { partnerSignupSchema } from '../middlewares/authMiddleware';
+import { signupPartnerWithOnboarding } from '../services/authService';
 
 export async function partnerSignup(req: Request, res: Response) {
   try {

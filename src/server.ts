@@ -16,7 +16,7 @@ class Server {
   constructor() {
     this.app = express();
     this.port = parseInt(process.env.PORT || '3000', 10);
-    
+
     this.initializeMiddlewares();
     this.initializeRoutes();
     this.initializeErrorHandling();
@@ -26,7 +26,7 @@ class Server {
     // Body parser middleware
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-    
+
     // Custom logger middleware
     this.app.use(logger);
   }
@@ -36,10 +36,10 @@ class Server {
     this.app.use('/', rootRoutes);
 
     // Auth routes
-    this.app.use("/auth", authRoutes);
+    this.app.use('/auth', authRoutes);
 
     // Onboarding routes
-    this.app.use("/onboarding", onboardingRoutes);
+    this.app.use('/onboarding', onboardingRoutes);
   }
 
   private initializeErrorHandling(): void {

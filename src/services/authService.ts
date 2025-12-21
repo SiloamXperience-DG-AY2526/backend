@@ -1,7 +1,7 @@
-import { prisma } from "../prisma/client";
-import { hashPassword, verifyPassword } from "../utils/password";
-import { signToken } from "../utils/jwt";
-import { submitPartnerOnboarding } from "./onboardingService";
+import { prisma } from '../prisma/client';
+import { hashPassword, verifyPassword } from '../utils/password';
+import { signToken } from '../utils/jwt';
+import { submitPartnerOnboarding } from './onboardingService';
 
 export async function signupPartnerWithOnboarding(
   name: string,
@@ -10,8 +10,8 @@ export async function signupPartnerWithOnboarding(
   formId: string,
   responses: { fieldId: string; value?: string; optionId?: string }[]
 ) {
-  if (email.endsWith("@siloamxperience.org")) {
-    throw new Error("Staff accounts cannot sign up publicly");
+  if (email.endsWith('@siloamxperience.org')) {
+    throw new Error('Staff accounts cannot sign up publicly');
   }
 
   const existingUser = await prisma.user.findUnique({
@@ -19,17 +19,17 @@ export async function signupPartnerWithOnboarding(
   });
 
   if (existingUser) {
-    throw new Error("Account already exists");
+    throw new Error('Account already exists');
   }
 
   const passwordHash = await hashPassword(password);
 
   const partnerRole = await prisma.role.findFirst({
-    where: { roleName: "PARTNER" },
+    where: { roleName: 'PARTNER' },
   });
 
   if (!partnerRole) {
-    throw new Error("Partner role does not exist. Seed roles first.");
+    throw new Error('Partner role does not exist. Seed roles first.');
   }
 
   const result = await prisma.$transaction(async (tx) => {
@@ -55,7 +55,7 @@ export async function signupPartnerWithOnboarding(
 
     // Check if the fields match the responses
     if (fields.length !== responses.length) {
-      throw new Error("One or more fields referenced in the responses do not exist.");
+      throw new Error('One or more fields referenced in the responses do not exist.');
     }
 
     // Create a form submission from onboarding
@@ -77,7 +77,7 @@ export async function signupPartnerWithOnboarding(
     // Create token for the new user
     const token = signToken({
       userId: user.id,
-      roles: ["PARTNER"],
+      roles: ['PARTNER'],
     });
 
     return token;
@@ -94,12 +94,12 @@ export async function login(email: string, password: string) {
   });
 
   if (!user) {
-    throw new Error("Invalid email");
+    throw new Error('Invalid email');
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
-    throw new Error("Invalid password");
+    throw new Error('Invalid password');
   }
 
   const roles = user.roles.map(r => r.role.roleName);
