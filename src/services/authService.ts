@@ -1,4 +1,5 @@
 import { prisma } from '../prisma/client';
+import { Prisma } from '@prisma/client';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signToken } from '../utils/jwt';
 import { submitPartnerOnboarding } from './onboardingService';
@@ -32,7 +33,7 @@ export async function signupPartnerWithOnboarding(
     throw new Error('Partner role does not exist. Seed roles first.');
   }
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Create user
     const user = await tx.user.create({
       data: {
@@ -107,7 +108,7 @@ export async function login(email: string, password: string) {
     throw new Error('Invalid password');
   }
 
-  const roles = user.roles.map(r => r.role.roleName);
+  const roles = user.roles.map((r: { role: { roleName: string } }) => r.role.roleName);
 
   const token = signToken({
     userId: user.id,
