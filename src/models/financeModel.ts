@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import {
   CreateCommitment,
@@ -8,15 +9,25 @@ import {
   UpdateDisbursementStatus,
 } from '../schemas';
 
-export interface FinanceAggregateByYear {
+interface FinanceAggregateByYear {
   fiscalYear: number;
   amount: number;
 }
 
-export interface FinanceAggregatesResult {
+interface FinanceAggregatesResult {
   committedByYear: FinanceAggregateByYear[];
   disbursedByYear: FinanceAggregateByYear[];
 }
+
+type CommittedByYear = {
+  fiscalYear: number;
+  _sum?: { amount?: Prisma.Decimal | null };
+};
+
+type DisbursedByYear = {
+  fiscalYear: number;
+  _sum?: { amount?: Prisma.Decimal | null };
+};
 
 /**
  *
@@ -29,7 +40,7 @@ export interface FinanceAggregatesResult {
 export const getAggregatesByYear = async (
   projectId?: string
 ): Promise<FinanceAggregatesResult> => {
-  const [committedByYear, disbursedByYear] = await prisma.$transaction([
+  const [committedRaw, disbursedRaw] = await prisma.$transaction([
     prisma.committedFund.groupBy({
       by: ['fiscalYear'],
       where: projectId ? { projectId } : {},
@@ -47,16 +58,15 @@ export const getAggregatesByYear = async (
       orderBy: { fiscalYear: 'asc' },
     }),
   ]);
-  return {
-    committedByYear: committedByYear.map((c) => ({
-      fiscalYear: c.fiscalYear,
-      amount: c._sum?.amount?.toNumber() ?? 0,
-    })),
-    disbursedByYear: disbursedByYear.map((d) => ({
-      fiscalYear: d.fiscalYear,
-      amount: d._sum?.amount?.toNumber() ?? 0,
-    })),
-  };
+  const committedByYear = committedRaw.map((c: CommittedByYear) => ({
+    fiscalYear: c.fiscalYear,
+    amount: c._sum?.amount?.toNumber() ?? 0,
+  }));
+  const disbursedByYear = disbursedRaw.map((d: DisbursedByYear) => ({
+    fiscalYear: d.fiscalYear,
+    amount: d._sum?.amount?.toNumber() ?? 0,
+  }));
+  return { committedByYear, disbursedByYear };
 };
 
 export const getTransactions = async (projectId: string) => {
