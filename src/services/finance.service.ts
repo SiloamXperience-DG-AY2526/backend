@@ -1,4 +1,4 @@
-import * as financeModel from '../models/financeModel';
+import * as financeModel from '../models/finance.model';
 import * as schema from '../schemas';
 
 const getAggregateOverview = async (projectId?: string) => {

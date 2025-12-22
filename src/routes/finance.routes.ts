@@ -7,7 +7,7 @@ const router = Router();
 
 router.use(
   '/projects/:projectId',
-  validateRequest({ params: schema.projectIdSchema })
+  validateRequest({ params: schema.ProjectIdSchema })
 );
 
 router.get('/budgets', controller.getFinancialOverview);
@@ -18,40 +18,40 @@ router.get(
 );
 
 router.post(
-  '/projects/:projectId/commitment',
+  '/projects/:projectId/commitments',
   validateRequest({ body: schema.CreateCommitmentSchema }),
   controller.createCommitment
 );
 router.patch(
-  '/projects/:projectId/commitment/:id',
+  '/projects/:projectId/commitments/:id',
   validateRequest({
-    params: schema.idSchema,
+    params: schema.IdSchema,
     body: schema.CommitmentStatusSchema,
   }),
   controller.updateCommitmentStatus
 );
 router.delete(
-  '/projects/:projectId/commitment/:id',
-  validateRequest({ params: schema.idSchema }),
+  '/projects/:projectId/commitments/:id',
+  validateRequest({ params: schema.IdSchema }),
   controller.deleteCommitment
 );
 
 router.post(
-  '/projects/:projectId/disbursement',
+  '/projects/:projectId/disbursements',
   validateRequest({ body: schema.CreateDisbursementSchema }),
   controller.createDisbursement
 );
 router.patch(
-  '/projects/:projectId/disbursement/:id',
+  '/projects/:projectId/disbursements/:id',
   validateRequest({
-    params: schema.idSchema,
+    params: schema.IdSchema,
     body: schema.DisbursementStatusSchema,
   }),
   controller.updateDisbursementStatus
 );
 router.delete(
-  '/projects/:projectId/disbursement/:id',
-  validateRequest({ params: schema.idSchema }),
+  '/projects/:projectId/disbursements/:id',
+  validateRequest({ params: schema.IdSchema }),
   controller.deleteDisbursement
 );
 

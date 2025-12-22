@@ -95,7 +95,6 @@ export const createDisbursement = async (req: Request, res: Response) => {
 export const updateDisbursementStatus = async (req: Request, res: Response) => {
   const { projectId, id } = req.params;
   const { status } = req.body;
-
   await financeService.updateDisbursementStatus({
     projectId,
     disbursementId: id,

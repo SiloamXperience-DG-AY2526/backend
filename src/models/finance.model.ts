@@ -29,6 +29,7 @@ interface FinanceAggregatesResult {
 export const getAggregatesByYear = async (
   projectId?: string
 ): Promise<FinanceAggregatesResult> => {
+  // transaction to ensure consistency
   const [committedRaw, disbursedRaw] = await prisma.$transaction([
     prisma.committedFund.groupBy({
       by: ['fiscalYear'],
@@ -59,16 +60,14 @@ export const getAggregatesByYear = async (
 };
 
 export const getTransactions = async (projectId: string) => {
-  const [commitments, disbursements] = await prisma.$transaction([
-    prisma.committedFund.findMany({
-      where: { projectId },
-      orderBy: { fiscalYear: 'asc' },
-    }),
-    prisma.disbursement.findMany({
-      where: { projectId },
-      orderBy: { fiscalYear: 'asc' },
-    }),
-  ]);
+  const commitments = await prisma.committedFund.findMany({
+    where: { projectId },
+    orderBy: { fiscalYear: 'asc' },
+  });
+  const disbursements = await prisma.disbursement.findMany({
+    where: { projectId },
+    orderBy: { fiscalYear: 'asc' },
+  });
   return { commitments, disbursements };
 };
 

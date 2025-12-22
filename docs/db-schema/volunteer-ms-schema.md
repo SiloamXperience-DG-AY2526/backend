@@ -88,6 +88,7 @@ erDiagram
         string time_period
         boolean is_recurring
         string frequency
+        decimal target_fund
         date start_date
         date next_date
         enum status "draft, pending, approved, rejected, finished"
@@ -121,6 +122,7 @@ erDiagram
         timestamptz createdAt
         timestamptz updatedAt
         timestamptz disbursedAt
+        timestamptz scheduledAt
     }
     FEEDBACK {
         uuid id PK

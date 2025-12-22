@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-export const projectIdSchema = z.object({
+export const ProjectIdSchema = z.object({
   projectId: z.uuid(),
 });
 
-export const idSchema = z.object({
+export const IdSchema = z.object({
   id: z.uuid(),
 });

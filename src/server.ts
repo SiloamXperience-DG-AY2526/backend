@@ -32,7 +32,7 @@ class Server {
 
   private initializeRoutes(): void {
     // Root routes
-    this.app.use('/', rootRoutes);
+    this.app.use('/api/v1', rootRoutes);
   }
 
   private initializeErrorHandling(): void {

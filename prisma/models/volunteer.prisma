@@ -56,6 +56,7 @@ model Project {
   startDate           DateTime
   nextDate            DateTime?
   status              ProjectStatus
+  targetFund          Decimal?      @db.Decimal(12, 2)
   hasVolunteering     Boolean       @default(false)
   hasDonations        Boolean       @default(false)
 
@@ -136,7 +137,7 @@ model VolunteerProject {
 
 model CommittedFund {
   id        String  @id @default(uuid())
-  amount    Decimal
+  amount    Decimal @db.Decimal(12, 2)
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
 
@@ -160,7 +161,7 @@ model CommittedFund {
 
 model Disbursement {
   id        String  @id @default(uuid())
-  amount    Decimal
+  amount    Decimal @db.Decimal(12, 2)
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
 
@@ -179,6 +180,7 @@ model Disbursement {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   disbursedAt DateTime?
+  scheduledAt DateTime?
 
   @@map("disbursements")
 }
