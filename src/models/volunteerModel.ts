@@ -75,15 +75,15 @@ export const submitVolunteerApplicationModel = async ({
 
   // get volunteer personal details 
   const submission = await prisma.submission.findUnique({
-  where: { id: volunteer.formSubmissionId },
-  include: {
-    responses: { include: { field: true } },
-  },
-});
+    where: { id: volunteer.formSubmissionId },
+    include: {
+      responses: { include: { field: true } },
+    },
+  });
 
-const name = getResponseValue(submission, 'name');
-const gender = getResponseValue(submission, 'gender');
-const contactNumber = getResponseValue(submission, 'contact_number');
+  const name = getResponseValue(submission, 'name');
+  const gender = getResponseValue(submission, 'gender');
+  const contactNumber = getResponseValue(submission, 'contact_number');
 
   // fetch volunteer application form
   const volunteerForm = await prisma.form.findFirst({
@@ -97,22 +97,22 @@ const contactNumber = getResponseValue(submission, 'contact_number');
 
   // map responses to form fields
   const responsesData = volunteerForm.fields
- .map((f: typeof volunteerForm.fields[number]) => {
+    .map((f: typeof volunteerForm.fields[number]) => {
       switch (f.fieldAlias) {
-        case 'project_title':
-          return { fieldId: f.id, value: project.title };
-        case 'volunteer_position':
-          return { fieldId: f.id, value: projectPosition.title };
-        case 'date_time':
-          return { fieldId: f.id, value: project.startDate.toISOString() };
-        case 'name':
-          return { fieldId: f.id, value: name };
-        case 'gender':
-          return { fieldId: f.id, value: gender };
-        case 'contact_number':
-          return { fieldId: f.id, value: contactNumber };
-        default:
-          return null;
+      case 'project_title':
+        return { fieldId: f.id, value: project.title };
+      case 'volunteer_position':
+        return { fieldId: f.id, value: projectPosition.title };
+      case 'date_time':
+        return { fieldId: f.id, value: project.startDate.toISOString() };
+      case 'name':
+        return { fieldId: f.id, value: name };
+      case 'gender':
+        return { fieldId: f.id, value: gender };
+      case 'contact_number':
+        return { fieldId: f.id, value: contactNumber };
+      default:
+        return null;
       }
     })
     .filter(Boolean) as { fieldId: string; value: string }[];

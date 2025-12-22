@@ -10,8 +10,8 @@ export const getResponseValue = (
   alias: string
 ): string => {
   return submission?.responses.find(
-  (r: { field: { fieldAlias: string }; value: string | null }) =>
-    r.field.fieldAlias === alias
-)?.value ?? '';
+    (r: { field: { fieldAlias: string }; value: string | null }) =>
+      r.field.fieldAlias === alias
+  )?.value ?? '';
 
 };

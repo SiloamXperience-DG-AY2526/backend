@@ -21,20 +21,20 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
     });
   } catch (error: any) {
     switch (error.message) {
-      case 'PROJECT_NOT_FOUND':
-        return res.status(404).json({ error: 'Project not found' });
-      case 'PROJECT_POSITION_NOT_FOUND':
-        return res.status(404).json({ error: 'Project position not found' });
-      case 'VOLUNTEER_NOT_FOUND':
-        return res.status(400).json({ error: 'Volunteer profile does not exist' });
-      case 'VOLUNTEER_FORM_NOT_FOUND':
-        return res.status(500).json({ error: 'Volunteer application form not configured' });
-      default:
-        console.error(error);
-        return res.status(500).json({
-          error: 'Internal server error',
-          details: error.message,
-        });
+    case 'PROJECT_NOT_FOUND':
+      return res.status(404).json({ error: 'Project not found' });
+    case 'PROJECT_POSITION_NOT_FOUND':
+      return res.status(404).json({ error: 'Project position not found' });
+    case 'VOLUNTEER_NOT_FOUND':
+      return res.status(400).json({ error: 'Volunteer profile does not exist' });
+    case 'VOLUNTEER_FORM_NOT_FOUND':
+      return res.status(500).json({ error: 'Volunteer application form not configured' });
+    default:
+      console.error(error);
+      return res.status(500).json({
+        error: 'Internal server error',
+        details: error.message,
+      });
     }
   }
 };
