@@ -8,6 +8,8 @@ model User {
 
   createdDisbursements  Disbursement[] @relation("created_by")
   approvedDisbursements Disbursement[] @relation("approved_by")
+  createdCommitments  CommittedFund[] @relation("created_by")
+  approvedCommitments CommittedFund[] @relation("approved_by")
 
   feedbackGiven    Feedback[] @relation("feedback_from")
   feedbackReceived Feedback[] @relation("feedback_to")

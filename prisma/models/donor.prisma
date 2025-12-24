@@ -52,7 +52,7 @@ model RecurringDonation {
   projectId       String
   type            DonationType
   paymentMode     String
-  scheduledAmount Decimal
+  scheduledAmount Decimal                 @db.Decimal(12, 2)
   frequency       DonationFrequency
   startDate       DateTime
   nextDate        DateTime?
@@ -77,7 +77,7 @@ model DonationTransaction {
   type                DonationType
   paymentMode         String
   date                DateTime       @default(now())
-  amount              Decimal
+  amount              Decimal        @db.Decimal(12, 2)
   receiptNumber       String?
   isThankYouSent      Boolean        @default(false)
   status              DonationStatus

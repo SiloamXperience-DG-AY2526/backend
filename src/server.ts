@@ -1,7 +1,9 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { Application } from 'express';
 import dotenv from 'dotenv';
 import { logger } from './middlewares/logger';
+import { errorHandler } from './middlewares/errorHandler';
 import rootRoutes from './routes';
+import { notFoundHandler } from './middlewares/notFoundHandler';
 
 // Load environment variables
 dotenv.config();
@@ -13,7 +15,7 @@ class Server {
   constructor() {
     this.app = express();
     this.port = parseInt(process.env.PORT || '3000', 10);
-    
+
     this.initializeMiddlewares();
     this.initializeRoutes();
     this.initializeErrorHandling();
@@ -23,35 +25,22 @@ class Server {
     // Body parser middleware
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-    
+
     // Custom logger middleware
     this.app.use(logger);
   }
 
   private initializeRoutes(): void {
     // Root routes
-    this.app.use('/', rootRoutes);
+    this.app.use('/api/v1', rootRoutes);
   }
 
   private initializeErrorHandling(): void {
     // 404 handler
-    this.app.use((req: Request, res: Response) => {
-      res.status(404).json({
-        status: 'error',
-        message: 'Route not found',
-        path: req.originalUrl
-      });
-    });
+    this.app.use(notFoundHandler);
 
     // Global error handler
-    this.app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
-      console.error('Error:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Internal server error',
-        ...(process.env.NODE_ENV === 'development' && { error: error.message })
-      });
-    });
+    this.app.use(errorHandler);
   }
 
   public start(): void {

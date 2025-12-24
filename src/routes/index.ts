@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
 import { submitVolunteerApplication, getVolunteerApplications, getAvailableVolunteerActivities } from '../controllers/volunteerController';
 
+import financeRoutes from './finance.routes';
 
 const router = Router();
 
@@ -17,5 +18,7 @@ router.get('/api/volunteer/availableActivities', getAvailableVolunteerActivities
 
 
 
+
+router.use('/finance', financeRoutes);
 
 export default router;
