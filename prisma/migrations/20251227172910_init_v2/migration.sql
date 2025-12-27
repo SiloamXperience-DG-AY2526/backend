@@ -11,7 +11,7 @@ CREATE TYPE "RecurringDonationStatus" AS ENUM ('active', 'paused', 'cancelled', 
 CREATE TYPE "SubmissionStatus" AS ENUM ('draft', 'submitted', 'withdrawn');
 
 -- CreateEnum
-CREATE TYPE "DonationVerificationStatus" AS ENUM ('pending', 'received', 'cancelled');
+CREATE TYPE "DonationReceiptStatus" AS ENUM ('pending', 'received', 'cancelled');
 
 -- CreateEnum
 CREATE TYPE "ProjectType" AS ENUM ('brick', 'sponsor', 'partner_led');
@@ -87,8 +87,7 @@ CREATE TABLE "donation_transactions" (
     "isThankYouSent" BOOLEAN NOT NULL DEFAULT false,
     "isAdminNotified" BOOLEAN NOT NULL DEFAULT false,
     "submissionStatus" "SubmissionStatus" NOT NULL,
-    "verificationStatus" "DonationVerificationStatus" NOT NULL,
-    "status" TEXT NOT NULL,
+    "receiptStatus" "DonationReceiptStatus" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -249,6 +248,20 @@ CREATE TABLE "email_recipients" (
 );
 
 -- CreateTable
+CREATE TABLE "users" (
+    "id" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "title" TEXT,
+    "email" TEXT NOT NULL,
+    "passwordHash" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "roles" (
     "id" TEXT NOT NULL,
     "roleName" TEXT NOT NULL,
@@ -266,20 +279,6 @@ CREATE TABLE "user_roles" (
     "roleId" TEXT NOT NULL,
 
     CONSTRAINT "user_roles_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "users" (
-    "id" TEXT NOT NULL,
-    "firstName" TEXT NOT NULL,
-    "lastName" TEXT NOT NULL,
-    "title" TEXT,
-    "email" TEXT NOT NULL,
-    "passwordHash" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -464,10 +463,10 @@ CREATE UNIQUE INDEX "partners_userId_key" ON "partners"("userId");
 CREATE UNIQUE INDEX "trip_forms_partnerId_key" ON "trip_forms"("partnerId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "user_roles_userId_roleId_key" ON "user_roles"("userId", "roleId");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+CREATE UNIQUE INDEX "user_roles_userId_roleId_key" ON "user_roles"("userId", "roleId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "volunteer_sessions_volunteerId_sessionId_key" ON "volunteer_sessions"("volunteerId", "sessionId");

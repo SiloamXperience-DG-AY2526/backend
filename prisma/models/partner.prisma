@@ -198,28 +198,3 @@ model EmailRecipient {
 
   @@map("email_recipients")
 }
-
-model Role {
-  id          String  @id @default(uuid())
-  roleName    String
-  description String?
-
-  users UserRole[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("roles")
-}
-
-model UserRole {
-  id     String @id @default(uuid())
-  userId String
-  roleId String
-
-  user User @relation(fields: [userId], references: [id])
-  role Role @relation(fields: [roleId], references: [id])
-
-  @@unique([userId, roleId])
-  @@map("user_roles")
-}

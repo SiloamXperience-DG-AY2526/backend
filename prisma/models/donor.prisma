@@ -24,7 +24,7 @@ enum SubmissionStatus {
   withdrawn
 }
 
-enum DonationVerificationStatus {
+enum DonationReceiptStatus {
   pending
   received
   cancelled
@@ -74,8 +74,7 @@ model DonationTransaction {
   isThankYouSent      Boolean                    @default(false)
   isAdminNotified     Boolean                    @default(false)
   submissionStatus    SubmissionStatus
-  verificationStatus  DonationVerificationStatus
-  status              String
+  receiptStatus  DonationReceiptStatus
 
   donor             User               @relation("donor_transactions", fields: [donorId], references: [id])
   project           DonationProject    @relation(fields: [projectId], references: [id])
