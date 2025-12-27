@@ -1,10 +1,94 @@
+enum Gender {
+  male
+  female
+  others
+}
+
+enum ContactModeType {
+  email
+  whatsapp
+  telegram
+  messenger
+  phone_call
+}
+
+enum InterestSlug {
+  fundraise
+  plan_trips
+  mission_trips
+  long_term
+  admin
+  publicity
+  teaching
+  training
+  agriculture
+  building
+  others
+}
+
+enum ReferrerType {
+  friend
+  social_media
+  church
+  website
+  event
+  other
+}
+
+enum EmailStatus {
+  scheduled
+  attempted
+  cancelled
+}
+
+enum EmailRecipientStatus {
+  scheduled
+  pending
+  sent
+  failed
+}
+
+enum EmailRecipientType {
+  to
+  cc
+  bcc
+}
+
 model Partner {
-  id     String @id @default(uuid())
+  id String @id @default(uuid())
+
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 
-  formSubmission   Submission @relation(fields: [formSubmissionId], references: [id])
-  formSubmissionId String     @default(uuid())
+  tripForm   TripForm?
+  tripFormId String?
+
+  dob                    DateTime?
+  countryCode            String
+  contactNumber          String
+  emergencyCountryCode   String
+  emergencyContactNumber String
+  identificationNumber   String
+  nationality            String
+  occupation             String
+  gender                 Gender
+  residentialAddress     String?
+
+  otherInterests    String?
+  otherReferrers    String?
+  otherContactModes String?
+
+  hasVolunteerExperience       Boolean @default(false)
+  volunteerAvailability        String
+  isActive                     Boolean @default(true)
+  consentUpdatesCommunications Boolean
+  subscribeNewsletterEvents    Boolean @default(false)
+
+  skills       PartnerSkill[]
+  languages    Language[]
+  contactModes ContactMode[]
+  interests    Interest[]
+  referrers    Referrer[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -12,13 +96,115 @@ model Partner {
   @@map("partners")
 }
 
+model TripForm {
+  id String @id @default(uuid())
+
+  partner   Partner @relation(fields: [partnerId], references: [id])
+  partnerId String  @unique
+
+  fullName          String
+  passportNumber    String
+  passportExpiry    DateTime
+  healthDeclaration String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("trip_forms")
+}
+
+model PartnerSkill {
+  id String @id @default(uuid())
+
+  partner   Partner @relation(fields: [partnerId], references: [id])
+  partnerId String
+
+  skill String
+
+  @@map("partner_skills")
+}
+
+model Language {
+  id String @id @default(uuid())
+
+  partner   Partner @relation(fields: [partnerId], references: [id])
+  partnerId String
+
+  language String
+
+  @@map("languages")
+}
+
+model ContactMode {
+  id String @id @default(uuid())
+
+  partner   Partner @relation(fields: [partnerId], references: [id])
+  partnerId String
+
+  mode ContactModeType
+
+  createdAt DateTime @default(now())
+
+  @@map("contact_modes")
+}
+
+model Interest {
+  id String @id @default(uuid())
+
+  partner   Partner @relation(fields: [partnerId], references: [id])
+  partnerId String
+
+  interestSlug InterestSlug
+
+  @@map("interests")
+}
+
+model Referrer {
+  id String @id @default(uuid())
+
+  partner   Partner @relation(fields: [partnerId], references: [id])
+  partnerId String
+
+  referrer ReferrerType
+
+  @@map("referrers")
+}
+
+model Email {
+  id String @id @default(uuid())
+
+  senderAddress String
+  subject       String
+  previewText   String?
+  body          String
+
+  status      EmailStatus
+  scheduledAt DateTime?
+
+  recipients EmailRecipient[]
+
+  @@map("emails")
+}
+
+model EmailRecipient {
+  id String @id @default(uuid())
+
+  email   Email  @relation(fields: [emailId], references: [id])
+  emailId String
+
+  recipientAddress String
+  type             EmailRecipientType
+  status           EmailRecipientStatus
+
+  @@map("email_recipients")
+}
+
 model Role {
   id          String  @id @default(uuid())
   roleName    String
   description String?
 
-  users       UserRole[]
-  permissions RolePermission[]
+  users UserRole[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -36,28 +222,4 @@ model UserRole {
 
   @@unique([userId, roleId])
   @@map("user_roles")
-}
-
-model Permission {
-  id          String  @id @default(uuid())
-  name        String
-  description String?
-
-  roles RolePermission[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("permissions")
-}
-
-model RolePermission {
-  roleId       String
-  permissionId String
-
-  role       Role       @relation(fields: [roleId], references: [id])
-  permission Permission @relation(fields: [permissionId], references: [id])
-
-  @@id([roleId, permissionId])
-  @@map("role_permissions")
 }

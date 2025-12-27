@@ -1,49 +1,39 @@
 enum DonationFrequency {
-  DAILY
-  WEEKLY
-  BIWEEKLY
-  MONTHLY
-  QUARTERLY
-  YEARLY
+  daily
+  weekly
+  biweekly
+  monthly
 }
 
 enum DonationType {
-  INDIVIDUAL
-  FUNDRAISING
-  CORPORATE
-  OTHER
-}
-
-enum DonationStatus {
-  PENDING
-  COMPLETED
-  REFUNDED
-  CHARGEBACK
-  FAILED
+  individual
+  fundraising
+  corporate
 }
 
 enum RecurringDonationStatus {
-  ACTIVE
-  PAUSED
-  CANCELLED
-  COMPLETED
+  active
+  paused
+  cancelled
+  completed
 }
 
-model Donor {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+enum SubmissionStatus {
+  draft
+  submitted
+  withdrawn
+}
 
-  formSubmissionId String
-  formSubmission   Submission @relation(fields: [formSubmissionId], references: [id])
+enum DonationVerificationStatus {
+  pending
+  received
+  cancelled
+}
 
-  recurringDonations RecurringDonation[]
-  transactions       DonationTransaction[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("donors")
+enum ProjectType {
+  brick
+  sponsor
+  partner_led
 }
 
 model RecurringDonation {
@@ -56,11 +46,12 @@ model RecurringDonation {
   frequency       DonationFrequency
   startDate       DateTime
   nextDate        DateTime?
-  status          RecurringDonationStatus
+  isActive        Boolean                 @default(true)
   isAutoDeducted  Boolean                 @default(false)
+  status          RecurringDonationStatus
 
-  donor        Donor                 @relation(fields: [donorId], references: [id])
-  project      Project               @relation(fields: [projectId], references: [id])
+  donor        User                  @relation(fields: [donorId], references: [id])
+  project      DonationProject       @relation(fields: [projectId], references: [id])
   transactions DonationTransaction[]
 
   createdAt DateTime @default(now())
@@ -70,24 +61,75 @@ model RecurringDonation {
 }
 
 model DonationTransaction {
-  id                  String         @id @default(uuid())
+  id                  String                     @id @default(uuid())
   donorId             String
   projectId           String
-  recurringDonationId String? // null if one-off
+  recurringDonationId String?
   type                DonationType
+  countryOfResidence  String
   paymentMode         String
-  date                DateTime       @default(now())
-  amount              Decimal        @db.Decimal(12, 2)
-  receiptNumber       String?
-  isThankYouSent      Boolean        @default(false)
-  status              DonationStatus
+  date                DateTime                   @default(now())
+  amount              Decimal                    @db.Decimal(12, 2)
+  receipt             String?
+  isThankYouSent      Boolean                    @default(false)
+  isAdminNotified     Boolean                    @default(false)
+  submissionStatus    SubmissionStatus
+  verificationStatus  DonationVerificationStatus
+  status              String
 
-  donor             Donor              @relation(fields: [donorId], references: [id])
-  project           Project            @relation(fields: [projectId], references: [id])
+  donor             User               @relation("donor_transactions", fields: [donorId], references: [id])
+  project           DonationProject    @relation(fields: [projectId], references: [id])
   recurringDonation RecurringDonation? @relation(fields: [recurringDonationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("donation_transactions")
+}
+
+model DonationProject {
+  id               String                @id @default(uuid())
+  managedBy        String
+  title            String
+  location         String
+  about            String
+  objectives       String
+  beneficiaries    String?
+  initiatorName    String?
+  organisingTeam   String?
+  targetFund       Decimal?              @db.Decimal(12, 2)
+  brickSize        Decimal?              @db.Decimal(12, 2)
+  deadline         DateTime?
+  type             ProjectType
+  startDate        DateTime
+  endDate          DateTime
+  submissionStatus SubmissionStatus
+  approvalStatus   ProjectApprovalStatus
+  approvalNotes    String?
+  image            String?
+  attachments      String?
+
+  project_manager      User                       @relation("ManagedProjects", fields: [managedBy], references: [id])
+  recurringDonations   RecurringDonation[]
+  donationTransactions DonationTransaction[]
+  objectivesList       DonationProjectObjective[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("don_projects")
+}
+
+model DonationProjectObjective {
+  id        String   @id @default(uuid())
+  projectId String
+  objective String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project DonationProject @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, order])
+  @@map("don_project_objectives")
 }
