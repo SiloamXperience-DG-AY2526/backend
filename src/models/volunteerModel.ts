@@ -1,13 +1,10 @@
 import { prisma } from '../lib/prisma';
-import { sendVolunteerApplicationEmail } from '../utils/email';
 import { getResponseValue } from '../helpers/getResponseHelper';
-
-interface SubmitVolunteerApplicationInput {
-  userId: string;
-  projectId: string;
-  projectPositionId: string;
-}
-
+import {  GetVolunteerApplicationsOutput, VolunteerActivity,
+  PaginatedVolunteerActivities, 
+  
+  GetAvailableVolunteerActivities} from '../schemas/volunteer';
+import { NotFoundError } from '../utils/errors';
 type ProjectPositionType = {
   id: string;
   title: string;
@@ -23,35 +20,12 @@ type ProjectType = {
   projectPositions: ProjectPositionType[];
 };
 
-interface GetAvailableVolunteerActivitiesInput {
-  page?: number;
-  limit?: number;
-  search?: string;
-}
+export type SubmitVolunteerApplicationInput = {
+  userId: string;
+  projectId: string;
+  projectPositionId: string;
+};
 
-interface VolunteerActivityPosition {
-  id: string;
-  title: string;
-  slots: number;
-  filled: number;
-  availableSlots: number;
-}
-
-interface VolunteerActivity {
-  id: string;
-  title: string;
-  description: string;
-  startDate: Date;
-  positions: VolunteerActivityPosition[];
-}
-
-interface PaginatedVolunteerActivities {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  data: VolunteerActivity[];
-}
 
 export const submitVolunteerApplicationModel = async ({
   userId,
@@ -61,29 +35,29 @@ export const submitVolunteerApplicationModel = async ({
 
   // get project
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) throw new Error('PROJECT_NOT_FOUND');
+  if (!project) throw new NotFoundError('PROJECT_NOT_FOUND');
 
   // get project position
   const projectPosition = await prisma.projectPosition.findUnique({
     where: { id: projectPositionId },
   });
-  if (!projectPosition) throw new Error('PROJECT_POSITION_NOT_FOUND');
+  if (!projectPosition) throw new NotFoundError('PROJECT_POSITION_NOT_FOUND');
 
   // get volunteer
   const volunteer = await prisma.volunteer.findUnique({ where: { userId } });
-  if (!volunteer) throw new Error('VOLUNTEER_NOT_FOUND');
+  if (!volunteer) throw new NotFoundError('VOLUNTEER_NOT_FOUND');
 
   // get volunteer personal details 
-  const submission = await prisma.submission.findUnique({
+  const volunteer_details = await prisma.submission.findUnique({
     where: { id: volunteer.formSubmissionId },
     include: {
       responses: { include: { field: true } },
     },
   });
 
-  const name = getResponseValue(submission, 'name');
-  const gender = getResponseValue(submission, 'gender');
-  const contactNumber = getResponseValue(submission, 'contact_number');
+  const name = getResponseValue(volunteer_details, 'name');
+  const gender = getResponseValue(volunteer_details, 'gender');
+  const contactNumber = getResponseValue(volunteer_details, 'contact_number');
 
   // fetch volunteer application form
   const volunteerForm = await prisma.form.findFirst({
@@ -117,51 +91,39 @@ export const submitVolunteerApplicationModel = async ({
     })
     .filter(Boolean) as { fieldId: string; value: string }[];
 
-  // create submission
-  const newSubmission = await prisma.submission.create({
-    data: {
-      formId: volunteerForm.id,
-      userId,
-      responses: { create: responsesData },
-    },
-    include: { responses: true },
-  });
-
-  // link volunteer to project and roles
-  const volunteerProject = await prisma.volunteerProject.create({
-    data: {
-      volunteerId: volunteer.id,
-      projectId: project.id,
-      projectPositionId: projectPosition.id,
-    },
-  });
-
-  // send email (non-blocking)
-  sendVolunteerApplicationEmail({
-    to: 'tasmiyahwork@gmail.com', // replace with actual user email
-    name,
-    projectTitle: project.title,
-    positionTitle: projectPosition.title,
-    startDate: project.startDate,
-  }).catch(console.error);
-
+  // create submission and link volunteer to project
+const [newSubmission, volunteerProject] = await prisma.$transaction([
+    prisma.submission.create({
+      data: {
+        formId: volunteerForm.id,
+        userId,
+        responses: { create: responsesData },
+      },
+      include: { responses: true },
+    }),
+    prisma.volunteerProject.create({
+      data: {
+        volunteerId: volunteer.id,
+        projectId: project.id,
+        projectPositionId: projectPosition.id,
+      },
+    }),
+  ]);
   return {
     submission: newSubmission,
     volunteerProject,
   };
 };
 
-export const getVolunteerApplicationsModel = async (userId: string) => {
-  // get volunteer profile
+
+
+export const getVolunteerApplicationsModel = async (userId: string): Promise<GetVolunteerApplicationsOutput> => {
   const volunteer = await prisma.volunteer.findUnique({
     where: { userId },
   });
 
-  if (!volunteer) {
-    throw new Error('VOLUNTEER_NOT_FOUND');
-  }
+  if (!volunteer) throw new Error('VOLUNTEER_NOT_FOUND');
 
-  // get respective volunteer applications
   const volunteerProjects = await prisma.volunteerProject.findMany({
     where: { volunteerId: volunteer.id },
     include: {
@@ -172,19 +134,17 @@ export const getVolunteerApplicationsModel = async (userId: string) => {
     orderBy: { createdAt: 'desc' },
   });
 
-  // check status based on approvedAt field
-  const applications = volunteerProjects.map(
+   const applications = volunteerProjects.map(
     (vp: typeof volunteerProjects[number]) => ({
-      projectId: vp.projectId,
-      projectTitle: vp.project.title,
-      position: vp.projectPosition.title,
-      submittedAt: vp.createdAt,
-      status: vp.approvedAt ? 'PROCESSED' : 'PENDING',
-      approvedAt: vp.approvedAt,
-      approvedBy: vp.approver?.name ?? null,
-      approvalNotes: vp.approvalNotes,
-    })
-  );
+    projectId: vp.projectId,
+    projectTitle: vp.project.title,
+    position: vp.projectPosition.title,
+    submittedAt: vp.createdAt,
+    status: (vp.approvedAt ? 'PROCESSED' : 'PENDING') as 'PENDING' | 'PROCESSED',
+    approvedAt: vp.approvedAt,
+    approvedBy: vp.approver?.name ?? null,
+    approvalNotes: vp.approvalNotes,
+  }));
 
   return { userId, applications };
 };
@@ -193,28 +153,20 @@ export const getAvailableVolunteerActivitiesModel = async ({
   page = 1,
   limit = 10,
   search,
-}: GetAvailableVolunteerActivitiesInput): Promise<PaginatedVolunteerActivities> => {
-  const pageNumber = page;
-  const pageSize = limit;
-
-  if (pageNumber < 1 || pageSize < 1) {
-    throw new Error('INVALID_PAGINATION');
-  }
+}: GetAvailableVolunteerActivities): Promise<PaginatedVolunteerActivities> => {
+  if (page < 1 || limit < 1) throw new Error('INVALID_PAGINATION');
 
   const now = new Date();
 
-  // fetch total count and paginated projects in parallel
   const [total, projects] = await Promise.all([
-    // total projects count
     prisma.project.count({
       where: {
         hasVolunteering: true,
         startDate: { gte: now },
         ...(search && { title: { contains: search, mode: 'insensitive' } }),
-        projectPositions: { some: {} }, // ensure project has at least one position
+        projectPositions: { some: {} },
       },
     }),
-    // paginated projects
     prisma.project.findMany({
       where: {
         hasVolunteering: true,
@@ -222,36 +174,29 @@ export const getAvailableVolunteerActivitiesModel = async ({
         ...(search && { title: { contains: search, mode: 'insensitive' } }),
         projectPositions: { some: {} },
       },
-      include: { projectPositions: true }, // fetch all positions
+      include: { projectPositions: true },
       orderBy: { startDate: 'asc' },
-      skip: (pageNumber - 1) * pageSize,
-      take: pageSize,
+      skip: (page - 1) * limit,
+      take: limit,
     }),
   ]);
 
-  // cannot filter project positions from db as prisma does not allow field to field comparison
-  // only positions with available slots for retrieved projects
   const availableProjects = projects
     .map((project: ProjectType) => {
-      const availablePositions: ProjectPositionType[] = project.projectPositions.filter(
-        (pos: ProjectPositionType) => pos.filled < pos.slots
+      const availablePositions = project.projectPositions.filter(
+        (p) => p.filled < p.slots
       );
-
-      if (availablePositions.length === 0) return null; // remove projects with no available positions
-
+      if (availablePositions.length === 0) return null;
       return { ...project, projectPositions: availablePositions };
     })
     .filter(Boolean) as ProjectType[];
 
-  const totalPages = Math.ceil(total / pageSize);
-
-  // Map projects to API response format
   const data: VolunteerActivity[] = availableProjects.map((project) => ({
     id: project.id,
     title: project.title,
     description: project.description,
     startDate: project.startDate,
-    positions: project.projectPositions.map((pos: ProjectPositionType) => ({
+    positions: project.projectPositions.map((pos) => ({
       id: pos.id,
       title: pos.title,
       slots: pos.slots,
@@ -261,10 +206,10 @@ export const getAvailableVolunteerActivitiesModel = async ({
   }));
 
   return {
-    page: pageNumber,
-    limit: pageSize,
+    page,
+    limit,
     total,
-    totalPages,
+    totalPages: Math.ceil(total / limit),
     data,
   };
 };

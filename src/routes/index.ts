@@ -3,6 +3,7 @@ import { getRoot, getHealth } from '../controllers/rootController';
 import { submitVolunteerApplication, getVolunteerApplications, getAvailableVolunteerActivities } from '../controllers/volunteerController';
 
 import financeRoutes from './finance.routes';
+import volunteerRoutes from './volunteer.routes'
 
 const router = Router();
 
@@ -11,14 +12,14 @@ router.get('/', getRoot);
 
 // GET /health - Health check endpoint
 router.get('/health', getHealth);
-router.post('/api/volunteer/application', submitVolunteerApplication);
-router.get('/api/volunteer/application/:userId', getVolunteerApplications);
-// for filtering can use api as http://localhost:3000/api/volunteer/availableActivities?page=1&limit=5&search=community
-router.get('/api/volunteer/availableActivities', getAvailableVolunteerActivities);
+
+
 
 
 
 
 router.use('/finance', financeRoutes);
+router.use('/volunteer', volunteerRoutes);
+
 
 export default router;
