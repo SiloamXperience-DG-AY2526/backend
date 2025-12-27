@@ -97,6 +97,16 @@ erDiagram
         timestamptz createdAt
         timestamptz updatedAt
     }
+    PROJECT_POSITION {
+    uuid id PK
+    uuid projectId FK
+    string title
+    int slots
+    int filled DEFAULT 0
+    timestamptz createdAt
+    timestamptz updatedAt
+}
+
     COMMITTED_FUND {
         uuid id PK
         decimal amount
