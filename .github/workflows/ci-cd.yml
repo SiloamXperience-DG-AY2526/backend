@@ -9,7 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    env:
+      DATABASE_URL: 'file:./dev.db'
     strategy:
       matrix:
         node-version: [18.x, 20.x]
