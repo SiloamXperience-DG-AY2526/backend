@@ -92,7 +92,7 @@ export const submitVolunteerApplicationModel = async ({
     .filter(Boolean) as { fieldId: string; value: string }[];
 
   // create submission and link volunteer to project
-const [newSubmission, volunteerProject] = await prisma.$transaction([
+  const [newSubmission, volunteerProject] = await prisma.$transaction([
     prisma.submission.create({
       data: {
         formId: volunteerForm.id,
@@ -134,17 +134,17 @@ export const getVolunteerApplicationsModel = async (userId: string): Promise<Get
     orderBy: { createdAt: 'desc' },
   });
 
-   const applications = volunteerProjects.map(
+  const applications = volunteerProjects.map(
     (vp: typeof volunteerProjects[number]) => ({
-    projectId: vp.projectId,
-    projectTitle: vp.project.title,
-    position: vp.projectPosition.title,
-    submittedAt: vp.createdAt,
-    status: (vp.approvedAt ? 'PROCESSED' : 'PENDING') as 'PENDING' | 'PROCESSED',
-    approvedAt: vp.approvedAt,
-    approvedBy: vp.approver?.name ?? null,
-    approvalNotes: vp.approvalNotes,
-  }));
+      projectId: vp.projectId,
+      projectTitle: vp.project.title,
+      position: vp.projectPosition.title,
+      submittedAt: vp.createdAt,
+      status: (vp.approvedAt ? 'PROCESSED' : 'PENDING') as 'PENDING' | 'PROCESSED',
+      approvedAt: vp.approvedAt,
+      approvedBy: vp.approver?.name ?? null,
+      approvalNotes: vp.approvalNotes,
+    }));
 
   return { userId, applications };
 };

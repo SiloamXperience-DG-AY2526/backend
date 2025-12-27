@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { getAvailableVolunteerActivitiesService, getVolunteerApplicationsService, submitVolunteerApplicationService } from '../services/volunteer.service';
-import { GetAvailableVolunteerActivitiesSchema, SubmitVolunteerApplicationInput, SubmitVolunteerApplicationSchema } from '../schemas/volunteer';
+import { GetAvailableVolunteerActivitiesSchema, SubmitVolunteerApplicationSchema } from '../schemas/volunteer';
 import { ProjectIdSchema } from '../schemas';
 
 export const submitVolunteerApplication = async (req: Request, res: Response) => {
@@ -14,10 +14,10 @@ export const submitVolunteerApplication = async (req: Request, res: Response) =>
 
   // Respond with success
   return res.status(201).json({
-      status: 'success',
-      message: 'Volunteer application submitted successfully',
-      ...result,
-    });
+    status: 'success',
+    message: 'Volunteer application submitted successfully',
+    ...result,
+  });
 };
 
 
@@ -34,7 +34,7 @@ export const getVolunteerApplications = async (req: Request, res: Response) => {
 export const getAvailableVolunteerActivities = async (req: Request, res: Response) => {
   const query = GetAvailableVolunteerActivitiesSchema.parse(req.query); 
 
-   const result = await getAvailableVolunteerActivitiesService({
+  const result = await getAvailableVolunteerActivitiesService({
     page: query.page,
     limit: query.limit,
     search: query.search,

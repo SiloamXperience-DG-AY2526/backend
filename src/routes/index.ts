@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
-import { submitVolunteerApplication, getVolunteerApplications, getAvailableVolunteerActivities } from '../controllers/volunteerController';
 
 import financeRoutes from './finance.routes';
-import volunteerRoutes from './volunteer.routes'
+import volunteerRoutes from './volunteer.routes';
 
 const router = Router();
 
