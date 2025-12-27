@@ -3,8 +3,7 @@
 // Use the Previewer: https://github.com/BOCOVO/db-schema-visualizer
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["prismaSchemaFolder"]
+  provider = "prisma-client-js"
 }
 
 datasource db {

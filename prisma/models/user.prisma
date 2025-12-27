@@ -1,28 +1,60 @@
 model User {
-  id           String @id @default(uuid())
-  name         String
-  email        String @unique
+  id           String  @id @default(uuid())
+  firstName    String
+  lastName     String
+  title        String?
+  email        String  @unique
   passwordHash String
 
-  roles   UserRole[]
+  roles UserRole[]
 
-  createdDisbursements  Disbursement[] @relation("created_by")
-  approvedDisbursements Disbursement[] @relation("approved_by")
-  createdCommitments  CommittedFund[] @relation("created_by")
-  approvedCommitments CommittedFund[] @relation("approved_by")
+  // Volunteer-related relations
+  managedProjects           VolunteerProject[]         @relation("managed_projects")
+  approvedProjects          VolunteerProject[]         @relation("approved_projects")
+  volunteerSessions         VolunteerSession[]         @relation("volunteer_sessions")
+  approvedVolunteerSessions VolunteerSession[]         @relation("approved_volunteer_sessions")
+  volunteerProjectPositions VolunteerProjectPosition[]
+  approvedPositions         VolunteerProjectPosition[] @relation("approved_volunteer")
 
-  feedbackGiven    Feedback[] @relation("feedback_from")
-  feedbackReceived Feedback[] @relation("feedback_to")
+  // Feedback relations
+  feedbackGiven    PeerFeedback[] @relation("feedback_from")
+  feedbackReceived PeerFeedback[] @relation("feedback_to")
 
-  submissions Submission[]
+  // Donation-related relations
+  managedDonationProjects DonationProject[]     @relation("ManagedProjects")
+  donorTransactions       DonationTransaction[] @relation("donor_transactions")
 
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  Partner          Partner?
-  Donor            Donor?
-  Volunteer        Volunteer?
-  VolunteerSession VolunteerSession[]
-  VolunteerProject VolunteerProject[]
+  // Other role relations
+  partner Partner?
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  RecurringDonation RecurringDonation[]
 
   @@map("users")
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  roleName    String
+  description String?
+
+  users UserRole[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
 }

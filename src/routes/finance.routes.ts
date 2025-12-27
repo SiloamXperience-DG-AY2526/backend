@@ -6,53 +6,34 @@ import * as schema from '../schemas';
 const router = Router();
 
 router.use(
-  '/projects/:projectId',
+  '/donationProjects/:projectId',
   validateRequest({ params: schema.ProjectIdSchema })
 );
 
-router.get('/budgets', controller.getFinancialOverview);
-router.get('/projects/:projectId/budgets', controller.getProjectBudgets);
+//TODO: GET all donor details
+//TODO: GET specific donor data
+//TODO: update a donation status
+
+//TODO: POST, PUT, DEL a donation_project
+//TODO: POST duplicate a donation_project
+
+//TODO: POST, PATCH email templates
+
+//TODO: EXPORT/IMPORT all donor details
+
+// TODO: filter by status, date, shortage, pagination
+router.get('/donationProjects', controller.getDonProjects);
+
+router.get('/donationProjects/:projectId', controller.getDonProjectDetails);
+
 router.get(
-  '/projects/:projectId/transactions',
-  controller.getProjectTransactions
-);
+  '/donationProjects/:projectId/donations',
+  controller.getProjectDonationTransactions
+); // TODO: filter by date, pagination
 
-router.post(
-  '/projects/:projectId/commitments',
-  validateRequest({ body: schema.CreateCommitmentSchema }),
-  controller.createCommitment
-);
 router.patch(
-  '/projects/:projectId/commitments/:id',
-  validateRequest({
-    params: schema.IdSchema,
-    body: schema.CommitmentStatusSchema,
-  }),
-  controller.updateCommitmentStatus
-);
-router.delete(
-  '/projects/:projectId/commitments/:id',
-  validateRequest({ params: schema.IdSchema }),
-  controller.deleteCommitment
-);
-
-router.post(
-  '/projects/:projectId/disbursements',
-  validateRequest({ body: schema.CreateDisbursementSchema }),
-  controller.createDisbursement
-);
-router.patch(
-  '/projects/:projectId/disbursements/:id',
-  validateRequest({
-    params: schema.IdSchema,
-    body: schema.DisbursementStatusSchema,
-  }),
-  controller.updateDisbursementStatus
-);
-router.delete(
-  '/projects/:projectId/disbursements/:id',
-  validateRequest({ params: schema.IdSchema }),
-  controller.deleteDisbursement
+  '/donations/:id/receiptStatus',
+  controller.updateDonationReceiptStatus
 );
 
 export default router;

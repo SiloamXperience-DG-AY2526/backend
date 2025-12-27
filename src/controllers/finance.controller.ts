@@ -1,115 +1,46 @@
 import { Request, Response } from 'express';
 import * as financeService from '../services/finance.service';
 import { NotFoundError } from '../utils/errors';
-import { AppError } from '../middlewares/errorHandler';
 
-export const getFinancialOverview = async (req: Request, res: Response) => {
-  const financial_overview = await financeService.getFinancialOverview();
+export const getDonProjects = async (req: Request, res: Response) => {
+  const projSummaries = await financeService.getDonProjects();
 
-  if (!financial_overview) {
-    throw new AppError('Server failed to fetch financial overview', 500);
+  res.json(projSummaries);
+};
+
+export const getDonProjectDetails = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const details = await financeService.getDonProjectDetails(projectId);
+
+  if (!details) {
+    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
 
-  res.json(financial_overview);
+  res.json(details);
 };
 
-export const getProjectBudgets = async (req: Request, res: Response) => {
+export const getProjectDonationTransactions = async (
+  req: Request,
+  res: Response
+) => {
   const { projectId } = req.params;
-  const budgets = await financeService.getBudgetSummaries(projectId);
+  const donations = await financeService.getProjectDonationTransactions(
+    projectId
+  );
 
-  if (!budgets) {
-    throw new NotFoundError(`Budget Data not found for project ${projectId}`);
-  }
-
-  res.json(budgets);
+  res.json(donations);
 };
 
-export const getProjectTransactions = async (req: Request, res: Response) => {
-  const { projectId } = req.params;
-  const transactions = await financeService.getAllTransactions(projectId);
+export const updateDonationReceiptStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { donationId } = req.params;
+  const { receiptStatus } = req.body;
 
-  if (!transactions) {
-    throw new NotFoundError(
-      `Transaction Data not found for project ${projectId}`
-    );
-  }
-
-  res.json(transactions);
-};
-
-export const createCommitment = async (req: Request, res: Response) => {
-  const { projectId } = req.params;
-
-  const commitment = await financeService.createCommitment({
-    projectId,
-    ...req.body,
-  });
-  //no need to check if commitment exists, since it should throw if creation fails
-
-  res.status(201).json({
-    status: 'success',
-    data: commitment,
-    message: 'Commitment created successfully',
-  });
-};
-
-export const updateCommitmentStatus = async (req: Request, res: Response) => {
-  const { projectId, id } = req.params;
-  const { status } = req.body;
-
-  await financeService.updateCommitmentStatus({
-    projectId,
-    commitmentId: id,
-    status,
-  });
-
-  res.status(204).send();
-};
-
-export const deleteCommitment = async (req: Request, res: Response) => {
-  const { projectId, id } = req.params;
-
-  await financeService.deleteCommitment({
-    projectId,
-    commitmentId: id,
-  });
-
-  res.status(204).send();
-};
-
-export const createDisbursement = async (req: Request, res: Response) => {
-  const { projectId } = req.params;
-
-  const disbursement = await financeService.createDisbursement({
-    projectId,
-    ...req.body,
-  });
-
-  res.status(201).json({
-    status: 'success',
-    data: disbursement,
-    message: 'Disbursement created successfully',
-  });
-};
-
-export const updateDisbursementStatus = async (req: Request, res: Response) => {
-  const { projectId, id } = req.params;
-  const { status } = req.body;
-  await financeService.updateDisbursementStatus({
-    projectId,
-    disbursementId: id,
-    status,
-  });
-
-  res.status(204).send();
-};
-
-export const deleteDisbursement = async (req: Request, res: Response) => {
-  const { projectId, id } = req.params;
-
-  await financeService.deleteDisbursement({
-    projectId,
-    disbursementId: id,
+  await financeService.updateDonationReceiptStatus({
+    donationId,
+    receiptStatus,
   });
 
   res.status(204).send();
