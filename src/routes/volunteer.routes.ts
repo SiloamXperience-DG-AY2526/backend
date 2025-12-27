@@ -19,9 +19,9 @@ router.get(
   validateRequest({ params: GetVolunteerApplicationsSchema }),
   getVolunteerApplications
 );
-
+// http://localhost:3000/api/v1/volunteer/projects/available?page=1&limit=5&search=community
 router.get(
-  '/availableActivities',
+  '/projects/available',
   getAvailableVolunteerActivities
 );
 
