@@ -607,6 +607,230 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # Project APIs
+  /projects:
+    get:
+      summary: Get all projects with optional filtering
+      tags: [Project]
+      description: Retrieve all projects with optional filtering by status, search, hasVolunteering, and hasDonations
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [DRAFT, PENDING, APPROVED, REJECTED, FINISHED]
+          description: Filter by project status
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search term for project title or description
+        - name: hasVolunteering
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter by whether project has volunteering opportunities
+        - name: hasDonations
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter by whether project accepts donations
+      responses:
+        '200':
+          description: Projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  count:
+                    type: integer
+                    example: 10
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new project
+      tags: [Project]
+      description: Create a new project with required fields (title, description, startDate)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProject'
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Project created successfully
+                  data:
+                    $ref: '#/components/schemas/Project'
+        '400':
+          description: Invalid request - missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /projects/{id}:
+    get:
+      summary: Get a single project by ID
+      tags: [Project]
+      description: Retrieve a single project by ID with all related data
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
+      responses:
+        '200':
+          description: Project retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/ProjectDetail'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a project
+      tags: [Project]
+      description: Update an existing project. All fields are optional.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProject'
+      responses:
+        '200':
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Project updated successfully
+                  data:
+                    $ref: '#/components/schemas/Project'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a project
+      tags: [Project]
+      description: Delete an existing project. Cannot delete if project has associated records.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
+      responses:
+        '200':
+          description: Project deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Project deleted successfully
+        '400':
+          description: Cannot delete project due to associated records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # Volunteer Manager APIs (Sample APIs - Update accordingly)
   /volunteers/pending:
     get:
@@ -806,9 +1030,173 @@ components:
     ErrorResponse:
       type: object
       properties:
-        error_code: { type: string }
-        message: { type: string }
-        details: { type: string }
+        status:
+          type: string
+          example: error
+        message: 
+          type: string
+        errors:
+          type: object
+          description: Additional error details (for validation errors)
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        timePeriod:
+          type: string
+          nullable: true
+        isRecurring:
+          type: boolean
+          default: false
+        frequency:
+          type: string
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        nextDate:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [DRAFT, PENDING, APPROVED, REJECTED, FINISHED]
+        targetFund:
+          type: number
+          format: double
+          nullable: true
+        hasVolunteering:
+          type: boolean
+          default: false
+        hasDonations:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProjectDetail:
+      allOf:
+        - $ref: '#/components/schemas/Project'
+        - type: object
+          properties:
+            sessions:
+              type: array
+              items:
+                type: object
+            volunteerProjects:
+              type: array
+              items:
+                type: object
+            disbursements:
+              type: array
+              items:
+                type: object
+            feedbacks:
+              type: array
+              items:
+                type: object
+            RecurringDonation:
+              type: array
+              items:
+                type: object
+            DonationTransaction:
+              type: array
+              items:
+                type: object
+
+    CreateProject:
+      type: object
+      required:
+        - title
+        - description
+        - startDate
+      properties:
+        title:
+          type: string
+          example: 'Community Outreach Program'
+        description:
+          type: string
+          example: 'A program to support local community needs'
+        targetFund:
+          type: number
+          format: double
+          nullable: true
+          example: 50000.00
+        timePeriod:
+          type: string
+          nullable: true
+          example: 'Q1 2025'
+        isRecurring:
+          type: boolean
+          default: false
+        frequency:
+          type: string
+          nullable: true
+          example: 'MONTHLY'
+        startDate:
+          type: string
+          format: date-time
+          example: '2025-01-01T00:00:00Z'
+        nextDate:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-02-01T00:00:00Z'
+        status:
+          type: string
+          enum: [DRAFT, PENDING, APPROVED, REJECTED, FINISHED]
+          default: DRAFT
+        hasVolunteering:
+          type: boolean
+          default: false
+        hasDonations:
+          type: boolean
+          default: false
+
+    UpdateProject:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        targetFund:
+          type: number
+          format: double
+          nullable: true
+        timePeriod:
+          type: string
+          nullable: true
+        isRecurring:
+          type: boolean
+        frequency:
+          type: string
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        nextDate:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [DRAFT, PENDING, APPROVED, REJECTED, FINISHED]
+        hasVolunteering:
+          type: boolean
+        hasDonations:
+          type: boolean
 
     FinancialOverview:
       type: object
