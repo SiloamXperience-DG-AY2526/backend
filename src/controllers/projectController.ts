@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { ProjectStatus } from '@prisma/client';
 import { NotFoundError, ValidationError } from '../utils/errors';
 
 interface CreateProjectBody {
@@ -12,7 +11,7 @@ interface CreateProjectBody {
   frequency?: string;
   startDate: string;
   nextDate?: string;
-  status?: ProjectStatus;
+  status?: string;
   hasVolunteering?: boolean;
   hasDonations?: boolean;
 }
@@ -26,7 +25,7 @@ interface UpdateProjectBody {
   frequency?: string;
   startDate?: string;
   nextDate?: string;
-  status?: ProjectStatus;
+  status?: string;
   hasVolunteering?: boolean;
   hasDonations?: boolean;
 }
@@ -38,7 +37,7 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
   const where: any = {};
 
   if (status) {
-    where.status = status as ProjectStatus;
+    where.status = status as string;
   }
 
   if (hasVolunteering !== undefined) {
@@ -112,18 +111,18 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
     });
   }
 
-  const projectData: any = {
-    title: body.title,
-    description: body.description,
-    timePeriod: body.timePeriod,
-    isRecurring: body.isRecurring ?? false,
-    frequency: body.frequency,
-    startDate: new Date(body.startDate),
-    nextDate: body.nextDate ? new Date(body.nextDate) : null,
-    status: body.status ?? ProjectStatus.DRAFT,
-    hasVolunteering: body.hasVolunteering ?? false,
-    hasDonations: body.hasDonations ?? false,
-  };
+    const projectData: any = {
+      title: body.title,
+      description: body.description,
+      timePeriod: body.timePeriod,
+      isRecurring: body.isRecurring ?? false,
+      frequency: body.frequency,
+      startDate: new Date(body.startDate),
+      nextDate: body.nextDate ? new Date(body.nextDate) : null,
+      status: body.status ?? 'DRAFT',
+      hasVolunteering: body.hasVolunteering ?? false,
+      hasDonations: body.hasDonations ?? false,
+    };
 
   if (body.targetFund !== undefined) {
     projectData.targetFund = typeof body.targetFund === 'string'
