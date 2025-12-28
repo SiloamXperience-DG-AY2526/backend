@@ -111,18 +111,18 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
     });
   }
 
-    const projectData: any = {
-      title: body.title,
-      description: body.description,
-      timePeriod: body.timePeriod,
-      isRecurring: body.isRecurring ?? false,
-      frequency: body.frequency,
-      startDate: new Date(body.startDate),
-      nextDate: body.nextDate ? new Date(body.nextDate) : null,
-      status: body.status ?? 'DRAFT',
-      hasVolunteering: body.hasVolunteering ?? false,
-      hasDonations: body.hasDonations ?? false,
-    };
+  const projectData: any = {
+    title: body.title,
+    description: body.description,
+    timePeriod: body.timePeriod,
+    isRecurring: body.isRecurring ?? false,
+    frequency: body.frequency,
+    startDate: new Date(body.startDate),
+    nextDate: body.nextDate ? new Date(body.nextDate) : null,
+    status: body.status ?? 'DRAFT',
+    hasVolunteering: body.hasVolunteering ?? false,
+    hasDonations: body.hasDonations ?? false,
+  };
 
   if (body.targetFund !== undefined) {
     projectData.targetFund = typeof body.targetFund === 'string'
