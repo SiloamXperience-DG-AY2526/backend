@@ -92,3 +92,98 @@ export const matchVolunteerToProject = async (
   }
 };
 
+// POST /projects/match/approve - Approve a volunteer-project match
+export const approveVolunteerProject = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { volunteerProjectId } = req.body;
+
+  // Validate required body parameter
+  if (!volunteerProjectId) {
+    throw new ValidationError(
+      'Missing required field: volunteerProjectId is required in request body',
+      {
+        volunteerProjectId: 'volunteerProjectId is required',
+      }
+    );
+  }
+
+  // Check if VolunteerProject exists
+  const volunteerProject = await prisma.volunteerProject.findUnique({
+    where: { id: volunteerProjectId },
+  });
+
+  if (!volunteerProject) {
+    throw new NotFoundError(
+      `VolunteerProject with id ${volunteerProjectId} not found`
+    );
+  }
+
+  // Check if already approved
+  if (volunteerProject.approvedAt !== null) {
+    throw new ValidationError(
+      'VolunteerProject is already approved',
+      {
+        alreadyApproved: true,
+        message: 'This volunteer-project match has already been approved',
+      }
+    );
+  }
+
+  // Update VolunteerProject with approval
+  const updatedVolunteerProject = await prisma.volunteerProject.update({
+    where: { id: volunteerProjectId },
+    data: {
+      approvedAt: new Date(),
+      // approvedBy can be set when authentication is implemented
+      // approvedBy: req.user?.id,
+    },
+  });
+
+  res.json({
+    status: 'success',
+    message: 'Volunteer-project match approved successfully',
+    data: updatedVolunteerProject,
+  });
+};
+
+// POST /projects/match/deny - Deny a volunteer-project match
+export const denyVolunteerProject = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { volunteerProjectId } = req.body;
+
+  // Validate required body parameter
+  if (!volunteerProjectId) {
+    throw new ValidationError(
+      'Missing required field: volunteerProjectId is required in request body',
+      {
+        volunteerProjectId: 'volunteerProjectId is required',
+      }
+    );
+  }
+
+  // Check if VolunteerProject exists
+  const volunteerProject = await prisma.volunteerProject.findUnique({
+    where: { id: volunteerProjectId },
+  });
+
+  if (!volunteerProject) {
+    throw new NotFoundError(
+      `VolunteerProject with id ${volunteerProjectId} not found`
+    );
+  }
+
+  // Delete the VolunteerProject record (denial = removal of match)
+  await prisma.volunteerProject.delete({
+    where: { id: volunteerProjectId },
+  });
+
+  res.json({
+    status: 'success',
+    message: 'Volunteer-project match denied and removed successfully',
+  });
+};
+
