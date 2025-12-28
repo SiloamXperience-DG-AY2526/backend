@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
+import financeRoutes from './finance.routes';
 import {
   getProjects,
   getProjectById,
@@ -15,6 +16,8 @@ router.get('/', getRoot);
 
 // GET /health - Health check endpoint
 router.get('/health', getHealth);
+
+router.use('/finance', financeRoutes);
 
 // Project routes
 router.get('/projects', getProjects);

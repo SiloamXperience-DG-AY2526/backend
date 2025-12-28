@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
+import { prisma } from '../lib/prisma';
 import { ProjectStatus } from '@prisma/client';
 
 interface CreateProjectBody {
   title: string;
   description: string;
-  totalAllocatedFunds: number | string;
+  targetFund?: number | string;
   timePeriod?: string;
   isRecurring?: boolean;
   frequency?: string;
@@ -19,7 +19,7 @@ interface CreateProjectBody {
 interface UpdateProjectBody {
   title?: string;
   description?: string;
-  totalAllocatedFunds?: number | string;
+  targetFund?: number | string;
   timePeriod?: string;
   isRecurring?: boolean;
   frequency?: string;
@@ -134,30 +134,35 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
     const body: CreateProjectBody = req.body;
 
     // Validate required fields
-    if (!body.title || !body.description || !body.totalAllocatedFunds || !body.startDate) {
+    if (!body.title || !body.description || !body.startDate) {
       res.status(400).json({
         status: 'error',
-        message: 'Missing required fields: title, description, totalAllocatedFunds, and startDate are required',
+        message: 'Missing required fields: title, description, and startDate are required',
       });
       return;
     }
 
+    const projectData: any = {
+      title: body.title,
+      description: body.description,
+      timePeriod: body.timePeriod,
+      isRecurring: body.isRecurring ?? false,
+      frequency: body.frequency,
+      startDate: new Date(body.startDate),
+      nextDate: body.nextDate ? new Date(body.nextDate) : null,
+      status: body.status ?? ProjectStatus.DRAFT,
+      hasVolunteering: body.hasVolunteering ?? false,
+      hasDonations: body.hasDonations ?? false,
+    };
+
+    if (body.targetFund !== undefined) {
+      projectData.targetFund = typeof body.targetFund === 'string'
+        ? parseFloat(body.targetFund)
+        : body.targetFund;
+    }
+
     const project = await prisma.project.create({
-      data: {
-        title: body.title,
-        description: body.description,
-        totalAllocatedFunds: typeof body.totalAllocatedFunds === 'string' 
-          ? parseFloat(body.totalAllocatedFunds) 
-          : body.totalAllocatedFunds,
-        timePeriod: body.timePeriod,
-        isRecurring: body.isRecurring ?? false,
-        frequency: body.frequency,
-        startDate: new Date(body.startDate),
-        nextDate: body.nextDate ? new Date(body.nextDate) : null,
-        status: body.status ?? ProjectStatus.DRAFT,
-        hasVolunteering: body.hasVolunteering ?? false,
-        hasDonations: body.hasDonations ?? false,
-      },
+      data: projectData,
     });
 
     res.status(201).json({
@@ -205,10 +210,10 @@ export const updateProject = async (req: Request, res: Response): Promise<void> 
 
     if (body.title !== undefined) updateData.title = body.title;
     if (body.description !== undefined) updateData.description = body.description;
-    if (body.totalAllocatedFunds !== undefined) {
-      updateData.totalAllocatedFunds = typeof body.totalAllocatedFunds === 'string'
-        ? parseFloat(body.totalAllocatedFunds)
-        : body.totalAllocatedFunds;
+    if (body.targetFund !== undefined) {
+      updateData.targetFund = typeof body.targetFund === 'string'
+        ? parseFloat(body.targetFund)
+        : body.targetFund;
     }
     if (body.timePeriod !== undefined) updateData.timePeriod = body.timePeriod;
     if (body.isRecurring !== undefined) updateData.isRecurring = body.isRecurring;
