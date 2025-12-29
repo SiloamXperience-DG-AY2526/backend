@@ -2,9 +2,8 @@ import express, { Application } from "express";
 import dotenv from "dotenv";
 import { logger } from "./middlewares/logger";
 import { errorHandler } from "./middlewares/errorHandler";
+import { notFoundHandler } from "./middlewares/notFoundHandler";
 import rootRoutes from "./routes";
-import authRoutes from "./routes/authRoutes";
-import onboardingRoutes from "./routes/onboardingRoutes";
 
 // Load environment variables
 dotenv.config();
@@ -34,12 +33,6 @@ class Server {
   private initializeRoutes(): void {
     // Root routes
     this.app.use("/api/v1", rootRoutes);
-
-    // Auth routes
-    this.app.use("/auth", authRoutes);
-
-    // Onboarding routes
-    this.app.use("/onboarding", onboardingRoutes);
   }
 
   private initializeErrorHandling(): void {
