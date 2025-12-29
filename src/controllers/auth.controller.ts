@@ -1,18 +1,18 @@
 import { Request, Response } from 'express';
 import { partnerSignupSchema } from '../middlewares/authMiddleware';
-import { signupPartnerWithOnboarding } from '../services/authService';
-import { login } from '../services/authService';
+import { signupPartnerWithOnboarding } from '../services/auth.service';
+import { login } from '../services/auth.service';
 
 export async function signupPartner(req: Request, res: Response) {
   try {
     const data = partnerSignupSchema.parse(req.body);
 
     const token = await signupPartnerWithOnboarding(
-      data.name,
+      data.firstName,
+      data.lastName,
       data.email,
       data.password,
-      data.formId,
-      data.responses
+      data.partner
     );
 
     res.status(201).json({ token });
