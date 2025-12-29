@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { partnerSignupSchema } from '../middlewares/authMiddleware';
 import { signupPartnerWithOnboarding } from '../services/authService';
+import { login } from '../services/authService';
 
 export async function signupPartner(req: Request, res: Response) {
   try {
@@ -18,4 +19,12 @@ export async function signupPartner(req: Request, res: Response) {
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
+}
+
+export async function loginUser(req: Request, res: Response) {
+  const { email, password } = req.body;
+
+  const token = await login(email, password);
+
+  res.json({ token });
 }
