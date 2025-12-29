@@ -138,7 +138,7 @@ export async function createUserWithPartner(
     throw new Error('Account already exists');
   }
 
-  const partnerRole = await prisma.role.findFirst({ where: { roleName: 'PARTNER' } });
+  const partnerRole = await prisma.role.findFirst({ where: { roleName: 'partner' } });
   if (!partnerRole) {
     throw new Error('Partner role does not exist. Seed roles first.');
   }
