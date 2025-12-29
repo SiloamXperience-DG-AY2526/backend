@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-//basic checks, can be more extensive if required
 export const partnerSignupSchema = z.object({
   firstName: z.string().min(2, 'Name must be at least 2 characters'),
   lastName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -14,7 +13,6 @@ export const partnerSignupSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/\d/, 'Password must contain at least one number'),
-  // Partner profile info (minimal set). Add more fields as needed.
   partner: z.object({
     countryCode: z.string().min(1, 'Country code required'),
     contactNumber: z.string().min(4, 'Contact number required'),

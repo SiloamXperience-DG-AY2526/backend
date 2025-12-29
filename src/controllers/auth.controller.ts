@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { partnerSignupSchema } from '../middlewares/authMiddleware';
+import { partnerSignupSchema } from '../schemas/auth';
 import { signupPartnerWithOnboarding } from '../services/auth.service';
 import { login } from '../services/auth.service';
 

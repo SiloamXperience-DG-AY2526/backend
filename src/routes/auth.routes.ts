@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/auth.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { partnerSignupSchema } from '../middlewares/authMiddleware';
+import { partnerSignupSchema } from '../schemas/auth';
 
 const router = Router();
 
