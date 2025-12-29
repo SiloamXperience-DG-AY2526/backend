@@ -1,9 +1,9 @@
-import express, { Application } from "express";
-import dotenv from "dotenv";
-import { logger } from "./middlewares/logger";
-import { errorHandler } from "./middlewares/errorHandler";
-import { notFoundHandler } from "./middlewares/notFoundHandler";
-import rootRoutes from "./routes";
+import express, { Application } from 'express';
+import dotenv from 'dotenv';
+import { logger } from './middlewares/logger';
+import { errorHandler } from './middlewares/errorHandler';
+import { notFoundHandler } from './middlewares/notFoundHandler';
+import rootRoutes from './routes';
 
 // Load environment variables
 dotenv.config();
@@ -14,7 +14,7 @@ class Server {
 
   constructor() {
     this.app = express();
-    this.port = parseInt(process.env.PORT || "3000", 10);
+    this.port = parseInt(process.env.PORT || '3000', 10);
 
     this.initializeMiddlewares();
     this.initializeRoutes();
@@ -32,7 +32,7 @@ class Server {
 
   private initializeRoutes(): void {
     // Root routes
-    this.app.use("/api/v1", rootRoutes);
+    this.app.use('/api/v1', rootRoutes);
   }
 
   private initializeErrorHandling(): void {
@@ -46,7 +46,7 @@ class Server {
   public start(): void {
     this.app.listen(this.port, () => {
       console.log(`🚀 Server running on port ${this.port}`);
-      console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   }
 
