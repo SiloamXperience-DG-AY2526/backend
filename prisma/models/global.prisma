@@ -1,0 +1,6 @@
+enum ProjectApprovalStatus {
+  pending
+  reviewing
+  approved
+  rejected
+}

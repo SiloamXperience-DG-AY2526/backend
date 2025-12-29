@@ -3,7 +3,7 @@
     "target": "ES2020",
     "types": ["node", "jest"],
     "module": "commonjs",
-    "lib": ["ES2020"],
+    "lib": ["ES2021"],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -15,13 +15,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "include": ["src/**/*", "types"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

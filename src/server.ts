@@ -1,10 +1,10 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
-import dotenv from 'dotenv';
-import { logger } from './middlewares/logger';
-import rootRoutes from './routes';
-import authRoutes from './routes/authRoutes';
-import onboardingRoutes from './routes/onboardingRoutes';
-
+import express, { Application } from "express";
+import dotenv from "dotenv";
+import { logger } from "./middlewares/logger";
+import { errorHandler } from "./middlewares/errorHandler";
+import rootRoutes from "./routes";
+import authRoutes from "./routes/authRoutes";
+import onboardingRoutes from "./routes/onboardingRoutes";
 
 // Load environment variables
 dotenv.config();
@@ -15,7 +15,7 @@ class Server {
 
   constructor() {
     this.app = express();
-    this.port = parseInt(process.env.PORT || '3000', 10);
+    this.port = parseInt(process.env.PORT || "3000", 10);
 
     this.initializeMiddlewares();
     this.initializeRoutes();
@@ -33,40 +33,27 @@ class Server {
 
   private initializeRoutes(): void {
     // Root routes
-    this.app.use('/', rootRoutes);
+    this.app.use("/api/v1", rootRoutes);
 
     // Auth routes
-    this.app.use('/auth', authRoutes);
+    this.app.use("/auth", authRoutes);
 
     // Onboarding routes
-    this.app.use('/onboarding', onboardingRoutes);
+    this.app.use("/onboarding", onboardingRoutes);
   }
 
   private initializeErrorHandling(): void {
     // 404 handler
-    this.app.use((req: Request, res: Response) => {
-      res.status(404).json({
-        status: 'error',
-        message: 'Route not found',
-        path: req.originalUrl
-      });
-    });
+    this.app.use(notFoundHandler);
 
     // Global error handler
-    this.app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
-      console.error('Error:', error);
-      res.status(500).json({
-        status: 'error',
-        message: 'Internal server error',
-        ...(process.env.NODE_ENV === 'development' && { error: error.message })
-      });
-    });
+    this.app.use(errorHandler);
   }
 
   public start(): void {
     this.app.listen(this.port, () => {
       console.log(`🚀 Server running on port ${this.port}`);
-      console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
     });
   }
 
