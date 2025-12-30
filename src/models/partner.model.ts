@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import type { Gender, ContactModeType, InterestSlug, ReferrerType, User } from '@prisma/client';
+import { BadRequestError, ServerError } from '../utils/errors';
 import { prisma } from '../prisma/client';
 
 export type UserWithRoles = User & { roles: { role: { roleName: string } }[] };
@@ -128,19 +129,21 @@ export async function createUserWithPartner(
   passwordHash: string,
   partnerData: PartnerData
 ) {
-  if (email.endsWith('@siloamxperience.org')) {
-    throw new Error('Staff accounts cannot sign up publicly');
-  }
 
   // Check existing user
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    throw new Error('Account already exists');
+    throw new BadRequestError('Account already exists');
   }
 
-  const partnerRole = await prisma.role.findFirst({ where: { roleName: 'partner' } });
-  if (!partnerRole) {
-    throw new Error('Partner role does not exist. Seed roles first.');
+  let partnerRole;
+
+  try {
+    partnerRole = await prisma.role.findFirstOrThrow({
+      where: { roleName: 'partner' }
+    });
+  } catch {
+    throw new ServerError('Partner role does not exist. Seed roles first.');
   }
 
   const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {

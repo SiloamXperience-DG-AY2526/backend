@@ -1,5 +1,6 @@
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signToken } from '../utils/jwt';
+import { ForbiddenError, UnauthorizedError } from '../utils/errors';
 import { PartnerData, createUserWithPartner, findUserByEmailWithRoles } from '../models/partner.model';
 
 export async function signupPartnerWithOnboarding(
@@ -9,6 +10,10 @@ export async function signupPartnerWithOnboarding(
   password: string,
   partnerData: PartnerData
 ) {
+
+  if (email.endsWith('@siloamxperience.org')) {
+    throw new ForbiddenError('Staff accounts cannot sign up publicly');
+  }
 
   const passwordHash = await hashPassword(password);
 
@@ -27,12 +32,12 @@ export async function login(email: string, password: string) {
   const user = await findUserByEmailWithRoles(email);
 
   if (!user) {
-    throw new Error('Invalid email');
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
-    throw new Error('Invalid password');
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   const roles = user.roles.map((r: { role: { roleName: string } }) => r.role.roleName);
