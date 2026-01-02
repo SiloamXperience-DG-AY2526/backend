@@ -1,24 +1,31 @@
 import { Request, Response, NextFunction } from 'express';
-import { UnauthorizedError } from '../utils/errors';
-import { Permission } from '../authorisation/permissions';
-import { checkPermission } from '../authorisation/checkPermission';
-import { Role } from '../authorisation/types';
+import { ForbiddenError, UnauthorizedError } from '../utils/errors';
+import { Permission, PERMISSIONS } from '../authorisation/permissions';
+import { createCheckPermission } from '../authorisation/checkPermission';
 
-const extractJWT = (_req: Request) => {
-  // TODO: Extract from actual JWT
-  const userId = 'user-123';
-  const role: Role = 'superAdmin';
-  return { userId, role };
+export const checkPermission = createCheckPermission(PERMISSIONS);
+
+const extractJWT = (req: Request) => {
+  if (!req.user)
+    throw new UnauthorizedError(
+      'User is not authenticated. Login and try again.'
+    );
+  return req.user;
 };
 
 export const requirePermission = (permission: Permission) => {
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
-      const { userId, role } = extractJWT(req);
-      const isAuthorized = await checkPermission(userId, role, permission, req);
+      const { userId, roles } = extractJWT(req);
+      const isAuthorized = await checkPermission(
+        userId,
+        roles,
+        permission,
+        req
+      );
 
       if (!isAuthorized) {
-        throw new UnauthorizedError('Forbidden');
+        throw new ForbiddenError('Forbidden');
       }
 
       next();
@@ -31,9 +38,9 @@ export const requirePermission = (permission: Permission) => {
 export const requireAnyPermission = (permissions: Permission[]) => {
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
-      const { userId, role } = extractJWT(req);
+      const { userId, roles } = extractJWT(req);
       const results = await Promise.allSettled(
-        permissions.map((p) => checkPermission(userId, role, p, req))
+        permissions.map((p) => checkPermission(userId, roles, p, req))
       );
 
       const hasAnyPermission = results.some(
@@ -41,7 +48,7 @@ export const requireAnyPermission = (permissions: Permission[]) => {
       );
 
       if (!hasAnyPermission) {
-        throw new UnauthorizedError('Forbidden');
+        throw new ForbiddenError('Forbidden');
       }
 
       next();
