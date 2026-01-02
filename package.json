@@ -12,7 +12,8 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "clean": "rm -rf dist coverage"
+    "clean": "rm -rf dist coverage",
+    "seed": "ts-node prisma/signUpSeed.ts"
   },
   "keywords": [
     "express",
@@ -24,18 +25,22 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^6.18.0",
+    "@prisma/client": "^6.19.1",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "nodemailer": "^7.0.11",
+    "jsonwebtoken": "^9.0.3",
     "prisma": "^6.18.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.3.1",
     "@types/nodemailer": "^7.0.4",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.4",
     "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.43.0",
     "@typescript-eslint/parser": "^8.43.0",

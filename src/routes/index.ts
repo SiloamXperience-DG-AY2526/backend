@@ -3,6 +3,7 @@ import { getRoot, getHealth } from '../controllers/rootController';
 
 import financeRoutes from './finance.routes';
 import volunteerRoutes from './volunteer.routes';
+import authRoutes from './auth.routes';
 
 const router = Router();
 
@@ -17,6 +18,8 @@ router.get('/health', getHealth);
 
 
 
+// Auth routes
+router.use('/auth', authRoutes);
 router.use('/finance', financeRoutes);
 router.use('/volunteer', volunteerRoutes);
 
