@@ -4,11 +4,7 @@ This document outlines the Entity-Relationship Diagram (ERD) for the database re
 
 ## Notes
 
-- USER and DONOR: Optional one-to-one relationship (a USER may be a DONOR).
-
 ## Questions
-
--
 
 ## Constraints
 
@@ -17,17 +13,13 @@ This document outlines the Entity-Relationship Diagram (ERD) for the database re
 ```mermaid
 erDiagram
     direction LR
-    USER |o--|| DONOR : may_be
-    DONOR ||--o{ DONATION_TRANSACTION : donates
-    DONOR ||--o{ RECURRING_DONATION : schedules
+    USER ||--o{ DONATION_TRANSACTION : donates
+    USER ||--o{ RECURRING_DONATION : schedules
     RECURRING_DONATION ||--o{ DONATION_TRANSACTION : creates
-
+    USER }o--|| DON_PROJECT: manages
+    DON_PROJECT ||--o{ DON_PROJECT_OBJECTIVES: sets
     USER {
         uuid id PK
-    }
-    DONOR {
-        uuid id PK
-        uuid form_submission_id FK
     }
     RECURRING_DONATION {
         uuid id PK
@@ -37,8 +29,8 @@ erDiagram
         string payment_mode
         decimal scheduled_amount
         enum frequency "daily, weekly, biweekly, monthly"
-        date start_date
-        date next_date
+        timestamptz start_date
+        timestamptz next_date
         boolean is_active
         boolean is_auto_deducted "E.g. GIRO, Scheduled Transfers"
         string status
@@ -47,13 +39,55 @@ erDiagram
         uuid id PK
         uuid donor_id FK
         uuid project_id FK
-        string type "individual, corporate, fundraising events"
+        enum type "individual, corporate, fundraising events - optional"
+
+        string country_of_residence
         string payment_mode
-        date date
+        timestamptz date
         decimal amount
-        uuid recurring_donation_id FK
-        string receipt_number
+        uuid recurring_donation_id FK "optional"
+        string receipt "optional"
         boolean is_thank_you_sent
+        boolean is_admin_notified
+        enum submission_status "draft, submitted, withdrawn"
+        enum verification_status "pending, recieved, cancelled"
         string status
     }
+    DON_PROJECT {
+        uuid id PK
+        uuid managedBy FK "user"
+        string title
+        string location
+        string about
+        string objectives
+        string beneficiaries "optional"
+        string initiator_name "optional"
+        string organising_team "optional"
+
+        decimal target_fund "optional"
+        decimal brick_size "optional"
+        timestamptz deadline "optional"
+        enum type "brick, sponsor, partner_led"
+
+        date start_date
+        date end_date
+
+        boolean submission_status "draft, submitted, withdrawn"
+        enum approval_status "pending (submitted but not reviewed), reviewing, approved, rejected"
+        string approval_notes
+        string image "optional"
+        string attachments "optional"
+        timestamptz createdAt
+        timestamptz updatedAt
+    }
+    DON_PROJECT_OBJECTIVES {
+        uuid id PK
+        uuid don_project_id FK
+        string objective
+        int order "unique with vol_project_id"
+        timestamptz createdAt
+        timestamptz updatedAt
+    }
+
+
 ```

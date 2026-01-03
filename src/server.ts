@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import { logger } from './middlewares/logger';
 import { errorHandler } from './middlewares/errorHandler';
 import rootRoutes from './routes';
-import donationRoutes from './routes/donations';
 import { notFoundHandler } from './middlewares/notFoundHandler';
 
 // Load environment variables

@@ -1,126 +1,93 @@
 import { prisma } from '../lib/prisma';
-import {
-  CreateCommitment,
-  CreateDisbursement,
-  DeleteCommitment,
-  DeleteDisbursement,
-  UpdateCommitmentStatus,
-  UpdateDisbursementStatus,
-} from '../schemas';
+import { UpdateDonationReceiptStatusInput } from '../schemas/index';
 
-interface FinanceAggregateByYear {
-  fiscalYear: number;
-  amount: number;
-}
+const receivedDonationFilter = {
+  submissionStatus: 'submitted',
+  verificationStatus: 'received',
+} as const;
 
-interface FinanceAggregatesResult {
-  committedByYear: FinanceAggregateByYear[];
-  disbursedByYear: FinanceAggregateByYear[];
-}
+const pmPublicInfo = {
+  select: {
+    id: true,
+    title: true,
+    firstName: true,
+    lastName: true,
+  },
+} as const;
 
-/**
- *
- * @returns an object with two arrays, committedByYear and disbursedByYear.
- *
- * Notes:
- * Fiscal years with no records are not included.
- * Arrays are ordered by fiscal year.
- */
-export const getAggregatesByYear = async (
-  projectId?: string
-): Promise<FinanceAggregatesResult> => {
-  // transaction to ensure consistency
-  const [committedRaw, disbursedRaw] = await prisma.$transaction([
-    prisma.committedFund.groupBy({
-      by: ['fiscalYear'],
-      where: projectId ? { projectId } : {},
-      _sum: {
-        amount: true,
+export const getDonProjects = async () => {
+  // faster parallel execution
+  // TODO: return values based on authorisation
+  const [projectSummaries, totalDonationsByProject] = await Promise.all([
+    prisma.donationProject.findMany({
+      orderBy: { title: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        startDate: true,
+        endDate: true,
+        targetFund: true,
+        submissionStatus: true,
+        approvalStatus: true,
+        project_manager: pmPublicInfo,
       },
-      orderBy: { fiscalYear: 'asc' },
     }),
-    prisma.disbursement.groupBy({
-      by: ['fiscalYear'],
-      where: projectId ? { projectId } : {},
+    prisma.donationTransaction.groupBy({
+      by: ['projectId'],
+      where: {
+        ...receivedDonationFilter,
+      },
       _sum: {
         amount: true,
       },
-      orderBy: { fiscalYear: 'asc' },
     }),
   ]);
-  const committedByYear = committedRaw.map((c: any) => ({
-    fiscalYear: c.fiscalYear,
-    amount: c._sum?.amount?.toNumber() ?? 0,
-  }));
-  const disbursedByYear = disbursedRaw.map((d: any) => ({
-    fiscalYear: d.fiscalYear,
-    amount: d._sum?.amount?.toNumber() ?? 0,
-  }));
-  return { committedByYear, disbursedByYear };
+  return { projectSummaries, totalDonationsByProject };
 };
 
-export const getTransactions = async (projectId: string) => {
-  const commitments = await prisma.committedFund.findMany({
-    where: { projectId },
-    orderBy: { fiscalYear: 'asc' },
-  });
-  const disbursements = await prisma.disbursement.findMany({
-    where: { projectId },
-    orderBy: { fiscalYear: 'asc' },
-  });
-  return { commitments, disbursements };
+export const getDonProjectDetails = async (projectId: string) => {
+  // faster parallel execution
+  const [projectDetails, totalDonations] = await Promise.all([
+    await prisma.donationProject.findUniqueOrThrow({
+      where: {
+        id: projectId,
+      },
+      include: {
+        project_manager: pmPublicInfo,
+      },
+    }),
+    await prisma.donationTransaction.aggregate({
+      where: {
+        projectId,
+        ...receivedDonationFilter,
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+  ]);
+  return { projectDetails, totalDonations };
 };
 
-export const createCommitment = async (commitment: CreateCommitment) => {
-  const created = await prisma.committedFund.create({
-    data: commitment,
-  });
-  return created;
-};
-
-export const updateCommitmentStatus = async (data: UpdateCommitmentStatus) => {
-  await prisma.committedFund.update({
+export const getProjectDonationTransactions = async (projectId: string) => {
+  const donations = await prisma.donationTransaction.findMany({
     where: {
-      id: data.commitmentId,
-    },
-    data: {
-      status: data.status,
+      id: projectId,
     },
   });
+  return donations;
 };
 
-export const deleteCommitment = async (data: DeleteCommitment) => {
-  await prisma.committedFund.delete({
-    where: {
-      id: data.commitmentId,
-    },
-  });
-};
-
-export const createDisbursement = async (commitment: CreateDisbursement) => {
-  const created = await prisma.disbursement.create({
-    data: commitment,
-  });
-  return created;
-};
-
-export const updateDisbursementStatus = async (
-  data: UpdateDisbursementStatus
+export const updateDonationReceiptStatus = async (
+  data: UpdateDonationReceiptStatusInput
 ) => {
-  await prisma.disbursement.update({
+  const donations = await prisma.donationTransaction.update({
     where: {
-      id: data.disbursementId,
+      id: data.donationId,
     },
     data: {
-      status: data.status,
+      receiptStatus: data.receiptStatus,
     },
   });
-};
-
-export const deleteDisbursement = async (data: DeleteDisbursement) => {
-  await prisma.disbursement.delete({
-    where: {
-      id: data.disbursementId,
-    },
-  });
+  return donations;
 };
