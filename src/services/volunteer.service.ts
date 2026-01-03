@@ -4,7 +4,6 @@ import {
   CreateVolunteerProjectInput,
 } from '../schemas/volunteer';
 import { NotFoundError } from '../utils/errors';
-import { Prisma } from '@prisma/client';
 
 export const getVolunteerProjects = async (managerId: string) => {
   const projects = await volunteerModel.getVolunteerProjectsByManager(managerId);

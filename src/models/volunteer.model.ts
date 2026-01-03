@@ -104,11 +104,11 @@ export const createVolunteerProject = async (
       approvalStatus: 'pending', // Awaiting approval
       objectivesList: objectivesList
         ? {
-            create: objectivesList.map((obj) => ({
-              objective: obj.objective,
-              order: obj.order,
-            })),
-          }
+          create: objectivesList.map((obj) => ({
+            objective: obj.objective,
+            order: obj.order,
+          })),
+        }
         : undefined,
     },
     include: {
