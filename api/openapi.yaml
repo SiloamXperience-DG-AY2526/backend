@@ -18,14 +18,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Volunteer"
+              $ref: '#/components/schemas/Volunteer'
       responses:
-        "201":
+        '201':
           description: Volunteer profile successfully created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
     patch:
       summary: Update Volunteer Profile
       tags: [Volunteer]
@@ -40,14 +40,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Volunteer"
+              $ref: '#/components/schemas/Volunteer'
       responses:
-        "200":
+        '200':
           description: Volunteer profile updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
   /volunteers/{id}/documents:
     post:
@@ -64,14 +64,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VolunteerDocument"
+              $ref: '#/components/schemas/VolunteerDocument'
       responses:
-        "201":
+        '201':
           description: Document submitted
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VolunteerDocumentResponse"
+                $ref: '#/components/schemas/VolunteerDocumentResponse'
 
   /volunteers/{id}/registration:
     post:
@@ -88,14 +88,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Volunteer"
+              $ref: '#/components/schemas/Volunteer'
       responses:
-        "201":
+        '201':
           description: Registration successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
   /projects/{project_id}/rsvp:
     post:
@@ -112,14 +112,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RSVP"
+              $ref: '#/components/schemas/RSVP'
       responses:
-        "201":
+        '201':
           description: RSVP submitted
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
   # Donor APIs (Sample APIs - Update accordingly)
   /donors:
@@ -134,14 +134,14 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Donor data retrieved successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Donor"
+                  $ref: '#/components/schemas/Donor'
     post:
       summary: Create Donor Profile
       tags: [Donor]
@@ -150,14 +150,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Donor"
+              $ref: '#/components/schemas/Donor'
       responses:
-        "201":
+        '201':
           description: Donor profile created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
     patch:
       summary: Update Donor Profile
       tags: [Donor]
@@ -172,14 +172,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Donor"
+              $ref: '#/components/schemas/Donor'
       responses:
-        "200":
+        '200':
           description: Donor profile updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
   /donors/{id}/payment-options:
     post:
@@ -201,12 +201,12 @@ paths:
                 payment_method:
                   type: string
       responses:
-        "201":
+        '201':
           description: Payment option saved
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
   /donors/{id}/wishlist:
     post:
@@ -228,12 +228,12 @@ paths:
                 mode:
                   type: string
       responses:
-        "201":
+        '201':
           description: Wishlist submitted
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
   /donations:
     post:
@@ -244,14 +244,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Donation"
+              $ref: '#/components/schemas/Donation'
       responses:
-        "201":
+        '201':
           description: Donation recorded
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DonationResponse"
+                $ref: '#/components/schemas/DonationResponse'
 
   /donations/{id}/send-receipt:
     post:
@@ -264,12 +264,12 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Receipt sent
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
   /donations/{id}/send-thank-you:
     post:
@@ -282,12 +282,12 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Thank-you email sent
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
   /donors/{id}/reminders:
     post:
@@ -300,68 +300,312 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Reminder sent
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: '#/components/schemas/SuccessResponse'
 
-  # Finance APIs (Sample APIs - Update accordingly)
-  /finance/dashboard:
+  # Finance APIs
+  /finance/budgets:
     get:
-      summary: View Donation Dashboard
+      summary: Get Financial Overview
       tags: [Finance]
+      description: Retrieve financial overview with fiscal year, committed, and disbursed amounts
       responses:
-        "200":
-          description: Dashboard data
+        '200':
+          description: Financial overview retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancialOverview'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /finance/reports:
+  /finance/projects/{projectId}/budgets:
     get:
-      summary: Generate Financial Reports
+      summary: Get Project Budget Summaries
       tags: [Finance]
+      description: Retrieve budget summaries for a specific project
       parameters:
-        - name: start_date
-          in: query
+        - name: projectId
+          in: path
+          required: true
           schema:
             type: string
-        - name: end_date
-          in: query
+            format: uuid
+          description: Project ID
+      responses:
+        '200':
+          description: Budget summaries retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetSummaries'
+        '404':
+          description: Budget data not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/projects/{projectId}/transactions:
+    get:
+      summary: Get Project Transactions
+      tags: [Finance]
+      description: Retrieve all transactions for a specific project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
           schema:
             type: string
+            format: uuid
+          description: Project ID
       responses:
-        "200":
-          description: Report data
+        '200':
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '404':
+          description: Transaction data not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /finance/reminders:
+  /finance/projects/{projectId}/commitment:
     post:
-      summary: Send Reminders
+      summary: Create Commitment
       tags: [Finance]
-      responses:
-        "200":
-          description: Reminder sent
-
-  /finance/receipts:
-    post:
-      summary: Send Receipts
-      tags: [Finance]
-      responses:
-        "200":
-          description: Receipt sent
-
-  /donations/{id}/receipt:
-    get:
-      summary: View Donation Receipt
-      tags: [Finance]
+      description: Create a new financial commitment for a project
       parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommitment'
+      responses:
+        '201':
+          description: Commitment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Commitment'
+                  message:
+                    type: string
+                    example: Commitment created successfully
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/projects/{projectId}/commitment/{id}:
+    patch:
+      summary: Update Commitment Status
+      tags: [Finance]
+      description: Update the status of an existing commitment
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
         - name: id
           in: path
           required: true
           schema:
             type: string
+            format: uuid
+          description: Commitment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [DRAFT, PENDING, APPROVAL, RELEASED, REJECTED]
       responses:
-        "200":
-          description: Receipt data
+        '204':
+          description: Commitment status updated successfully
+        '404':
+          description: Commitment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete Commitment
+      tags: [Finance]
+      description: Delete an existing commitment
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Commitment ID
+      responses:
+        '204':
+          description: Commitment deleted successfully
+        '404':
+          description: Commitment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/projects/{projectId}/disbursement:
+    post:
+      summary: Create Disbursement
+      tags: [Finance]
+      description: Create a new financial disbursement for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDisbursement'
+      responses:
+        '201':
+          description: Disbursement created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Disbursement'
+                  message:
+                    type: string
+                    example: Disbursement created successfully
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/projects/{projectId}/disbursement/{id}:
+    patch:
+      summary: Update Disbursement Status
+      tags: [Finance]
+      description: Update the status of an existing disbursement
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Disbursement ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [DRAFT, PENDING, APPROVAL, RELEASED, REJECTED]
+      responses:
+        '204':
+          description: Disbursement status updated successfully
+        '404':
+          description: Disbursement not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete Disbursement
+      tags: [Finance]
+      description: Delete an existing disbursement
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project ID
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Disbursement ID
+      responses:
+        '204':
+          description: Disbursement deleted successfully
+        '404':
+          description: Disbursement not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # Volunteer Manager APIs (Sample APIs - Update accordingly)
   /volunteers/pending:
@@ -369,7 +613,7 @@ paths:
       summary: View Pending Volunteers
       tags: [VolunteerManager]
       responses:
-        "200":
+        '200':
           description: Pending volunteers list
 
   /volunteers/{id}/approve:
@@ -383,7 +627,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Volunteer approved
 
   # Super Admin APIs (Sample APIs - Update accordingly)
@@ -398,7 +642,7 @@ paths:
             schema:
               type: object
       responses:
-        "201":
+        '201':
           description: Admin user created
 
   /admin/users/{id}:
@@ -412,7 +656,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Admin user deleted
 
   /admin/logs:
@@ -420,7 +664,7 @@ paths:
       summary: Get Admin Logs
       tags: [SuperAdmin]
       responses:
-        "200":
+        '200':
           description: Logs retrieved
 
   # Donation APIs (Sample APIs - Update accordingly)
@@ -636,3 +880,208 @@ components:
         error_code: { type: string }
         message: { type: string }
         details: { type: string }
+
+    FinancialOverview:
+      type: object
+      properties:
+        fiscalYear:
+          type: integer
+          example: 2025
+        committed:
+          type: number
+          format: double
+          example: 150000.00
+        disbursed:
+          type: number
+          format: double
+          example: 75000.00
+
+    BudgetSummaries:
+      type: object
+      properties:
+        projectId:
+          type: string
+          format: uuid
+        fiscalYear:
+          type: integer
+        totalCommitted:
+          type: number
+          format: double
+        totalDisbursed:
+          type: number
+          format: double
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+        description:
+          type: string
+        fiscalYear:
+          type: integer
+        status:
+          type: string
+          enum: [DRAFT, PENDING, APPROVAL, RELEASED, REJECTED]
+        type:
+          type: string
+          enum: [COMMITMENT, DISBURSEMENT]
+        createdAt:
+          type: string
+          format: date-time
+        createdById:
+          type: string
+          format: uuid
+
+    CreateCommitment:
+      type: object
+      required:
+        - amount
+        - fiscalYear
+        - status
+        - createdById
+      properties:
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 50000.00
+        description:
+          type: string
+          example: 'Q1 budget allocation for community outreach'
+        fiscalYear:
+          type: integer
+          minimum: 1900
+          example: 2025
+        status:
+          type: string
+          enum: [DRAFT, PENDING, APPROVAL, RELEASED, REJECTED]
+          example: DRAFT
+        createdById:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        approvedById:
+          type: string
+          format: uuid
+        approvedAt:
+          type: string
+          format: date-time
+
+    Commitment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+        description:
+          type: string
+        fiscalYear:
+          type: integer
+        status:
+          type: string
+          enum: [DRAFT, PENDING, APPROVAL, RELEASED, REJECTED]
+        createdById:
+          type: string
+          format: uuid
+        approvedById:
+          type: string
+          format: uuid
+        approvedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateDisbursement:
+      type: object
+      required:
+        - amount
+        - fiscalYear
+        - status
+        - createdById
+      properties:
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 25000.00
+        description:
+          type: string
+          example: 'Payment for facility rental'
+        fiscalYear:
+          type: integer
+          minimum: 1900
+          example: 2025
+        status:
+          type: string
+          enum: [DRAFT, PENDING, APPROVAL, RELEASED, REJECTED]
+          example: DRAFT
+        createdById:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        approvedById:
+          type: string
+          format: uuid
+        approvedAt:
+          type: string
+          format: date-time
+        disbursedAt:
+          type: string
+          format: date-time
+
+    Disbursement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+        description:
+          type: string
+        fiscalYear:
+          type: integer
+        status:
+          type: string
+          enum: [DRAFT, PENDING, APPROVAL, RELEASED, REJECTED]
+        createdById:
+          type: string
+          format: uuid
+        approvedById:
+          type: string
+          format: uuid
+        approvedAt:
+          type: string
+          format: date-time
+        disbursedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
