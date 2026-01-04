@@ -33,7 +33,7 @@ enum DonationReceiptStatus {
 enum ProjectType {
   brick
   sponsor
-  partner_led
+  partnerLed
 }
 
 model RecurringDonation {
