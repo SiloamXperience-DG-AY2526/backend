@@ -12,3 +12,13 @@ export function signToken(payload: object) {
 export function verifyToken(token: string) {
   return jwt.verify(token, JWT_SECRET);
 }
+
+export async function getPasswordResetToken(userId: string, email: string) {
+  // token by email
+  const token = signToken({
+    userId: userId,
+    email: email,
+  });
+
+  return token;
+}

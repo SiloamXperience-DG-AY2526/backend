@@ -71,3 +71,17 @@ export const partnerSignupSchema = z.object({
       .optional(),
   }),
 });
+
+export const requestPasswordResetSchema = z.object({
+  email: z.email('Invalid email format'),
+});
+
+export const resetPasswordSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+  token: z.string().min(1, 'Token is required'),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/\d/, 'Password must contain at least one number'),
+});
