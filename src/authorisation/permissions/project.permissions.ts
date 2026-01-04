@@ -38,27 +38,6 @@ export const checkDonationProjectOwnership: PermissionHandler = async ({
 };
 
 export const projectPermissions = {
-  'volunteer-project:create': async ({ userId }) => {
-    // Any authenticated user can create projects (they become the manager)
-    userId;
-    return true;
-  },
-  'volunteer-project:view:own': async ({ userId }) => {
-    // Allow viewing own projects - this is handled at the service/model level
-    userId;
-    return true;
-  },
-  'volunteer-project:update:own': checkVolunteerProjectOwnership,
-  'donation-project:create': async ({ userId }) => {
-    // Any authenticated user can create projects (they become the manager)
-    userId;
-    return true;
-  },
-  'donation-project:view:own': async ({ userId }) => {
-    // Allow viewing own projects - this is handled at the service/model level
-    userId;
-    return true;
-  },
   'donation-project:update:own': checkDonationProjectOwnership,
 } satisfies Record<string, PermissionHandler>;
 

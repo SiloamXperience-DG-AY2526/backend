@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { validateRequest } from '../middlewares/validateRequest';
-import { requirePermission } from '../middlewares/requirePermission';
 import {
   DonationProjectIdSchema,
   UpdateDonationProjectSchema,
   CreateDonationProjectSchema,
+  getDonationProjectsSchema,
 } from '../schemas/donation';
 import * as donationProjectController from '../controllers/donationProject.controller';
 
@@ -12,40 +12,45 @@ const router = Router();
 
 // USE validation middleware for routes with projectId param
 router.use(
-  '/:projectId',
+  ['/:projectId', '/me/:projectId'],
   validateRequest({ params: DonationProjectIdSchema })
 );
 
 
-// GET Donation Projects
-router.get('/', donationProjectController.getDonationProjects);
+// GET Donation Projects 
+// (column-level access control is checked at service/model layer)
+router.get(
+  '/',
+  validateRequest({ query: getDonationProjectsSchema }),
+  donationProjectController.getDonationProjects
+);
 
 // GET Donation Projects managed by the current user (i.e. donation-project manager/ partner)
+// no need permission check: anyone can view own projects
 router.get(
   '/me',
-  requirePermission('donation-project:view:own'),
   donationProjectController.getMyDonationProjects
 );
 
 // GET details for a donation project managed by the current user
+// no need permission check: anyone can view own project
 router.get(
   '/me/:projectId',
-  requirePermission('donation-project:view:own'),
   donationProjectController.getDonationProjectDetails
 );
 
 // POST create new donation project
+// no need permission check: anyone can create
 router.post(
   '/',
-  requirePermission('donation-project:create'),
   validateRequest({ body: CreateDonationProjectSchema }),
   donationProjectController.createDonationProject
 );
 
-// PATCH update a specific donation project
+// PATCH update my own donation project
+// no need permission check: anyone can update own project
 router.patch(
   '/me/:projectId',
-  requirePermission('donation-project:update:own'),
   validateRequest({ body: UpdateDonationProjectSchema }),
   donationProjectController.updateDonationProject
 );
