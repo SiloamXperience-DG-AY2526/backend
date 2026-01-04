@@ -4,6 +4,7 @@ import { getRoot, getHealth } from '../controllers/rootController';
 import financeRoutes from './finance.routes';
 import volunteerRoutes from './volunteer.routes';
 import authRoutes from './auth.routes';
+import donationRoutes from './donation.routes';
 
 const router = Router();
 
@@ -22,6 +23,6 @@ router.get('/health', getHealth);
 router.use('/auth', authRoutes);
 router.use('/finance', financeRoutes);
 router.use('/volunteer', volunteerRoutes);
-
+router.use('/donation', donationRoutes);
 
 export default router;
