@@ -17,7 +17,7 @@ export const getDonationHomepage = async (req: Request, res: Response) => {
 
 /**
  * Controller: Submit donation application
- * POST /donations/applications
+ * POST /donations
  * Body: { projectId, type, countryOfResidence, paymentMode, amount, brickCount? }
  */
 export const submitDonationApplication = async (req: Request, res: Response) => {
@@ -43,10 +43,10 @@ export const submitDonationApplication = async (req: Request, res: Response) => 
 };
 
 /**
- * Controller: Get partner's donation history
- * GET /donations/donations?status=pending|completed|cancelled|all&page=1&limit=10
+ * Controller: Get user's donation history
+ * GET /donations/me?status=pending|completed|cancelled|all&page=1&limit=10
  */
-export const getPartnerDonationHistory = async (req: Request, res: Response) => {
+export const getMyDonationHistory = async (req: Request, res: Response) => {
   // TODO: Get partnerId from authenticated user
   const partnerId = (req as any).user?.id;
 
@@ -61,13 +61,13 @@ export const getPartnerDonationHistory = async (req: Request, res: Response) => 
     limit: req.query.limit,
   });
 
-  const result = await donationService.getPartnerDonationHistory(partnerId, filters);
+  const result = await donationService.getMyDonationHistory(partnerId, filters);
   res.json(result);
 };
 
 /**
- * Controller: Get donation detail
- * GET /donations/:donationId
+ * Controller: Get donation details of current user
+ * GET /donations/me/:donationId
  */
 export const getDonationDetail = async (req: Request, res: Response) => {
   // TODO: Get partnerId from authenticated user
@@ -85,8 +85,8 @@ export const getDonationDetail = async (req: Request, res: Response) => {
 };
 
 /**
- * Controller: Download donation receipt
- * GET /donations/:donationId/receipt
+ * Controller: Download donation receipt for current user
+ * GET /donations/me/:donationId/receipt
  * TODO: Implement receipt generation (PDF or similar)
  */
 export const downloadDonationReceipt = async (req: Request, res: Response) => {

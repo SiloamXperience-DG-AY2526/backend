@@ -13,10 +13,10 @@ const pmPublicInfo = {
 } as const;
 
 /**
- * Get a partner's donation history (transactions)
+ * Get a user's donation history (transactions)
  * Filter by status: pending (submitted but not received), completed (received), cancelled
  */
-export const getPartnerDonationHistory = async (
+export const getMyDonationHistory = async (
   partnerId: string,
   filters: {
     status?: 'pending' | 'completed' | 'cancelled' | 'all';

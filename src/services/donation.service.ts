@@ -6,14 +6,14 @@ import {
 import { NotFoundError } from '../utils/errors';
 
 /**
- * Service: Get partner's donation history
- * Returns all donations made by a specific partner with status filtering
+ * Service: Get user's donation history
+ * Returns all donations made by a specific user with status filtering
  */
-export const getPartnerDonationHistory = async (
+export const getMyDonationHistory = async (
   partnerId: string,
   filters: GetDonationHistoryInput
 ) => {
-  return await donationModel.getPartnerDonationHistory(partnerId, filters);
+  return await donationModel.getMyDonationHistory(partnerId, filters);
 };
 
 /**

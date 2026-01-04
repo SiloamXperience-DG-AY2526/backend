@@ -12,11 +12,11 @@ import {
  * Service: Get all donation projects for partners
  * Handles business logic for filtering and pagination
  */
-export const getAllDonationProjects = async (filters: GetDonationProjectsInput) => {
-  return await donationProjectModel.getAllDonationProjects(filters);
+export const getDonationProjects = async (filters: GetDonationProjectsInput) => {
+  return await donationProjectModel.getDonationProjects(filters);
 };
 
-export const getDonationProjects = async (managerId: string) => {
+export const getMyDonationProjects = async (managerId: string) => {
   const projects = await donationProjectModel.getDonationProjectsByManager(managerId);
   return projects;
 };

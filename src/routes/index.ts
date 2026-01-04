@@ -2,9 +2,9 @@ import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
 import financeRoutes from './finance.routes';
 import authRoutes from './auth.routes';
-import volunteerProjectRoutes from './volunteer-project.routes';
+import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
-import donationProjectRoutes from './donation-project.routes';
+import donationProjectRoutes from './donationProject.routes';
 
 const router = Router();
 

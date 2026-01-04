@@ -17,14 +17,14 @@ router.use(
 );
 
 
-// GET all Donation Projects
-router.get('/', donationProjectController.getAllDonationProjects);
+// GET Donation Projects
+router.get('/', donationProjectController.getDonationProjects);
 
-// GET all donation projects managed by the current user (i.e. donation-project manager/ partner)
+// GET Donation Projects managed by the current user (i.e. donation-project manager/ partner)
 router.get(
   '/me',
   requirePermission('donation-project:view:own'),
-  donationProjectController.getDonationProjects
+  donationProjectController.getMyDonationProjects
 );
 
 // GET details for a donation project managed by the current user

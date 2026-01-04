@@ -5,9 +5,24 @@ import {
   getDonationProjectsSchema,
 } from '../schemas/index';
 
+/**
+ * Controller: Get all donation projects
+ * GET /donation-projects?type=ongoing|specific|all&page=1&limit=20
+ */
 export const getDonationProjects = async (req: Request, res: Response) => {
+  const filters = getDonationProjectsSchema.parse({
+    type: req.query.type,
+    page: req.query.page,
+    limit: req.query.limit,
+  });
+
+  const result = await donationProjectService.getDonationProjects(filters);
+  res.json(result);
+};
+
+export const getMyDonationProjects = async (req: Request, res: Response) => {
   const managerId = getUserIdFromRequest(req);
-  const projects = await donationProjectService.getDonationProjects(managerId);
+  const projects = await donationProjectService.getMyDonationProjects(managerId);
   res.json(projects);
 };
 
@@ -42,19 +57,4 @@ export const updateDonationProject = async (req: Request, res: Response) => {
     req.body
   );
   res.json(updatedProject);
-};
-
-/**
- * Controller: Get all donation projects
- * GET /donations/projects?type=ongoing|specific|all&page=1&limit=20
- */
-export const getAllDonationProjects = async (req: Request, res: Response) => {
-  const filters = getDonationProjectsSchema.parse({
-    type: req.query.type,
-    page: req.query.page,
-    limit: req.query.limit,
-  });
-
-  const result = await donationProjectService.getAllDonationProjects(filters);
-  res.json(result);
 };
