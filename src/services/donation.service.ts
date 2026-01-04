@@ -1,54 +1,58 @@
 import * as donationModel from '../models/donation.model';
 import {
-  UpdateDonationProjectInput,
-  CreateDonationProjectInput,
-} from '../schemas/donation';
+  SubmitDonationApplicationInput,
+  GetDonationHistoryInput,
+} from '../schemas/index';
 import { NotFoundError } from '../utils/errors';
 
-export const getDonationProjects = async (managerId: string) => {
-  const projects = await donationModel.getDonationProjectsByManager(managerId);
-  return projects;
+/**
+ * Service: Get user's donation history
+ * Returns all donations made by a specific user with status filtering
+ */
+export const getMyDonationHistory = async (
+  partnerId: string,
+  filters: GetDonationHistoryInput
+) => {
+  return await donationModel.getMyDonationHistory(partnerId, filters);
 };
 
-export const getDonationProjectDetails = async (
-  projectId: string,
-  managerId: string
-) => {
-  const project = await donationModel.getDonationProjectById(
-    projectId,
-    managerId
-  );
+/**
+ * Service: Get donation detail
+ * Returns a single donation transaction with full details
+ */
+export const getDonationDetail = async (donationId: string, partnerId: string) => {
+  const donation = await donationModel.getDonationDetail(donationId, partnerId);
 
-  if (!project) {
-    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
+  if (!donation) {
+    throw new NotFoundError(`Donation ${donationId} not found or access denied`);
   }
 
-  return project;
+  return donation;
 };
 
-export const updateDonationProject = async (
-  projectId: string,
-  managerId: string,
-  data: UpdateDonationProjectInput
+/**
+ * Service: Submit donation application
+ * Creates a new donation transaction and handles notifications
+ * TODO: Add email notifications for admin and partner
+ */
+export const submitDonationApplication = async (
+  partnerId: string,
+  data: SubmitDonationApplicationInput
 ) => {
-  const updatedProject = await donationModel.updateDonationProject(
-    projectId,
-    managerId,
-    data
-  );
+  // Validate that project exists and is published
+  // This will be handled by foreign key constraint, but we can add explicit check
+  const donation = await donationModel.submitDonationApplication(partnerId, data);
 
-  if (!updatedProject) {
-    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
-  }
+  // TODO: Send automated email to partner with payment details (QR code/bank account)
+  // TODO: Send automated email to finance manager about new donation application
 
-  return updatedProject;
+  return donation;
 };
 
-export const createDonationProject = async (
-  managerId: string,
-  data: CreateDonationProjectInput
-) => {
-  const project = await donationModel.createDonationProject(managerId, data);
-  return project;
+/**
+ * Service: Get donation homepage data
+ * Returns statistics and featured projects for the donation homepage
+ */
+export const getDonationHomepageData = async () => {
+  return await donationModel.getDonationHomepageData();
 };
-

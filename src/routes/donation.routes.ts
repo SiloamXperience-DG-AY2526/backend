@@ -1,49 +1,48 @@
 import { Router } from 'express';
-import * as controller from '../controllers/donation.controller';
+import * as donationController from '../controllers/donation.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { requirePermission } from '../middlewares/requirePermission';
 import {
-  DonationProjectIdSchema,
-  UpdateDonationProjectSchema,
-  CreateDonationProjectSchema,
+  submitDonationApplicationSchema,
+  getDonationHistorySchema,
+  donationIdSchema,
 } from '../schemas/donation';
 
 const router = Router();
 
-// Apply validation middleware for routes with projectId param
-router.use(
-  '/projects/:projectId',
-  validateRequest({ params: DonationProjectIdSchema })
+// GET Donation History of the current user
+// no need permission check: can view own donations
+router.get(
+  '/me',
+  validateRequest({ query: getDonationHistorySchema }),
+  donationController.getMyDonationHistory
 );
 
-// POST create new donation project
+// GET Details for a Donation of current user
+// no need permission check: can view own donation
+router.get(
+  '/me/:donationId',
+  validateRequest({ params: donationIdSchema }),
+  donationController.getDonationDetail
+);
+
+// GET Receipt for a Donation of the current user
+// no need permission check: can view own donation receipts
+router.get(
+  '/me/:donationId/receipt',
+  validateRequest({ params: donationIdSchema }),
+  donationController.downloadDonationReceipt
+);
+
+// Get Donation Homepage Data (any user)
+// no need permission check: public info
+router.get('/home', donationController.getDonationHomepage);
+
+// Apply to make a Donation (to receive the next steps for payment)
+// no need permission check: anyone can make a donation request
 router.post(
-  '/projects',
-  requirePermission('donation-project:create'),
-  validateRequest({ body: CreateDonationProjectSchema }),
-  controller.createDonationProject
-);
-
-// GET all donation projects for the current project manager
-router.get(
-  '/projects',
-  requirePermission('donation-project:view:own'),
-  controller.getDonationProjects
-);
-
-// GET specific donation project details
-router.get(
-  '/projects/:projectId',
-  requirePermission('donation-project:view:own'),
-  controller.getDonationProjectDetails
-);
-
-// PATCH update donation project
-router.patch(
-  '/projects/:projectId',
-  requirePermission('donation-project:update:own'),
-  validateRequest({ body: UpdateDonationProjectSchema }),
-  controller.updateDonationProject
+  '/',
+  validateRequest({ body: submitDonationApplicationSchema }),
+  donationController.submitDonationApplication
 );
 
 export default router;

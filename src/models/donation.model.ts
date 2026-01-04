@@ -1,10 +1,8 @@
 import { prisma } from '../lib/prisma';
-import {
-  UpdateDonationProjectInput,
-  CreateDonationProjectInput,
-} from '../schemas/donation';
-import { SubmissionStatus, ProjectApprovalStatus } from '@prisma/client';
+import { SubmitDonationApplicationInput } from '../schemas/index';
+import { Prisma } from '@prisma/client';
 
+// Common select for project manager public info
 const pmPublicInfo = {
   select: {
     id: true,
@@ -14,105 +12,235 @@ const pmPublicInfo = {
   },
 } as const;
 
-export const getDonationProjectsByManager = async (managerId: string) => {
-  const projects = await prisma.donationProject.findMany({
-    where: {
-      managedBy: managerId,
-    },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      project_manager: pmPublicInfo,
-      objectivesList: {
-        orderBy: { order: 'asc' },
-      },
-    },
-  });
-  return projects;
-};
-
-export const getDonationProjectById = async (
-  projectId: string,
-  managerId: string
+/**
+ * Get a user's donation history (transactions)
+ * Filter by status: pending (submitted but not received), completed (received), cancelled
+ */
+export const getMyDonationHistory = async (
+  partnerId: string,
+  filters: {
+    status?: 'pending' | 'completed' | 'cancelled' | 'all';
+    page: number;
+    limit: number;
+  }
 ) => {
-  const project = await prisma.donationProject.findFirst({
-    where: {
-      id: projectId,
-      managedBy: managerId,
-    },
-    include: {
-      project_manager: pmPublicInfo,
-      objectivesList: {
-        orderBy: { order: 'asc' },
-      },
-    },
-  });
-  return project;
-};
+  const { status = 'all', page = 1, limit = 10 } = filters;
+  const skip = (page - 1) * limit;
 
-export const updateDonationProject = async (
-  projectId: string,
-  managerId: string,
-  data: UpdateDonationProjectInput
-) => {
-  // First verify the project belongs to the manager
-  const existingProject = await prisma.donationProject.findFirst({
-    where: {
-      id: projectId,
-      managedBy: managerId,
-    },
-  });
+  // Build where clause based on status
+  const where: any = {
+    donorId: partnerId,
+  };
 
-  if (!existingProject) {
-    return null;
+  if (status === 'pending') {
+    where.receiptStatus = 'pending';
+  } else if (status === 'completed') {
+    where.receiptStatus = 'received';
+  } else if (status === 'cancelled') {
+    where.receiptStatus = 'cancelled';
   }
 
-  const updatedProject = await prisma.donationProject.update({
-    where: {
-      id: projectId,
-    },
-    data: {
-      ...data,
-    },
-    include: {
-      project_manager: pmPublicInfo,
-      objectivesList: {
-        orderBy: { order: 'asc' },
+  const [donations, totalCount] = await Promise.all([
+    prisma.donationTransaction.findMany({
+      where,
+      include: {
+        project: {
+          select: {
+            id: true,
+            title: true,
+            location: true,
+            image: true,
+            type: true,
+            brickSize: true,
+          },
+        },
       },
-    },
-  });
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.donationTransaction.count({ where }),
+  ]);
 
-  return updatedProject;
+  return {
+    donations,
+    pagination: {
+      page,
+      limit,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    },
+  };
 };
 
-export const createDonationProject = async (
-  managerId: string,
-  data: CreateDonationProjectInput
+/**
+ * Get a single donation transaction detail
+ */
+export const getDonationDetail = async (
+  donationId: string,
+  partnerId: string
 ) => {
-  const { objectivesList, ...projectData } = data;
-
-  const project = await prisma.donationProject.create({
-    data: {
-      ...projectData,
-      managedBy: managerId,
-      submissionStatus: SubmissionStatus.draft, // New projects start as draft
-      approvalStatus: ProjectApprovalStatus.pending, // Awaiting approval
-      objectivesList: objectivesList
-        ? {
-          create: objectivesList.map((obj) => ({
-            objective: obj.objective,
-            order: obj.order,
-          })),
-        }
-        : undefined,
+  const donation = await prisma.donationTransaction.findFirst({
+    where: {
+      id: donationId,
+      donorId: partnerId,
     },
     include: {
-      project_manager: pmPublicInfo,
-      objectivesList: {
-        orderBy: { order: 'asc' },
+      project: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          image: true,
+          type: true,
+          brickSize: true,
+          project_manager: pmPublicInfo,
+        },
+      },
+      donor: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
       },
     },
   });
 
-  return project;
+  return donation;
 };
 
+/**
+ * Submit a donation application (create transaction)
+ * Status starts as 'submitted' with receipt status as 'pending'
+ */
+export const submitDonationApplication = async (
+  partnerId: string,
+  data: SubmitDonationApplicationInput
+) => {
+  // If brickCount is provided, calculate amount based on project's brickSize
+  let finalAmount =
+    typeof data.amount === 'string' ? parseFloat(data.amount) : data.amount;
+
+  if (data.brickCount) {
+    const project = await prisma.donationProject.findUnique({
+      where: { id: data.projectId },
+      select: { brickSize: true },
+    });
+
+    if (project?.brickSize) {
+      finalAmount = data.brickCount * project.brickSize.toNumber();
+    }
+  }
+
+  const donation = await prisma.donationTransaction.create({
+    data: {
+      donorId: partnerId,
+      projectId: data.projectId,
+      type: data.type,
+      countryOfResidence: data.countryOfResidence,
+      paymentMode: data.paymentMode,
+      amount: new Prisma.Decimal(finalAmount),
+      submissionStatus: 'submitted',
+      receiptStatus: 'pending',
+      isThankYouSent: false,
+      isAdminNotified: false,
+    },
+    include: {
+      project: {
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          brickSize: true,
+        },
+      },
+    },
+  });
+
+  return donation;
+};
+
+/**
+ * Get donation homepage data for partners
+ * Returns summary statistics and featured/recent projects
+ */
+export const getDonationHomepageData = async () => {
+  // Get total raised across all projects
+  const totalRaisedAggregate = await prisma.donationTransaction.aggregate({
+    where: {
+      submissionStatus: 'submitted',
+      receiptStatus: 'received',
+    },
+    _sum: {
+      amount: true,
+    },
+    _count: true,
+  });
+
+  // Get number of active projects
+  const activeProjectsCount = await prisma.donationProject.count({
+    where: {
+      approvalStatus: 'approved',
+      submissionStatus: 'submitted',
+    },
+  });
+
+  // Get featured/recent projects (top 3 most recent approved)
+  const featuredProjects = await prisma.donationProject.findMany({
+    where: {
+      approvalStatus: 'approved',
+      submissionStatus: 'submitted',
+    },
+    select: {
+      id: true,
+      title: true,
+      location: true,
+      about: true,
+      targetFund: true,
+      deadline: true,
+      image: true,
+      type: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 3,
+  });
+
+  // Get total raised for each featured project
+  const featuredProjectIds = featuredProjects.map((p) => p.id);
+  const featuredDonationSums = await prisma.donationTransaction.groupBy({
+    by: ['projectId'],
+    where: {
+      projectId: { in: featuredProjectIds },
+      submissionStatus: 'submitted',
+      receiptStatus: 'received',
+    },
+    _sum: {
+      amount: true,
+    },
+  });
+
+  const donationMap = new Map(
+    featuredDonationSums.map((d) => [d.projectId, d._sum.amount])
+  );
+
+  const featuredProjectsWithTotals = featuredProjects.map((project) => ({
+    ...project,
+    totalRaised: donationMap.get(project.id) ?? new Prisma.Decimal(0),
+    isOngoing: project.targetFund === null && project.deadline === null,
+  }));
+
+  return {
+    statistics: {
+      totalRaised: totalRaisedAggregate._sum.amount ?? new Prisma.Decimal(0),
+      totalDonations: totalRaisedAggregate._count,
+      activeProjects: activeProjectsCount,
+    },
+    featuredProjects: featuredProjectsWithTotals,
+  };
+};

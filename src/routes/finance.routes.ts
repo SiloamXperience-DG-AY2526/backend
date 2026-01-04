@@ -6,7 +6,7 @@ import * as schema from '../schemas';
 const router = Router();
 
 router.use(
-  '/donationProjects/:projectId',
+  '/donation-projects/:projectId',
   validateRequest({ params: schema.ProjectIdSchema })
 );
 
@@ -22,12 +22,12 @@ router.use(
 //TODO: EXPORT/IMPORT all donor details
 
 // TODO: filter by status, date, shortage, pagination
-router.get('/donationProjects', controller.getDonProjects);
+router.get('/donation-projects', controller.getDonProjects);
 
-router.get('/donationProjects/:projectId', controller.getDonProjectDetails);
+router.get('/donation-projects/:projectId', controller.getDonProjectDetails);
 
 router.get(
-  '/donationProjects/:projectId/donations',
+  '/donation-projects/:projectId/donations',
   controller.getProjectDonationTransactions
 ); // TODO: filter by date, pagination
 

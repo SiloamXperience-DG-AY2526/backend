@@ -5,7 +5,7 @@ info:
   description: API contract for Volunteers, Donors, Staff, Finance, and Admin operations.
 
 servers:
-  - url: http://localhost:3000/
+  - url: http://localhost:3000/api/v1
 
 paths:
   # Volunteer APIs (Sample APIs - Update accordingly)
@@ -230,60 +230,6 @@ paths:
       responses:
         '201':
           description: Wishlist submitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-
-  /donations:
-    post:
-      summary: Make Donation
-      tags: [Donor]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Donation'
-      responses:
-        '201':
-          description: Donation recorded
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DonationResponse'
-
-  /donations/{id}/send-receipt:
-    post:
-      summary: Send Receipt Email
-      tags: [Donor]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Receipt sent
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-
-  /donations/{id}/send-thank-you:
-    post:
-      summary: Send Thank-You Email
-      tags: [Donor]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Thank-you email sent
           content:
             application/json:
               schema:
@@ -667,6 +613,341 @@ paths:
         '200':
           description: Logs retrieved
 
+  # Donation APIs
+  /donations:
+    post:
+      summary: Submit Donation Application
+      description: Submit a donation application to receive payment instructions
+      tags: [Donation]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitDonationApplication'
+      responses:
+        '201':
+          description: Donation application submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Donation application submitted successfully'
+                  donation:
+                    $ref: '#/components/schemas/DonationApplication'
+        '401':
+          description: Unauthorized - Partner not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /donations/home:
+    get:
+      summary: Get Donation Homepage Data
+      description: Retrieve donation homepage data including featured projects and statistics
+      tags: [Donation]
+      responses:
+        '200':
+          description: Donation homepage data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonationHomepage'
+
+  /donations/me:
+    get:
+      summary: Get My Donation History
+      description: Get donation history for the authenticated partner with optional filters
+      tags: [Donation]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, completed, cancelled, all]
+            default: all
+          description: Filter donations by status
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Donation history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonationHistoryResponse'
+        '401':
+          description: Unauthorized - Partner not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /donations/me/{donationId}:
+    get:
+      summary: Get Donation Detail
+      description: Get details of a specific donation for the authenticated partner
+      tags: [Donation]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: donationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Donation ID
+      responses:
+        '200':
+          description: Donation detail retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonationDetail'
+        '401':
+          description: Unauthorized - Partner not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Donation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /donations/me/{donationId}/receipt:
+    get:
+      summary: Download Donation Receipt
+      description: Download receipt for a specific donation of the authenticated partner
+      tags: [Donation]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: donationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Donation ID
+      responses:
+        '200':
+          description: Donation receipt
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized - Partner not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Donation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Donation Project APIs
+  /donation-projects:
+    get:
+      summary: Get All Donation Projects
+      description: Get all donation projects with optional filters
+      tags: [DonationProject]
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ongoing, specific, all]
+            default: all
+          description: Filter projects by type
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+      responses:
+        '200':
+          description: Donation projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonationProjectsResponse'
+
+    post:
+      summary: Create Donation Project
+      description: Create a new donation project (requires donation-project:create permission)
+      tags: [DonationProject]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDonationProject'
+      responses:
+        '201':
+          description: Donation project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonationProject'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /donation-projects/me:
+    get:
+      summary: Get My Donation Projects
+      description: Get all donation projects managed by the authenticated user
+      tags: [DonationProject]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Donation projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DonationProject'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /donation-projects/me/{projectId}:
+    get:
+      summary: Get Donation Project Details
+      description: Get details of a specific donation project managed by the authenticated user
+      tags: [DonationProject]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Donation project ID
+      responses:
+        '200':
+          description: Donation project details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonationProject'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Donation project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      summary: Update Donation Project
+      description: Update a specific donation project managed by the authenticated user
+      tags: [DonationProject]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Donation project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDonationProject'
+      responses:
+        '200':
+          description: Donation project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonationProject'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Donation project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 # Components (Schemas) (Sample - Update accordingly)
 components:
   schemas:
@@ -1014,3 +1295,394 @@ components:
         updatedAt:
           type: string
           format: date-time
+
+    # Donation Schemas
+    SubmitDonationApplication:
+      type: object
+      required:
+        - projectId
+        - type
+        - countryOfResidence
+        - paymentMode
+        - amount
+      properties:
+        projectId:
+          type: string
+          format: uuid
+          description: ID of the donation project
+        type:
+          type: string
+          enum: [INDIVIDUAL, CORPORATE, FUNDRAISING_EVENTS]
+          description: Type of donation
+        countryOfResidence:
+          type: string
+          description: Country of residence of the donor
+        paymentMode:
+          type: string
+          description: Payment mode for the donation
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Donation amount
+        brickCount:
+          type: integer
+          minimum: 1
+          description: Number of bricks for brick-by-brick donations (optional)
+
+    DonationApplication:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [INDIVIDUAL, CORPORATE, FUNDRAISING_EVENTS]
+        countryOfResidence:
+          type: string
+        paymentMode:
+          type: string
+        amount:
+          type: number
+          format: double
+        brickCount:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DonationHomepage:
+      type: object
+      properties:
+        featuredProjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/DonationProject'
+        statistics:
+          type: object
+          properties:
+            totalDonations:
+              type: number
+              format: double
+            totalProjects:
+              type: integer
+            totalDonors:
+              type: integer
+
+    DonationHistoryResponse:
+      type: object
+      properties:
+        donations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DonationApplication'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+
+    DonationDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        project:
+          $ref: '#/components/schemas/DonationProject'
+        partnerId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [INDIVIDUAL, CORPORATE, FUNDRAISING_EVENTS]
+        countryOfResidence:
+          type: string
+        paymentMode:
+          type: string
+        amount:
+          type: number
+          format: double
+        brickCount:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Donation Project Schemas
+    CreateDonationProject:
+      type: object
+      required:
+        - title
+        - location
+        - about
+        - objectives
+        - deadline
+        - type
+        - startDate
+        - endDate
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: Project title
+        location:
+          type: string
+          minLength: 1
+          description: Project location
+        about:
+          type: string
+          minLength: 1
+          description: Project description
+        objectives:
+          type: string
+          minLength: 1
+          description: Project objectives
+        beneficiaries:
+          type: string
+          nullable: true
+          description: Project beneficiaries
+        initiatorName:
+          type: string
+          nullable: true
+          description: Name of project initiator
+        organisingTeam:
+          type: string
+          nullable: true
+          description: Organising team details
+        targetFund:
+          type: number
+          format: double
+          minimum: 0.01
+          nullable: true
+          description: Target fund amount
+        brickSize:
+          type: number
+          format: double
+          minimum: 0.01
+          nullable: true
+          description: Brick size for brick-by-brick donations
+        deadline:
+          type: string
+          format: date-time
+          description: Project deadline
+        type:
+          type: string
+          enum: [ONGOING, SPECIFIC]
+          description: Project type
+        startDate:
+          type: string
+          format: date-time
+          description: Project start date
+        endDate:
+          type: string
+          format: date-time
+          description: Project end date
+        image:
+          type: string
+          format: uri
+          nullable: true
+          description: Project image URL
+        attachments:
+          type: string
+          nullable: true
+          description: Project attachments
+        objectivesList:
+          type: array
+          description: List of objectives with order
+          items:
+            type: object
+            required:
+              - objective
+              - order
+            properties:
+              objective:
+                type: string
+                minLength: 1
+              order:
+                type: integer
+                minimum: 1
+
+    UpdateDonationProject:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        location:
+          type: string
+          minLength: 1
+        about:
+          type: string
+        objectives:
+          type: string
+        beneficiaries:
+          type: string
+          nullable: true
+        initiatorName:
+          type: string
+          nullable: true
+        organisingTeam:
+          type: string
+          nullable: true
+        targetFund:
+          type: number
+          format: double
+          minimum: 0.01
+          nullable: true
+        brickSize:
+          type: number
+          format: double
+          minimum: 0.01
+          nullable: true
+        deadline:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum: [ONGOING, SPECIFIC]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        submissionStatus:
+          type: string
+          enum: [DRAFT, SUBMITTED, APPROVED, REJECTED]
+        approvalStatus:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+        approvalNotes:
+          type: string
+          nullable: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+        attachments:
+          type: string
+          nullable: true
+
+    DonationProject:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        location:
+          type: string
+        about:
+          type: string
+        objectives:
+          type: string
+        beneficiaries:
+          type: string
+          nullable: true
+        initiatorName:
+          type: string
+          nullable: true
+        organisingTeam:
+          type: string
+          nullable: true
+        targetFund:
+          type: number
+          format: double
+          nullable: true
+        currentFund:
+          type: number
+          format: double
+        brickSize:
+          type: number
+          format: double
+          nullable: true
+        deadline:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum: [ONGOING, SPECIFIC]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        submissionStatus:
+          type: string
+          enum: [DRAFT, SUBMITTED, APPROVED, REJECTED]
+        approvalStatus:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+        approvalNotes:
+          type: string
+          nullable: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+        attachments:
+          type: string
+          nullable: true
+        managerId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DonationProjectsResponse:
+      type: object
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/DonationProject'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

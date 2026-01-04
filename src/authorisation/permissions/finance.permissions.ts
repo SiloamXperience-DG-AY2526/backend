@@ -1,6 +1,5 @@
+import { nothingElse } from '../helper';
 import { PermissionHandler } from '../types';
-
-const nothingElse = async () => true;
 
 export const financePermissions = {
   'overview:view': nothingElse,
