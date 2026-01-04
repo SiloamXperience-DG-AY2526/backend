@@ -91,3 +91,18 @@ export const updateDonationReceiptStatus = async (
   });
   return donations;
 };
+
+export const getProposedProjects = async () => {
+  const proposedProjects = await prisma.donationProject.findMany({
+    // TODO: confirm this is what the fields mean
+    where: {
+      type: 'partner_led',
+      submissionStatus: 'submitted'
+    },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      project_manager: pmPublicInfo,
+    },
+  });
+  return proposedProjects;
+};

@@ -36,4 +36,8 @@ router.patch(
   controller.updateDonationReceiptStatus
 );
 
+// Get proposed projects
+router.get('/proposedProjects', controller.getProposedProjects);
+
+
 export default router;

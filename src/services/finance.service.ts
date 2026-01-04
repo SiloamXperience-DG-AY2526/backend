@@ -57,3 +57,7 @@ export const updateDonationReceiptStatus = async (
 ) => {
   await financeModel.updateDonationReceiptStatus(data);
 };
+
+export const getProposedProjects = async () => {
+  return await financeModel.getProposedProjects();
+};
