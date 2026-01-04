@@ -2,6 +2,8 @@ import { Router } from 'express';
 import * as controller from '../controllers/finance.controller';
 import { validateRequest } from '../middlewares/validateRequest';
 import * as schema from '../schemas';
+import { requirePermission } from '../middlewares/requirePermission';
+import { Permission } from '../authorisation/permissions';
 
 const router = Router();
 
@@ -37,12 +39,17 @@ router.patch(
 );
 
 // Get proposed projects
-router.get('/proposedProjects', controller.getProposedProjects);
+router.get(
+  '/proposedProjects',
+  requirePermission('proposedProjects:view' as Permission),
+  controller.getProposedProjects
+);
 
 // Change status of proposed project
 router.patch(
   '/proposedProjects/:projectId/status',
   validateRequest({ params: schema.ProjectIdSchema, body: schema.UpdateProposedProjectStatusSchema }),
+  requirePermission('proposedProjects:update:status' as Permission),
   controller.updateProposedProjectStatus
 );
 

@@ -16,7 +16,7 @@ const directPermissions: Record<Role, Permission[]> = {
 
   generalManager: [],
 
-  financeManager: [],
+  financeManager: ['proposedProjects:view', 'proposedProjects:update:status'],
 
   partner: [],
 };
