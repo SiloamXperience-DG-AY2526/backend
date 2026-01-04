@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DonationReceiptStatus } from '@prisma/client'; // your Prisma enum
+import { DonationReceiptStatus, ProjectApprovalStatus } from '@prisma/client'; // your Prisma enum
 
 // zod object
 export const UpdateDonationReceiptStatusSchema = z.object({
@@ -11,3 +11,7 @@ export const UpdateDonationReceiptStatusSchema = z.object({
 export type UpdateDonationReceiptStatusInput = z.infer<
   typeof UpdateDonationReceiptStatusSchema
 >;
+
+export const UpdateProposedProjectStatusSchema = z.object({
+  status: z.enum(ProjectApprovalStatus),
+});

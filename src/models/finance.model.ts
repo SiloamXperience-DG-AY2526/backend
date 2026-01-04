@@ -1,3 +1,4 @@
+import { ProjectApprovalStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { UpdateDonationReceiptStatusInput } from '../schemas/index';
 
@@ -105,4 +106,18 @@ export const getProposedProjects = async () => {
     },
   });
   return proposedProjects;
+};
+
+export const updateProposedProjectStatus = async (data: {
+  projectId: string;
+  status: ProjectApprovalStatus;
+}) => {
+  await prisma.donationProject.update({
+    where: {
+      id: data.projectId,
+    },
+    data: {
+      approvalStatus: data.status,
+    },
+  });
 };

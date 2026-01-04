@@ -39,5 +39,11 @@ router.patch(
 // Get proposed projects
 router.get('/proposedProjects', controller.getProposedProjects);
 
+// Change status of proposed project
+router.patch(
+  '/proposedProjects/:projectId/status',
+  validateRequest({ params: schema.ProjectIdSchema, body: schema.UpdateProposedProjectStatusSchema }),
+  controller.updateProposedProjectStatus
+);
 
 export default router;
