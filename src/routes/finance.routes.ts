@@ -2,6 +2,8 @@ import { Router } from 'express';
 import * as controller from '../controllers/finance.controller';
 import { validateRequest } from '../middlewares/validateRequest';
 import * as schema from '../schemas';
+import { requirePermission } from '../middlewares/requirePermission';
+import { Permission } from '../authorisation/permissions';
 
 const router = Router();
 
@@ -34,6 +36,21 @@ router.get(
 router.patch(
   '/donations/:id/receiptStatus',
   controller.updateDonationReceiptStatus
+);
+
+// Get proposed projects
+router.get(
+  '/proposedProjects',
+  requirePermission('proposedProjects:view' as Permission),
+  controller.getProposedProjects
+);
+
+// Change status of proposed project
+router.patch(
+  '/proposedProjects/:projectId/status',
+  requirePermission('proposedProjects:update:status' as Permission),
+  validateRequest({ params: schema.ProjectIdSchema, body: schema.UpdateProposedProjectStatusSchema }),
+  controller.updateProposedProjectStatus
 );
 
 export default router;

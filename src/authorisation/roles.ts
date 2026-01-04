@@ -31,11 +31,12 @@ const directPermissions: Record<Role, Permission[]> = {
     'donation-project:view:own',
     'donation-project:update:own',
   ],
-
   financeManager: [
     'donation-project:create',
     'donation-project:view:own',
     'donation-project:update:own',
+    'proposedProjects:view', 
+    'proposedProjects:update:status'
   ],
 
   partner: [

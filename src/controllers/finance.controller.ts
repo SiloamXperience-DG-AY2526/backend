@@ -45,3 +45,24 @@ export const updateDonationReceiptStatus = async (
 
   res.status(204).send();
 };
+
+export const getProposedProjects = async (req: Request, res: Response) => {
+  const proposedProjects = await financeService.getProposedProjects();
+
+  res.json(proposedProjects);
+};
+
+export const updateProposedProjectStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const { status } = req.body;
+
+  await financeService.updateProposedProjectStatus({
+    projectId,
+    status,
+  });
+
+  res.status(204).send();
+};

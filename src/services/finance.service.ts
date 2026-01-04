@@ -1,5 +1,5 @@
 import * as financeModel from '../models/finance.model';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProjectApprovalStatus } from '@prisma/client';
 import { NotFoundError } from '../utils/errors';
 import { UpdateDonationReceiptStatusInput } from '../schemas/index';
 
@@ -56,4 +56,15 @@ export const updateDonationReceiptStatus = async (
   data: UpdateDonationReceiptStatusInput
 ) => {
   await financeModel.updateDonationReceiptStatus(data);
+};
+
+export const getProposedProjects = async () => {
+  return await financeModel.getProposedProjects();
+};
+
+export const updateProposedProjectStatus = async (data: {
+  projectId: string;
+  status: ProjectApprovalStatus;
+}) => {
+  await financeModel.updateProposedProjectStatus(data);
 };
