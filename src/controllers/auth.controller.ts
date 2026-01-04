@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { partnerSignupSchema, requestPasswordResetSchema } from '../schemas/auth';
+import { partnerSignupSchema } from '../schemas/auth';
 import { signupPartnerWithOnboarding, login, requestPasswordResetService, resetPasswordService } from '../services/auth.service';
 
 export async function signupPartner(req: Request, res: Response, next: NextFunction) {
@@ -34,14 +34,14 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
 
 export async function requestPasswordReset(req: Request, res: Response, next: NextFunction) {
   try {
-  const { email } = req.body;
+    const { email } = req.body;
 
-  await requestPasswordResetService(email);
+    await requestPasswordResetService(email);
 
-  return res.status(201).json({
-    status: "success",
-    message: "Password reset request sent.",
-  });
+    return res.status(201).json({
+      status: 'success',
+      message: 'Password reset request sent.',
+    });
   } catch (err) {
     next(err);
   }

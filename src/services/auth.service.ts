@@ -56,16 +56,16 @@ export async function requestPasswordResetService(email: string) {
   const user = await findUserByEmailWithRoles(email);
 
   if (!user) {
-    throw new UnauthorizedError("This email is not registered");
+    throw new UnauthorizedError('This email is not registered');
   }
 
   const token = await getPasswordResetToken(user.id, email);
 
   // For testing purposes
-  console.log("User ID:", user.id);
-  console.log("Password reset token:", token);
-  const TEST_PASSWORD = await hashPassword("NewPassword@1234");
-  console.log("New password hash:", TEST_PASSWORD);
+  console.log('User ID:', user.id);
+  console.log('Password reset token:', token);
+  const TEST_PASSWORD = await hashPassword('NewPassword@1234');
+  console.log('New password hash:', TEST_PASSWORD);
 
   // TODO: create frontend landing page
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
@@ -79,13 +79,13 @@ export async function resetPasswordService(userId: string, token: string, newPas
   const user = await findUserByIdWithRoles(userId);
 
   if (!user) {
-    throw new UnauthorizedError("Invalid credentials");
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   const verify = await verifyToken(token);
 
   if (!verify) {
-    throw new UnauthorizedError("Invalid or expired token");
+    throw new UnauthorizedError('Invalid or expired token');
   }
 
   const passwordHash = await hashPassword(newPassword);
