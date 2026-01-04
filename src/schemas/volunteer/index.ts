@@ -1,5 +1,5 @@
-export * from './application.schema';
-export * from './projects.schema';
+export * from './partner.schema';
+
 
 import { z } from 'zod';
 import {

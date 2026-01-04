@@ -1,6 +1,9 @@
 import * as volunteerModel from '../models/volunteer.model';
-import { GetAvailableVolunteerActivitiesInput, SubmitVolunteerApplicationInput } from '../schemas/volunteer/index';
-
+import { GetAvailableVolunteerActivitiesInput, SubmitVolunteerApplicationInput, UpdateVolunteerProjectInput,
+  CreateVolunteerProjectInput,
+  ProposeVolunteerProjectInput,UpdateVolunteerProposalInput } from '../schemas/volunteer/index';
+import { NotFoundError } from '../utils/errors';
+//partner
 interface SubmitVolunteerApplicationServiceInput
   extends SubmitVolunteerApplicationInput {
   userId: string;
@@ -34,12 +37,28 @@ export const getAvailableVolunteerActivities = async (
 ) => {
   return volunteerModel.getAvailableVolunteerActivitiesModel(input);
 };
+export const proposeVolunteerProject = async (
+  input: ProposeVolunteerProjectInput & { proposerId: string }
+) => {
+  return volunteerModel.proposeVolunteerProjectModel(input);
+};
 
-import {
-  UpdateVolunteerProjectInput,
-  CreateVolunteerProjectInput,
-} from '../schemas/volunteer';
-import { NotFoundError } from '../utils/errors';
+export const updateVolunteerProposal = async (input: {
+  projectId: string;
+  userId: string;
+  payload: Omit<UpdateVolunteerProposalInput, 'userId'>;
+}) => {
+  return volunteerModel.updateVolunteerProposalModel(input);
+};
+
+export const withdrawVolunteerProposal = async (input: {
+  projectId: string;
+  userId: string;
+}) => {
+  return volunteerModel.withdrawVolunteerProposalModel(input);
+};
+
+//admin
 
 export const getVolunteerProjects = async (managerId: string) => {
   const projects = await volunteerModel.getVolunteerProjectsByManager(managerId);

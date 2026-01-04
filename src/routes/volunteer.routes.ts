@@ -4,9 +4,12 @@ import { validateRequest } from '../middlewares/validateRequest';
 import { requirePermission } from '../middlewares/requirePermission';
 import {  GetVolunteerApplicationsParamsSchema, SubmitVolunteerApplicationSchema, VolunteerProjectIdSchema,
   UpdateVolunteerProjectSchema,
-  CreateVolunteerProjectSchema, } from '../schemas/volunteer';
+  CreateVolunteerProjectSchema,
+  ProposeVolunteerProjectSchema,
+  UpdateVolunteerProposalSchema,
+  WithdrawVolunteerProposalSchema, } from '../schemas/volunteer';
 import { ProjectIdSchema } from '../schemas';
-import { getAvailableVolunteerActivities, getVolunteerApplications, submitVolunteerApplication } from '../controllers/volunteerController';
+
 import * as controller from '../controllers/volunteer.controller';
 const router = Router();
 
@@ -18,7 +21,7 @@ router.post(
     body: SubmitVolunteerApplicationSchema, 
     params: ProjectIdSchema 
   }),                                 
-  submitVolunteerApplication
+  controller.submitVolunteerApplication
 );
 //get user application
 router.get(
@@ -26,15 +29,39 @@ router.get(
   validateRequest({
     params: GetVolunteerApplicationsParamsSchema,
   }),
-  getVolunteerApplications
+  controller.getVolunteerApplications
 );
 //get projects available
 router.get(
   '/projects/available',
-  getAvailableVolunteerActivities
+  controller.getAvailableVolunteerActivities
 );
 
+router.post(
+  '/project/proposal',
+  validateRequest({ body: ProposeVolunteerProjectSchema }),
+  controller.proposeVolunteerProject
+);
 
+router.patch(
+  '/project/proposal/:projectId',
+  validateRequest({
+    params: ProjectIdSchema,
+    body: UpdateVolunteerProposalSchema,
+  }),
+  controller.updateVolunteerProposal
+);
+
+router.patch(
+  '/project/proposal/:projectId/withdraw',
+  validateRequest({
+    params: ProjectIdSchema,
+    body: WithdrawVolunteerProposalSchema,
+  }),
+  controller.withdrawVolunteerProposal
+);
+
+//admin
 // Apply validation middleware for routes with projectId param
 router.use(
   '/projects/:projectId',

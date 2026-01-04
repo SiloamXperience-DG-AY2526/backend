@@ -2,7 +2,8 @@ import { prisma } from '../lib/prisma';
 import {
   UpdateVolunteerProjectInput,
   CreateVolunteerProjectInput,
-  GetAvailableVolunteerActivitiesInput
+  GetAvailableVolunteerActivitiesInput,
+  ProposeVolunteerProjectInput
 } from '../schemas/volunteer';
 import { NotFoundError } from '../utils/errors';
 
@@ -454,4 +455,181 @@ export const getAvailableVolunteerActivitiesModel = async ({
     totalPages,
     data,
   };
+};
+
+//volunteer suggest project
+export const proposeVolunteerProjectModel = async ({
+  proposerId,
+  positions,
+  ...data
+}: ProposeVolunteerProjectInput & { proposerId: string }) => {
+  return prisma.$transaction(async (tx) => {
+    const project = await tx.volunteerProject.create({
+      data: {
+        ...data,
+
+        managedById: proposerId, // volunteerid
+        submissionStatus: 'draft',
+        approvalStatus: 'pending',
+        operationStatus: 'paused', 
+      },
+    });
+
+    if (positions?.length) {
+      for (const pos of positions) {
+        const createdPosition = await tx.projectPosition.create({
+          data: {
+            projectId: project.id,
+            role: pos.role,
+            description: pos.description,
+            totalSlots: 0,
+          },
+        });
+
+        if (pos.skills?.length) {
+          await tx.projectSkill.createMany({
+            data: pos.skills.map((s, idx) => ({
+              projectPositionId: createdPosition.id,
+              skill: s,
+              order: idx + 1,
+            })),
+          });
+        }
+      }
+    }
+
+    return project;
+  });
+};
+
+export const updateVolunteerProposalModel = async ({
+  projectId,
+  userId,
+  payload,
+}: {
+  projectId: string;
+  userId: string;
+  payload: any;
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const project = await tx.volunteerProject.findUnique({
+      where: { id: projectId },
+      select: {
+        id: true,
+        managedById: true,
+        submissionStatus: true,
+      },
+    });
+
+    if (!project) throw new Error('PROJECT_NOT_FOUND');
+
+    //  unauthorised
+    if (project.managedById !== userId) {
+      throw new Error('FORBIDDEN_NOT_PROJECT_OWNER');
+    }
+
+    // can edit if status is still draft
+    if (project.submissionStatus !== 'draft') {
+      throw new Error('ONLY_DRAFT_CAN_BE_EDITED');
+    }
+
+    // remove unnecessary detail from payload also ensuring security
+    delete payload.userId;
+    delete payload.managedById;
+    delete payload.approvedById;
+
+    const { positions, ...projectData } = payload;
+
+    const updatedProject = await tx.volunteerProject.update({
+      where: { id: projectId },
+      data: {
+        ...projectData,
+      },
+    });
+
+  
+    if (positions) {
+      for (const pos of positions) {
+        let positionId: string;
+
+        if (pos.id) {
+          const updatedPos = await tx.projectPosition.update({
+            where: { id: pos.id },
+            data: {
+              role: pos.role,
+              description: pos.description,
+            },
+          });
+          positionId = updatedPos.id;
+        } else {
+          const createdPos = await tx.projectPosition.create({
+            data: {
+              projectId,
+              role: pos.role,
+              description: pos.description,
+              totalSlots: 0,
+            },
+          });
+          positionId = createdPos.id;
+        }
+
+        //update skills
+        await tx.projectSkill.deleteMany({
+          where: { projectPositionId: positionId },
+        });
+
+        if (pos.skills?.length) {
+          await tx.projectSkill.createMany({
+            data: pos.skills.map((skill: string, idx: number) => ({
+              projectPositionId: positionId,
+              skill,
+              order: idx + 1,
+            })),
+          });
+        }
+      }
+    }
+
+    return updatedProject;
+  });
+};
+
+export const withdrawVolunteerProposalModel = async ({
+  projectId,
+  userId,
+}: {
+  projectId: string;
+  userId: string;
+}) => {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.volunteerProject.findUnique({
+      where: { id: projectId },
+      select: {
+        id: true,
+        managedById: true,
+        submissionStatus: true,
+      },
+    });
+
+    if (!existing) throw new Error('PROJECT_NOT_FOUND');
+
+    // only the proposed user can withdraw
+    if (existing.managedById !== userId) {
+      throw new Error('FORBIDDEN');
+    }
+
+    // if already withdrawn, just return (or throw)
+    if (existing.submissionStatus === 'withdrawn') {
+      throw new Error('ALREADY_WITHDRAWN');
+    }
+
+    const updated = await tx.volunteerProject.update({
+      where: { id: projectId },
+      data: {
+        submissionStatus: 'withdrawn',
+      },
+    });
+
+    return updated;
+  });
 };
