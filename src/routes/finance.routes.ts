@@ -48,8 +48,8 @@ router.get(
 // Change status of proposed project
 router.patch(
   '/proposedProjects/:projectId/status',
-  validateRequest({ params: schema.ProjectIdSchema, body: schema.UpdateProposedProjectStatusSchema }),
   requirePermission('proposedProjects:update:status' as Permission),
+  validateRequest({ params: schema.ProjectIdSchema, body: schema.UpdateProposedProjectStatusSchema }),
   controller.updateProposedProjectStatus
 );
 

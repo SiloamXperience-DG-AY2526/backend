@@ -12,13 +12,41 @@ const roleHierarchy: Record<Role, Role[]> = {
 // Role to permissions mapping
 const directPermissions: Record<Role, Permission[]> = {
   //add more permissions here
-  superAdmin: ['overview:view', 'project:update:own'],
+  superAdmin: [
+    'overview:view',
+    'project:update:own',
+    'volunteer-project:create',
+    'volunteer-project:view:own',
+    'volunteer-project:update:own',
+    'donation-project:create',
+    'donation-project:view:own',
+    'donation-project:update:own',
+  ],
 
-  generalManager: [],
+  generalManager: [
+    'volunteer-project:create',
+    'volunteer-project:view:own',
+    'volunteer-project:update:own',
+    'donation-project:create',
+    'donation-project:view:own',
+    'donation-project:update:own',
+  ],
+  financeManager: [
+    'donation-project:create',
+    'donation-project:view:own',
+    'donation-project:update:own',
+    'proposedProjects:view', 
+    'proposedProjects:update:status'
+  ],
 
-  financeManager: ['proposedProjects:view', 'proposedProjects:update:status'],
-
-  partner: [],
+  partner: [
+    'volunteer-project:create',
+    'volunteer-project:view:own',
+    'volunteer-project:update:own',
+    'donation-project:create',
+    'donation-project:view:own',
+    'donation-project:update:own',
+  ],
 };
 
 export const hasRolePermission = (
