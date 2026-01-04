@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { DonationType } from '@prisma/client';
+import { DonationReceiptStatus } from '@prisma/client';
 
 // Schema for submitting a donation application
 export const submitDonationApplicationSchema = z.object({
@@ -23,9 +24,8 @@ export type SubmitDonationApplicationInput = z.infer<
 // Schema for getting donation history with filters
 export const getDonationHistorySchema = z.object({
   status: z
-    .enum(['pending', 'completed', 'cancelled', 'all'])
-    .optional()
-    .default('all'),
+    .enum(DonationReceiptStatus)
+    .optional(),
   page: z
     .string()
     .transform((val) => parseInt(val, 10))

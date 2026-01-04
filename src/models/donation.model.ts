@@ -1,44 +1,17 @@
 import { prisma } from '../lib/prisma';
+import { PMPublicSelect } from '../projections/user.projections';
 import { SubmitDonationApplicationInput } from '../schemas/index';
 import { Prisma } from '@prisma/client';
-
-// Common select for project manager public info
-const pmPublicInfo = {
-  select: {
-    id: true,
-    title: true,
-    firstName: true,
-    lastName: true,
-  },
-} as const;
+import { Pagination } from './types';
 
 /**
  * Get a user's donation history (transactions)
  * Filter by status: pending (submitted but not received), completed (received), cancelled
  */
 export const getMyDonationHistory = async (
-  partnerId: string,
-  filters: {
-    status?: 'pending' | 'completed' | 'cancelled' | 'all';
-    page: number;
-    limit: number;
-  }
+  where: Prisma.DonationTransactionWhereInput,
+  pagination: Pagination
 ) => {
-  const { status = 'all', page = 1, limit = 10 } = filters;
-  const skip = (page - 1) * limit;
-
-  // Build where clause based on status
-  const where: any = {
-    donorId: partnerId,
-  };
-
-  if (status === 'pending') {
-    where.receiptStatus = 'pending';
-  } else if (status === 'completed') {
-    where.receiptStatus = 'received';
-  } else if (status === 'cancelled') {
-    where.receiptStatus = 'cancelled';
-  }
 
   const [donations, totalCount] = await Promise.all([
     prisma.donationTransaction.findMany({
@@ -58,20 +31,15 @@ export const getMyDonationHistory = async (
       orderBy: {
         createdAt: 'desc',
       },
-      skip,
-      take: limit,
+      skip: pagination.skip,
+      take: pagination.limit,
     }),
     prisma.donationTransaction.count({ where }),
   ]);
 
   return {
     donations,
-    pagination: {
-      page,
-      limit,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limit),
-    },
+    totalCount
   };
 };
 
@@ -96,7 +64,9 @@ export const getDonationDetail = async (
           image: true,
           type: true,
           brickSize: true,
-          project_manager: pmPublicInfo,
+          project_manager: {
+            select: PMPublicSelect,
+          },
         },
       },
       donor: {

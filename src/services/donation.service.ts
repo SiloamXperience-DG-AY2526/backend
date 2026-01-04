@@ -4,6 +4,8 @@ import {
   GetDonationHistoryInput,
 } from '../schemas/index';
 import { NotFoundError } from '../utils/errors';
+import { Prisma } from '@prisma/client';
+import { buildPagination, calculateSkip } from './paginationHelper';
 
 /**
  * Service: Get user's donation history
@@ -13,7 +15,20 @@ export const getMyDonationHistory = async (
   partnerId: string,
   filters: GetDonationHistoryInput
 ) => {
-  return await donationModel.getMyDonationHistory(partnerId, filters);
+  const { status, page = 1, limit = 10 } = filters;
+  const skip = calculateSkip(page, limit);
+
+  // Build where clause based on status
+  const where: Prisma.DonationTransactionWhereInput = {
+    donorId: partnerId,
+    receiptStatus: status
+  };
+  const { donations, totalCount } = await donationModel.getMyDonationHistory(where, {skip, limit});
+
+  return {
+    donations,
+    pagination: buildPagination(page, limit, totalCount)
+  };
 };
 
 /**

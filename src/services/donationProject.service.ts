@@ -7,13 +7,30 @@ import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
 } from '../schemas/donation';
+import { buildPagination, calculateSkip } from './paginationHelper';
+import { Prisma } from '@prisma/client';
 
 /**
  * Service: Get all donation projects for partners
  * Handles business logic for filtering and pagination
  */
 export const getDonationProjects = async (filters: GetDonationProjectsInput) => {
-  return await donationProjectModel.getDonationProjects(filters);
+  const { type, page = 1, limit = 20 } = filters;
+  const skip = calculateSkip(page, limit);
+
+  // Build where clause filter
+  const where: Prisma.DonationProjectWhereInput = {
+    approvalStatus: 'approved',
+    submissionStatus: 'submitted',
+    type: type
+  };
+  const {projectsWithTotals, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
+  
+  return {
+    projectsWithTotals,
+    pagination: buildPagination(page, limit, totalCount)
+  };
+  
 };
 
 export const getMyDonationProjects = async (managerId: string) => {

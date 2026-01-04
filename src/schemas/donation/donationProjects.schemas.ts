@@ -75,7 +75,7 @@ export type UpdateDonationProjectInput = z.infer<
 
 // Schema for getting all donation projects with filters
 export const getDonationProjectsSchema = z.object({
-  type: z.enum(['ongoing', 'specific', 'all']).optional().default('all'),
+  type: z.enum(ProjectType).optional(),
   page: z
     .string()
     .transform((val) => parseInt(val, 10))

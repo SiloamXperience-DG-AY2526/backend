@@ -1,79 +1,31 @@
 import { prisma } from '../lib/prisma';
+import { PMPublicSelect } from '../projections/user.projections';
 import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
 } from '../schemas/donation';
 import { SubmissionStatus, ProjectApprovalStatus } from '@prisma/client';
 import { Prisma } from '@prisma/client';
-
-// Common select for project manager public info
-const pmPublicInfo = {
-  select: {
-    id: true,
-    title: true,
-    firstName: true,
-    lastName: true,
-  },
-} as const;
-
+import { Pagination } from './types';
+import { DonationProjectPublicSelect } from '../projections/donationProject.projections';
 
 /**
  * Get all published donation projects for partners to view
  * Filters by approval status and allows filtering by type (ongoing/specific)
  */
-export const getDonationProjects = async (filters: {
-  type?: 'ongoing' | 'specific' | 'all';
-  page: number;
-  limit: number;
-}) => {
-  const { type = 'all', page = 1, limit = 20 } = filters;
-  const skip = (page - 1) * limit;
-
-  // Build where clause
-  const where: any = {
-    approvalStatus: 'approved',
-    submissionStatus: 'submitted',
-  };
-
-  // Filter by type: ongoing (no target/deadline) vs specific (has target/deadline)
-  if (type === 'ongoing') {
-    where.targetFund = null;
-    where.deadline = null;
-  } else if (type === 'specific') {
-    where.AND = [
-      { targetFund: { not: null } },
-      // Note: deadline is optional even for specific projects per requirements
-    ];
-  }
-
+export const getDonationProjects = async (
+  where: Prisma.DonationProjectWhereInput,
+  pagination: Pagination
+) => {
   const [projects, totalCount] = await Promise.all([
     prisma.donationProject.findMany({
       where,
-      select: {
-        id: true,
-        title: true,
-        location: true,
-        about: true,
-        objectives: true,
-        beneficiaries: true,
-        targetFund: true,
-        brickSize: true,
-        deadline: true,
-        type: true,
-        startDate: true,
-        endDate: true,
-        image: true,
-        attachments: true,
-        initiatorName: true,
-        organisingTeam: true,
-        project_manager: pmPublicInfo,
-        createdAt: true,
-      },
+      select: DonationProjectPublicSelect,
       orderBy: {
         createdAt: 'desc',
       },
-      skip,
-      take: limit,
+      skip: pagination.skip,
+      take: pagination.limit,
     }),
     prisma.donationProject.count({ where }),
   ]);
@@ -83,9 +35,9 @@ export const getDonationProjects = async (filters: {
   const donationSums = await prisma.donationTransaction.groupBy({
     by: ['projectId'],
     where: {
-      projectId: { in: projectIds },
       submissionStatus: 'submitted',
       receiptStatus: 'received',
+      projectId: { in: projectIds },
     },
     _sum: {
       amount: true,
@@ -100,18 +52,11 @@ export const getDonationProjects = async (filters: {
   const projectsWithTotals = projects.map((project) => ({
     ...project,
     totalRaised: donationMap.get(project.id) ?? new Prisma.Decimal(0),
-    // Determine if project is ongoing or specific
-    isOngoing: project.targetFund === null && project.deadline === null,
   }));
 
   return {
-    projects: projectsWithTotals,
-    pagination: {
-      page,
-      limit,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limit),
-    },
+    projectsWithTotals,
+    totalCount,
   };
 };
 
@@ -122,7 +67,9 @@ export const getDonationProjectsByManager = async (managerId: string) => {
     },
     orderBy: { createdAt: 'desc' },
     include: {
-      project_manager: pmPublicInfo,
+      project_manager: {
+        select: PMPublicSelect
+      },
       objectivesList: {
         orderBy: { order: 'asc' },
       },
@@ -141,7 +88,9 @@ export const getDonationProjectById = async (
       managedBy: managerId,
     },
     include: {
-      project_manager: pmPublicInfo,
+      project_manager: {
+        select: PMPublicSelect
+      },
       objectivesList: {
         orderBy: { order: 'asc' },
       },
@@ -175,7 +124,9 @@ export const updateDonationProject = async (
       ...data,
     },
     include: {
-      project_manager: pmPublicInfo,
+      project_manager: {
+        select: PMPublicSelect,
+      },
       objectivesList: {
         orderBy: { order: 'asc' },
       },
@@ -207,7 +158,9 @@ export const createDonationProject = async (
         : undefined,
     },
     include: {
-      project_manager: pmPublicInfo,
+      project_manager: {
+        select: PMPublicSelect
+      },
       objectivesList: {
         orderBy: { order: 'asc' },
       },

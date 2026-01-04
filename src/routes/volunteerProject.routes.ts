@@ -5,7 +5,7 @@ import {
   VolunteerProjectIdSchema,
   UpdateVolunteerProjectSchema,
   CreateVolunteerProjectSchema,
-} from '../schemas/volunteer';
+} from '../schemas/project';
 
 const router = Router();
 
