@@ -20,16 +20,42 @@ export type Role = (typeof VALID_ROLES)[number];
  * .
  */
 export const directPermissions: Record<Role, Permission[]> = {
-  //DEV: map a permission to a role here
-  superAdmin: ['overview:view'],
+  //add more permissions here
+  superAdmin: [
+    'overview:view',
+    'project:update:own',
+    'volunteer-project:create',
+    'volunteer-project:view:own',
+    'volunteer-project:update:own',
+    'donation-project:create',
+    'donation-project:view:own',
+    'donation-project:update:own',
+  ],
 
-  generalManager: [],
+  generalManager: [
+    'volunteer-project:create',
+    'volunteer-project:view:own',
+    'volunteer-project:update:own',
+    'donation-project:create',
+    'donation-project:view:own',
+    'donation-project:update:own',
+  ],
 
-  financeManager: [],
+  financeManager: [
+    'donation-project:create',
+    'donation-project:view:own',
+    'donation-project:update:own',
+  ],
 
-  partner: ['project:update:own'],
+  partner: [
+    'volunteer-project:create',
+    'volunteer-project:view:own',
+    'volunteer-project:update:own',
+    'donation-project:create',
+    'donation-project:view:own',
+    'donation-project:update:own',
+  ],
 };
-
 //
 /**
  * Single layer role hierarchy for convenience.
