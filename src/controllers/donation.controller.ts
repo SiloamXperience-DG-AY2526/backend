@@ -1,52 +1,10 @@
 import { Request, Response } from 'express';
 import * as donationService from '../services/donation.service';
-import { getUserIdFromRequest } from '../utils/user';
 import {
-  getDonationProjectsSchema,
   getDonationHistorySchema,
   submitDonationApplicationSchema,
   donationIdSchema,
 } from '../schemas/index';
-
-export const getDonationProjects = async (req: Request, res: Response) => {
-  const managerId = getUserIdFromRequest(req);
-  const projects = await donationService.getDonationProjects(managerId);
-  res.json(projects);
-};
-
-export const getDonationProjectDetails = async (
-  req: Request,
-  res: Response
-) => {
-  const { projectId } = req.params;
-  const managerId = getUserIdFromRequest(req);
-  const project = await donationService.getDonationProjectDetails(
-    projectId,
-    managerId
-  );
-  res.json(project);
-};
-
-export const createDonationProject = async (req: Request, res: Response) => {
-  const managerId = getUserIdFromRequest(req);
-  const project = await donationService.createDonationProject(
-    managerId,
-    req.body
-  );
-  res.status(201).json(project);
-};
-
-export const updateDonationProject = async (req: Request, res: Response) => {
-  const { projectId } = req.params;
-  const managerId = getUserIdFromRequest(req);
-  const updatedProject = await donationService.updateDonationProject(
-    projectId,
-    managerId,
-    req.body
-  );
-  res.json(updatedProject);
-};
-
 
 /**
  * Controller: Get donation homepage data
@@ -55,21 +13,6 @@ export const updateDonationProject = async (req: Request, res: Response) => {
 export const getDonationHomepage = async (req: Request, res: Response) => {
   const homepageData = await donationService.getDonationHomepageData();
   res.json(homepageData);
-};
-
-/**
- * Controller: Get all donation projects
- * GET /donations/projects?type=ongoing|specific|all&page=1&limit=20
- */
-export const getAllDonationProjects = async (req: Request, res: Response) => {
-  const filters = getDonationProjectsSchema.parse({
-    type: req.query.type,
-    page: req.query.page,
-    limit: req.query.limit,
-  });
-
-  const result = await donationService.getAllDonationProjects(filters);
-  res.json(result);
 };
 
 /**
@@ -101,7 +44,7 @@ export const submitDonationApplication = async (req: Request, res: Response) => 
 
 /**
  * Controller: Get partner's donation history
- * GET /donations/partners/donations?status=pending|completed|cancelled|all&page=1&limit=10
+ * GET /donations/donations?status=pending|completed|cancelled|all&page=1&limit=10
  */
 export const getPartnerDonationHistory = async (req: Request, res: Response) => {
   // TODO: Get partnerId from authenticated user

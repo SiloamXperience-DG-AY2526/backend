@@ -10,41 +10,40 @@ import {
 
 const router = Router();
 
-// Apply validation middleware for routes with projectId param
+// USE validation middleware for routes with projectId param
 router.use(
-  '/projects/:projectId',
+  '/:projectId',
   validateRequest({ params: VolunteerProjectIdSchema })
 );
 
 // POST create new volunteer project
 router.post(
-  '/projects',
+  '/',
   requirePermission('volunteer-project:create'),
   validateRequest({ body: CreateVolunteerProjectSchema }),
   controller.createVolunteerProject
 );
 
-// GET all volunteer projects for the current project manager
+// GET all volunteer projects for the current user
 router.get(
-  '/projects',
+  '/me',
   requirePermission('volunteer-project:view:own'),
   controller.getVolunteerProjects
 );
 
-// GET specific volunteer project details
+// GET specific volunteer project details for the current user
 router.get(
-  '/projects/:projectId',
+  '/me/:projectId',
   requirePermission('volunteer-project:view:own'),
   controller.getVolunteerProjectDetails
 );
 
-// PATCH update volunteer project
+// PATCH update volunteer project for the current user
 router.patch(
-  '/projects/:projectId',
+  '/me/:projectId',
   requirePermission('volunteer-project:update:own'),
   validateRequest({ body: UpdateVolunteerProjectSchema }),
   controller.updateVolunteerProject
 );
 
 export default router;
-
