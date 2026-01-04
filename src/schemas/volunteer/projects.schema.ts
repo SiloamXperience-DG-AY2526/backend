@@ -6,16 +6,24 @@ export const GetAvailableVolunteerActivitiesSchema = z.object({
     .string()
     .optional()
     .transform((val) => (val ? parseInt(val, 10) : 1))
-    .refine((val) => val > 0, { message: 'Page must be greater than 0' }),
+    .refine(
+      (val) => Number.isInteger(val) && val > 0,
+      { message: 'Page must be a positive integer greater than 0' }
+    ),
+
   limit: z
     .string()
     .optional()
     .transform((val) => (val ? parseInt(val, 10) : 10))
-    .refine((val) => val > 0, { message: 'Limit must be greater than 0' }),
-  search: z.string().optional(),
+    .refine(
+      (val) => Number.isInteger(val) && val > 0,
+      { message: 'Limit must be a positive integer greater than 0' }
+    ),
+
+  search: z.string().trim().min(1).optional(),
 });
 
-export type GetAvailableVolunteerActivities = z.infer<
+export type GetAvailableVolunteerActivitiesInput = z.infer<
   typeof GetAvailableVolunteerActivitiesSchema
 >;
 

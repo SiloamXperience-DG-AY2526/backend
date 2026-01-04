@@ -1,41 +1,36 @@
-import {
-  submitVolunteerApplicationModel,
-  getVolunteerApplicationsModel,
-  getAvailableVolunteerActivitiesModel,
-} from '../models/volunteerModel';
-import {  GetVolunteerApplicationsInput, GetVolunteerApplicationsOutput, GetAvailableVolunteerActivities, PaginatedVolunteerActivities } from '../schemas/volunteer';
+import * as volunteerModel from '../models/volunteerModel';
+import { GetAvailableVolunteerActivitiesInput, SubmitVolunteerApplicationInput } from '../schemas/volunteer/index';
 
+interface SubmitVolunteerApplicationServiceInput
+  extends SubmitVolunteerApplicationInput {
+  userId: string;
+  projectId: string;
+}
 
-// Service for submitting application
-export const submitVolunteerApplicationService = async (
-  userId: string,
-  projectId: string,
-  projectPositionId: string
+export const submitVolunteerApplication = async (
+  input: SubmitVolunteerApplicationServiceInput
 ) => {
-  return await submitVolunteerApplicationModel({
-    userId,
-    projectId,
-    projectPositionId,
+  return volunteerModel.submitVolunteerApplication({
+    userId: input.userId,
+    projectId: input.projectId,
+    positionId: input.positionId,
+    sessionId: input.sessionId,
   });
 };
 
 
-// Service for fetching volunteer applications
-export const getVolunteerApplicationsService = async (
-  params: GetVolunteerApplicationsInput
-): Promise<GetVolunteerApplicationsOutput> => {
-  const { userId } = params;
-  return await getVolunteerApplicationsModel(userId);
+interface GetVolunteerApplicationsServiceInput {
+  userId: string;
+  status?: 'reviewing' | 'approved' | 'rejected' | 'active' | 'inactive';
+}
+
+export const getVolunteerApplications = async (
+  input: GetVolunteerApplicationsServiceInput
+) => {
+  return volunteerModel.getVolunteerApplicationsModel(input);
 };
-
-export const getAvailableVolunteerActivitiesService = async (
-  query: GetAvailableVolunteerActivities
-): Promise<PaginatedVolunteerActivities> => {
-  const { page = 1, limit = 10, search } = query;
-
-  if (page < 1 || limit < 1) {
-    throw new Error('INVALID_PAGINATION');
-  }
-
-  return getAvailableVolunteerActivitiesModel({ page, limit, search });
+export const getAvailableVolunteerActivities = async (
+  input: GetAvailableVolunteerActivitiesInput
+) => {
+  return volunteerModel.getAvailableVolunteerActivitiesModel(input);
 };

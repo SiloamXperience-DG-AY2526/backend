@@ -77,23 +77,6 @@ model VolunteerProject {
   @@map("vol_projects")
 }
 
-model ProjectPosition {
-  id        String  @id @default(uuid())
-  project   Project @relation(fields: [projectId], references: [id])
-  projectId String
-
-  title  String
-  slots  Int
-  filled Int    @default(0)
-
-  volunteerProjects VolunteerProject[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("project_positions")
-}
-
 model Session {
   id String @id @default(uuid())
 

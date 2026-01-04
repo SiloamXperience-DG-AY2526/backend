@@ -1,43 +1,67 @@
 import { Request, Response } from 'express';
 
-import { getAvailableVolunteerActivitiesService, getVolunteerApplicationsService, submitVolunteerApplicationService } from '../services/volunteer.service';
-import { GetAvailableVolunteerActivitiesSchema, SubmitVolunteerApplicationSchema } from '../schemas/volunteer';
-import { ProjectIdSchema } from '../schemas';
-
-export const submitVolunteerApplication = async (req: Request, res: Response) => {
-  const { userId, projectPositionId } = SubmitVolunteerApplicationSchema.parse(req.body);
-  const { projectId } = ProjectIdSchema.parse(req.params);
+import * as volunteerService from '../services/volunteer.service';
+import { GetAvailableVolunteerActivitiesSchema, GetVolunteerApplicationsQuerySchema  } from '../schemas/volunteer';
 
 
-  const result = await submitVolunteerApplicationService(userId, projectId, projectPositionId);
 
-
+export const submitVolunteerApplication = async (
+  req: Request,
+  res: Response
+) => {
+  // const userId = req.user.id;change to get from auth middleware
+  const { projectId } = req.params;
+  const application =
+    await volunteerService.submitVolunteerApplication({
+      projectId, 
+      ...req.body,
+      
+    });
+  // res.status(201).json(application);
   // Respond with success
   return res.status(201).json({
     status: 'success',
     message: 'Volunteer application submitted successfully',
-    ...result,
+    data: application,
+  });
+
+};
+
+export const getVolunteerApplications = async (
+  req: Request,
+  res: Response
+) => {
+  const { userId } = req.params; // get from user token
+
+
+  const { status } = GetVolunteerApplicationsQuerySchema.parse(req.query);
+
+  const applications =
+    await volunteerService.getVolunteerApplications({
+      userId,
+      status, 
+    });
+
+  return res.status(200).json({
+    status: 'success',
+    data: applications,
   });
 };
 
+export const getAvailableVolunteerActivities = async (
+  req: Request,
+  res: Response
+) => {
+  const query = GetAvailableVolunteerActivitiesSchema.parse(req.query);
 
-
-export const getVolunteerApplications = async (req: Request, res: Response) => {
-  const { userId } = req.params;
-
-  // validated by middleware, so we can safely use userId
-  const result = await getVolunteerApplicationsService({ userId });
-
-  return res.status(200).json(result);
-};
-
-export const getAvailableVolunteerActivities = async (req: Request, res: Response) => {
-  const query = GetAvailableVolunteerActivitiesSchema.parse(req.query); 
-
-  const result = await getAvailableVolunteerActivitiesService({
+  const result = await volunteerService.getAvailableVolunteerActivities({
     page: query.page,
     limit: query.limit,
     search: query.search,
   });
-  res.status(200).json(result);
+
+  return res.status(200).json({
+    status: 'success',
+    ...result,
+  });
 };

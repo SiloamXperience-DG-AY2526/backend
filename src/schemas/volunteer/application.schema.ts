@@ -1,35 +1,29 @@
 import { z } from 'zod';
 
-//create application
 export const SubmitVolunteerApplicationSchema = z.object({
   userId: z.uuid(),
-  projectPositionId: z.uuid(),
+  positionId: z.uuid(),
+  sessionId: z.uuid().optional(),
+
+  name: z.string(),
+  gender: z.string(),
+  contactNumber: z.string(),
 });
 
-export type SubmitVolunteerApplicationInput = z.infer<typeof SubmitVolunteerApplicationSchema>;
+export type SubmitVolunteerApplicationInput = z.infer<
+  typeof SubmitVolunteerApplicationSchema
+>;
 
 //get application
-export const GetVolunteerApplicationsSchema = z.object({
-  userId: z.uuid({ message: 'Invalid user ID' }),
+export const GetVolunteerApplicationsParamsSchema = z.object({
+  userId: z.string().uuid(),
+});
+export const GetVolunteerApplicationsQuerySchema = z.object({
+  status: z
+    .enum(['reviewing', 'approved', 'rejected', 'active', 'inactive'])
+    .optional(),
 });
 
-export type GetVolunteerApplicationsInput = z.infer<typeof GetVolunteerApplicationsSchema>;
-
-//  output type
-export type VolunteerApplication = {
-  projectId: string;
-  projectTitle: string;
-  position: string;
-  submittedAt: Date;
-  status: 'PENDING' | 'PROCESSED';
-  approvedAt: Date | null;
-  approvedBy: string | null;
-  approvalNotes: string | null;
-};
-
-export type GetVolunteerApplicationsOutput = {
-  userId: string;
-  applications: VolunteerApplication[];
-};
-
-
+export type GetVolunteerApplicationsQueryInput = z.infer<
+  typeof GetVolunteerApplicationsQuerySchema
+>;
