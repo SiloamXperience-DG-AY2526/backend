@@ -16,10 +16,10 @@ const extractJWT = (req: Request) => {
 export const requirePermission = (permission: Permission) => {
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
-      const { userId, roles } = extractJWT(req);
+      const { userId, role } = extractJWT(req);
       const isAuthorized = await checkPermission(
         userId,
-        roles,
+        role,
         permission,
         req
       );
@@ -38,9 +38,9 @@ export const requirePermission = (permission: Permission) => {
 export const requireAnyPermission = (permissions: Permission[]) => {
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
-      const { userId, roles } = extractJWT(req);
+      const { userId, role } = extractJWT(req);
       const results = await Promise.allSettled(
-        permissions.map((p) => checkPermission(userId, roles, p, req))
+        permissions.map((p) => checkPermission(userId, role, p, req))
       );
 
       const hasAnyPermission = results.some(

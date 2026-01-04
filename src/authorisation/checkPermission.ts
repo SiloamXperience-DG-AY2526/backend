@@ -34,7 +34,7 @@ export function isValidRole(role: string): role is Role {
 }
 
 /**
- * createCheckPermission returns an asynchronous createCheck(userId, roles, permission, req) method.
+ * createCheckPermission returns an asynchronous createCheck(userId, role, permission, req) method.
  *
  * Dependency injection is used for testability.
  *
@@ -47,29 +47,24 @@ export function isValidRole(role: string): role is Role {
 export const createCheckPermission = (permissionsMap: PermissionsMap) => {
   return async (
     userId: string,
-    roles: string[],
+    role: string,
     permission: Permission,
     req: Request
   ): Promise<boolean> => {
-    // Check if ANY of the user's roles grants this permission
-    for (const role of roles) {
-      // Skip invalid roles
-      if (!isValidRole(role)) {
-        continue;
-      }
-
-      // 1. Check if role has this permission
-      if (!hasRolePermission(role, permission)) {
-        continue;
-      }
-
-      // 2. Run granular permission check
-      const permissionHandler = permissionsMap[permission];
-      const context = { userId, role, req };
-      const hasPermission = await permissionHandler(context);
-      if (hasPermission) return true;
+    // Skip invalid roles
+    if (!isValidRole(role)) {
+      return false;
     }
 
-    return false;
+    // 1. Check if role has this permission
+    if (!hasRolePermission(role, permission)) {
+      return false;
+    }
+
+    // 2. Run granular permission check
+    const permissionHandler = permissionsMap[permission];
+    const context = { userId, role, req };
+    const hasPermission = await permissionHandler(context);
+    return hasPermission;
   };
 };

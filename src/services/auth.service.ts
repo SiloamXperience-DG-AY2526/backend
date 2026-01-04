@@ -22,7 +22,7 @@ export async function signupPartnerWithOnboarding(
   // Create token for the new user
   const token = signToken({
     userId: user.id,
-    roles: user.roles.map((r: any) => r.role.roleName),
+    role: user.role,
   });
 
   return token;
@@ -40,11 +40,9 @@ export async function login(email: string, password: string) {
     throw new UnauthorizedError('Invalid credentials');
   }
 
-  const roles = user.roles.map((r: { role: { roleName: string } }) => r.role.roleName);
-
   const token = signToken({
     userId: user.id,
-    roles,
+    role: user.role,
   });
 
   return token;

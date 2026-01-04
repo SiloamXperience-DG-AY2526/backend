@@ -6,7 +6,7 @@ const JWT_EXPIRES_IN = '1d';
 
 export interface JwtPayload {
   userId: string;
-  roles: string[];
+  role: string;
 }
 
 export function signToken(payload: JwtPayload) {
@@ -24,23 +24,22 @@ export function verifyToken(token: string): JwtPayload {
       typeof payload !== 'object' ||
       payload === null ||
       !('userId' in payload) ||
-      !('roles' in payload)
+      !('role' in payload)
     ) {
       throw new Error();
     }
     // handle missing fields
-    const { userId, roles } = payload as Partial<JwtPayload>;
+    const { userId, role } = payload as Partial<JwtPayload>;
     //ensure correct shape of userId
     if (!userId || typeof userId !== 'string') {
       throw new Error();
     }
 
-    // ensures correct shape of roles, ok to allow a role that is not typeof Role as it can
-    // be handled by authorisation.
-    if (!Array.isArray(roles)) {
+    // ensure correct shape of role
+    if (!role || typeof role !== 'string') {
       throw new Error();
     }
-    return Object.freeze({ userId, roles }) as JwtPayload;
+    return Object.freeze({ userId, role }) as JwtPayload;
   } catch {
     throw new UnauthorizedError('Invalid or expired token');
   }

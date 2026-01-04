@@ -1,15 +1,11 @@
 import { Permission } from '.';
+import { UserRole } from '@prisma/client';
 
-//DEV: Add new roles here if needed
-export const VALID_ROLES = [
-  'superAdmin',
-  'generalManager',
-  'financeManager',
-  'partner',
-] as const;
+// Use Prisma enum as source of truth for roles
+export const VALID_ROLES = Object.values(UserRole);
 
-// Infer Role type from VALID_ROLES
-export type Role = (typeof VALID_ROLES)[number];
+// Role type derived from Prisma enum
+export type Role = UserRole;
 
 /**
  * For developers creating new permissions, you should map it to the role of least privilege.
@@ -21,7 +17,7 @@ export type Role = (typeof VALID_ROLES)[number];
  */
 export const directPermissions: Record<Role, Permission[]> = {
   //add more permissions here
-  superAdmin: [
+  [UserRole.superAdmin]: [
     'overview:view',
     'project:update:own',
     'volunteer-project:create',
@@ -32,7 +28,7 @@ export const directPermissions: Record<Role, Permission[]> = {
     'donation-project:update:own',
   ],
 
-  generalManager: [
+  [UserRole.generalManager]: [
     'volunteer-project:create',
     'volunteer-project:view:own',
     'volunteer-project:update:own',
@@ -41,13 +37,13 @@ export const directPermissions: Record<Role, Permission[]> = {
     'donation-project:update:own',
   ],
 
-  financeManager: [
+  [UserRole.financeManager]: [
     'donation-project:create',
     'donation-project:view:own',
     'donation-project:update:own',
   ],
 
-  partner: [
+  [UserRole.partner]: [
     'volunteer-project:create',
     'volunteer-project:view:own',
     'volunteer-project:update:own',
@@ -63,8 +59,8 @@ export const directPermissions: Record<Role, Permission[]> = {
  * Should not have to change frequently.
  */
 export const roleHierarchy: Record<Role, Role[]> = {
-  superAdmin: ['generalManager', 'financeManager', 'partner'],
-  generalManager: ['partner'],
-  financeManager: ['partner'],
-  partner: [], // base role, no inheritance
+  [UserRole.superAdmin]: [UserRole.generalManager, UserRole.financeManager, UserRole.partner],
+  [UserRole.generalManager]: [UserRole.partner],
+  [UserRole.financeManager]: [UserRole.partner],
+  [UserRole.partner]: [], // base role, no inheritance
 };

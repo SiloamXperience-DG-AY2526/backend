@@ -65,30 +65,30 @@ describe('createCheckPermission', () => {
 
   const checkPermission = createCheckPermission(mockPermissionsMap);
 
-  it('should return true if any role of a user has the required permission', async () => {
+  it('should return true if user role has the required permission', async () => {
     const result = await checkPermission(
       mockUserId,
-      ['superAdmin', 'partner'],
+      'superAdmin',
       TEST_PERMISSIONS.mockPartnerPermission,
       mockRequest
     );
     expect(result).toBe(true);
   });
 
-  it('should return false if no roles of a user have the required permission', async () => {
+  it('should return false if user role does not have the required permission', async () => {
     const result = await checkPermission(
       mockUserId,
-      ['partner'],
+      'partner',
       TEST_PERMISSIONS.mockPartnerAbsentPermission,
       mockRequest
     );
     expect(result).toBe(false);
   });
 
-  it('should return false for invalid roles of a user', async () => {
+  it('should return false for invalid role', async () => {
     const result = await checkPermission(
       mockUserId,
-      ['invalidRole'],
+      'invalidRole',
       TEST_PERMISSIONS.mockSuperAdminPermission,
       mockRequest
     );
