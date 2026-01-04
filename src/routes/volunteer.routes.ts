@@ -1,14 +1,39 @@
 import { Router } from 'express';
-import * as controller from '../controllers/volunteer.controller';
+//import { getAvailableVolunteerActivities, getVolunteerApplications, submitVolunteerApplication } from '../controllers/volunteerController';
 import { validateRequest } from '../middlewares/validateRequest';
 import { requirePermission } from '../middlewares/requirePermission';
-import {
-  VolunteerProjectIdSchema,
+import {  GetVolunteerApplicationsParamsSchema, SubmitVolunteerApplicationSchema, VolunteerProjectIdSchema,
   UpdateVolunteerProjectSchema,
-  CreateVolunteerProjectSchema,
-} from '../schemas/volunteer';
-
+  CreateVolunteerProjectSchema, } from '../schemas/volunteer';
+import { ProjectIdSchema } from '../schemas';
+import { getAvailableVolunteerActivities, getVolunteerApplications, submitVolunteerApplication } from '../controllers/volunteerController';
+import * as controller from '../controllers/volunteer.controller';
 const router = Router();
+
+//partner
+//submit application (partner)
+router.post(
+  '/projects/:projectId/application',
+  validateRequest({ 
+    body: SubmitVolunteerApplicationSchema, 
+    params: ProjectIdSchema 
+  }),                                 
+  submitVolunteerApplication
+);
+//get user application
+router.get(
+  '/:userId/volunteer-applications',
+  validateRequest({
+    params: GetVolunteerApplicationsParamsSchema,
+  }),
+  getVolunteerApplications
+);
+//get projects available
+router.get(
+  '/projects/available',
+  getAvailableVolunteerActivities
+);
+
 
 // Apply validation middleware for routes with projectId param
 router.use(

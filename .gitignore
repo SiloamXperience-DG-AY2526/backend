@@ -57,3 +57,7 @@ pids/
 # Yarn Integrity file
 .yarn-integrity
 /src/generated/prisma
+
+#files
+testpopulateDB.txt
+prisma\volunteerSeedTest.ts
