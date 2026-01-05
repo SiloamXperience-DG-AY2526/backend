@@ -15,6 +15,15 @@ export function signToken(payload: JwtPayload) {
   });
 }
 
+export async function getPasswordResetToken(userId: string, role: string) {
+  // token by role
+  const token = signToken({
+    userId,
+    role,
+  });
+
+  return token;
+}
 export function verifyToken(token: string): JwtPayload {
   try {
     const payload = jwt.verify(token, JWT_SECRET);
