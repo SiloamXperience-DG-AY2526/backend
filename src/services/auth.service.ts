@@ -24,7 +24,7 @@ export async function signupPartnerWithOnboarding(
   // Create token for the new user
   const token = signToken({
     userId: user.id,
-    roles: user.roles.map((r: any) => r.role.roleName),
+    role: user.role,
   });
 
   return token;
@@ -42,11 +42,9 @@ export async function login(email: string, password: string) {
     throw new UnauthorizedError('Invalid credentials');
   }
 
-  const roles = user.roles.map((r: { role: { roleName: string } }) => r.role.roleName);
-
   const token = signToken({
     userId: user.id,
-    roles,
+    role: user.role,
   });
 
   return token;
@@ -59,7 +57,13 @@ export async function requestPasswordResetService(email: string) {
     throw new UnauthorizedError('This email is not registered');
   }
 
-  const token = await getPasswordResetToken(user.id, email);
+  const token = await getPasswordResetToken(user.id, user.role);
+
+  // For testing purposes
+  console.log('User ID:', user.id);
+  console.log('Password reset token:', token);
+  const TEST_PASSWORD = await hashPassword('NewPassword@1234');
+  console.log('New password hash:', TEST_PASSWORD);
 
   // TODO: create frontend landing page
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
