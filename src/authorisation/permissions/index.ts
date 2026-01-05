@@ -1,6 +1,7 @@
 import { financePermissions } from './finance.permissions';
 import { projectPermissions } from './project.permissions';
 import { PermissionHandler } from '../types';
+import { generalPermissions } from './general.permissions';
 
 export type PermissionsMap = Record<string, PermissionHandler>;
 export type Permission = keyof typeof PERMISSIONS;
@@ -13,5 +14,6 @@ export type Permission = keyof typeof PERMISSIONS;
 export const PERMISSIONS = {
   ...financePermissions,
   ...projectPermissions,
+  ...generalPermissions,
   // DEV: Add other permission groups here
 } satisfies PermissionsMap;
