@@ -9,6 +9,12 @@ export async function findUserByEmailWithRoles(email: string) {
   }) as Promise<User | null>;
 }
 
+export async function findUserByIdWithRoles(id: string) {
+  return prisma.user.findUnique({
+    where: { id },
+  }) as Promise<User | null>;
+}
+
 export type PartnerData = {
   countryCode: string;
   contactNumber: string;
