@@ -190,7 +190,7 @@ export const submitVolunteerFeedback = async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const { userId, ratings, feedback } = req.body;
 
-  if (!userId) throw new Error("USER_ID_REQUIRED");
+  if (!userId) throw new Error('USER_ID_REQUIRED');
 
   const result = await volunteerService.submitVolunteerFeedback({
     projectId,
@@ -200,8 +200,8 @@ export const submitVolunteerFeedback = async (req: Request, res: Response) => {
   });
 
   return res.status(201).json({
-    status: "success",
-    message: "Volunteer feedback submitted",
+    status: 'success',
+    message: 'Volunteer feedback submitted',
     data: result,
   });
 };

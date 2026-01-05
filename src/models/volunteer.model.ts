@@ -425,9 +425,9 @@ export const getAvailableVolunteerActivitiesModel = async ({
 
   const totalPages = Math.ceil(total / limit);
 
-    const data = projects.map((p) => {
+  const data = projects.map((p) => {
   //volunteers that are filled
-   const positions = p.positions.map((pos) => {
+    const positions = p.positions.map((pos) => {
       const slotsFilled = pos.signups.length;
       const slotsAvailable = Math.max(pos.totalSlots - slotsFilled, 0);
 
@@ -442,7 +442,7 @@ export const getAvailableVolunteerActivitiesModel = async ({
     });
 
 
-     const projectTotalSlots = positions.reduce(
+    const projectTotalSlots = positions.reduce(
       (sum, pos) => sum + pos.totalSlots,
       0
     );
@@ -453,7 +453,7 @@ export const getAvailableVolunteerActivitiesModel = async ({
     );
 
     //session
-   const approvedVolunteerIds = new Set<string>();
+    const approvedVolunteerIds = new Set<string>();
     for (const pos of p.positions) {
       for (const signup of pos.signups) {
         approvedVolunteerIds.add(signup.volunteerId);
@@ -481,7 +481,7 @@ export const getAvailableVolunteerActivitiesModel = async ({
         slotsAvailable: sessionAvailable,
       };
     });
-//return all
+    //return all
     return {
       id: p.id,
       title: p.title,
@@ -855,7 +855,7 @@ export const submitVolunteerFeedbackModel = async ({
       where: { id: projectId },
       select: { id: true },
     });
-    if (!project) throw new NotFoundError("PROJECT_NOT_FOUND");
+    if (!project) throw new NotFoundError('PROJECT_NOT_FOUND');
 
     // sign up exist
     const signup = await tx.volunteerProjectPosition.findFirst({
@@ -873,12 +873,12 @@ export const submitVolunteerFeedbackModel = async ({
     });
 
     if (!signup) {
-      throw new Error("NOT_ELIGIBLE_FOR_FEEDBACK"); 
+      throw new Error('NOT_ELIGIBLE_FOR_FEEDBACK'); 
     }
 
     // prevent duplicates (per volunteer position signup)
     if (signup.volunteerProjectFeedbackId) {
-      throw new Error("FEEDBACK_ALREADY_SUBMITTED");
+      throw new Error('FEEDBACK_ALREADY_SUBMITTED');
     }
 
     // create feedback
