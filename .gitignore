@@ -60,4 +60,6 @@ pids/
 
 #files
 testpopulateDB.txt
-prisma\volunteerSeedTest.ts
+prisma/volunteerSeedTest.ts
+prisma/seed.project.community.ts
+prisma/populatePartner.ts

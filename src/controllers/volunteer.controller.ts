@@ -173,3 +173,15 @@ export const withdrawVolunteerProposal = async (
     data: project,
   });
 };
+
+export const getVolunteerProjectDetail = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+
+  const project = await volunteerService.getVolunteerProjectDetail({ projectId });
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'Volunteer project detail fetched',
+    data: project,
+  });
+};

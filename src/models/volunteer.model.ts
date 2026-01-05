@@ -168,12 +168,29 @@ type PaginatedVolunteerActivities = {
   }>;
 };
 
-interface SubmitVolunteerApplicationArgs {
+export type SubmitVolunteerApplicationArgs = {
   userId: string;
-  projectId:string;
+  projectId: string;
   positionId: string;
   sessionId?: string;
-}
+};
+
+type SubmitVolunteerApplicationResult = {
+  application: {
+    id: string;
+    volunteerId: string;
+    positionId: string;
+    status: string;
+    hasConsented: boolean;
+    createdAt: Date;
+  };
+  volunteer: {
+    userId: string;
+    name: string;
+    gender: string;
+    contactNumber: string;
+  };
+};
 
 interface GetVolunteerApplicationsModelInput {
   userId: string;
@@ -186,73 +203,77 @@ export const submitVolunteerApplication = async ({
   projectId,
   positionId,
   sessionId,
-}: SubmitVolunteerApplicationArgs) => {
+}: SubmitVolunteerApplicationArgs): Promise<SubmitVolunteerApplicationResult> => {
   return prisma.$transaction(async (tx) => {
+    //  get partner details (name, gender, contactNumber)
     const user = await tx.user.findUnique({
       where: { id: userId },
-    });
-
-    if (!user) {
-      throw new NotFoundError('VOLUNTEER_NOT_FOUND');
-    }
-    const project = await tx.volunteerProject.findUnique({
-      where: { id: projectId },
-    });
-    if (!project) throw new NotFoundError('PROJECT_NOT_FOUND');
-
-
-    // 3️⃣ Position exists + belongs to project
-    const position = await tx.projectPosition.findUnique({
-      where: { id: positionId },
-      include: {
-        project: true,
-        signups: {
-          where: {
-            status: { in: ['reviewing','approved', 'active'] },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        partner: {
+          select: {
+            gender: true,
+            countryCode: true,
+            contactNumber: true,
           },
         },
       },
     });
 
-    if (!position) {
-      throw new NotFoundError('POSITION_NOT_FOUND');
-    }
+    if (!user) throw new NotFoundError('VOLUNTEER_NOT_FOUND');
+    if (!user.partner) throw new NotFoundError('PARTNER_PROFILE_NOT_FOUND');
 
+    const project = await tx.volunteerProject.findUnique({
+      where: { id: projectId },
+      select: {
+        id: true,
+        operationStatus: true,
+      },
+    });
 
-    if (position.projectId !== projectId) {
-      throw new Error('POSITION_NOT_IN_PROJECT');
-    }
-  
-    if (project.operationStatus !== 'ongoing') {
-      throw new Error('PROJECT_NOT_ACTIVE');
-    }
-    const existing =
-      await tx.volunteerProjectPosition.findUnique({
-        where: {
-          volunteerId_positionId: {
-            volunteerId: userId,
-            positionId,
-          },
+    if (!project) throw new NotFoundError('PROJECT_NOT_FOUND');
+
+    //  check if position exist in project
+    const position = await tx.projectPosition.findUnique({
+      where: { id: positionId },
+      select: {
+        id: true,
+        projectId: true,
+      },
+    });
+
+    if (!position) throw new NotFoundError('POSITION_NOT_FOUND');
+    if (position.projectId !== projectId) throw new Error('POSITION_NOT_IN_PROJECT');
+
+    // active project
+    if (project.operationStatus !== 'ongoing') throw new Error('PROJECT_NOT_ACTIVE');
+
+    // prevent duplicate application
+    const existing = await tx.volunteerProjectPosition.findUnique({
+      where: {
+        volunteerId_positionId: {
+          volunteerId: userId,
+          positionId,
         },
-      });
+      },
+      select: { id: true },
+    });
 
-    if (existing) {
-      throw new Error('ALREADY_APPLIED');
-    }
+    if (existing) throw new Error('ALREADY_APPLIED');
 
-
+    // session check (if provided, must belong to same project)
     if (sessionId) {
       const session = await tx.session.findFirst({
-        where: {
-          id: sessionId,
-          projectId: position.projectId,
-        },
+        where: { id: sessionId, projectId },
+        select: { id: true },
       });
 
-      if (!session) {
-        throw new NotFoundError('SESSION_NOT_FOUND');
-      }
+      if (!session) throw new NotFoundError('SESSION_NOT_FOUND');
     }
+
+    // create application
     const application = await tx.volunteerProjectPosition.create({
       data: {
         volunteerId: userId,
@@ -260,8 +281,17 @@ export const submitVolunteerApplication = async ({
         status: 'reviewing',
         hasConsented: false,
       },
+      select: {
+        id: true,
+        volunteerId: true,
+        positionId: true,
+        status: true,
+        hasConsented: true,
+        createdAt: true,
+      },
     });
 
+    //  create volunteerSession if sessionId provided
     if (sessionId) {
       await tx.volunteerSession.create({
         data: {
@@ -271,7 +301,16 @@ export const submitVolunteerApplication = async ({
       });
     }
 
-    return application;
+    //  return application + volunteer info from DB
+    return {
+      application,
+      volunteer: {
+        userId: user.id,
+        name: `${user.firstName} ${user.lastName}`.trim(),
+        gender: user.partner.gender,
+        contactNumber: `${user.partner.countryCode}${user.partner.contactNumber}`,
+      },
+    };
   });
 };
 
@@ -386,17 +425,10 @@ export const getAvailableVolunteerActivitiesModel = async ({
 
   const totalPages = Math.ceil(total / limit);
 
-  const data = projects.map((p) => {
+    const data = projects.map((p) => {
   //volunteers that are filled
-    const approvedVolunteerIds = new Set<string>();
-    for (const pos of p.positions) {
-      for (const signup of pos.signups) {
-        approvedVolunteerIds.add(signup.volunteerId);
-      }
-    }
-
-    const positions = p.positions.map((pos) => {
-      const slotsFilled = pos.signups.length; 
+   const positions = p.positions.map((pos) => {
+      const slotsFilled = pos.signups.length;
       const slotsAvailable = Math.max(pos.totalSlots - slotsFilled, 0);
 
       return {
@@ -409,18 +441,34 @@ export const getAvailableVolunteerActivitiesModel = async ({
       };
     });
 
-    const projectTotalSlots = p.positions.reduce(
-      (acc, pos) => acc + pos.totalSlots,
+
+     const projectTotalSlots = positions.reduce(
+      (sum, pos) => sum + pos.totalSlots,
       0
     );
 
+    const projectAvailableSlots = positions.reduce(
+      (sum, pos) => sum + pos.slotsAvailable,
+      0
+    );
+
+    //session
+   const approvedVolunteerIds = new Set<string>();
+    for (const pos of p.positions) {
+      for (const signup of pos.signups) {
+        approvedVolunteerIds.add(signup.volunteerId);
+      }
+    }
+
     const sessions = p.sessions.map((s) => {
-      // volunteers for each session
-      const slotsFilled = s.volunteerSessions.filter((vs) =>
+      const sessionFilled = s.volunteerSessions.filter((vs) =>
         approvedVolunteerIds.has(vs.volunteerId)
       ).length;
 
-      const slotsAvailable = Math.max(projectTotalSlots - slotsFilled, 0);
+      const sessionAvailable = Math.max(
+        projectAvailableSlots - sessionFilled,
+        0
+      );
 
       return {
         id: s.id,
@@ -429,20 +477,25 @@ export const getAvailableVolunteerActivitiesModel = async ({
         startTime: s.startTime,
         endTime: s.endTime,
         totalSlots: projectTotalSlots,
-        slotsFilled,
-        slotsAvailable,
+        slotsFilled: sessionFilled,
+        slotsAvailable: sessionAvailable,
       };
     });
-
+//return all
     return {
       id: p.id,
       title: p.title,
       location: p.location,
+      image: p.image,          
+      aboutDesc: p.aboutDesc, 
       startDate: p.startDate,
       endDate: p.endDate,
       startTime: p.startTime,
       endTime: p.endTime,
       operationStatus: p.operationStatus,
+
+      projectTotalSlots,       
+      projectAvailableSlots,    
       positions,
       sessions,
     };
@@ -632,4 +685,146 @@ export const withdrawVolunteerProposalModel = async ({
 
     return updated;
   });
+};
+
+//getProjectDetail
+const FILLED_STATUSES = ['approved', 'active', 'inactive'] as const;
+
+export const getVolunteerProjectDetailModel = async ({
+  projectId,
+}: {
+  projectId: string;
+}) => {
+  const p = await prisma.volunteerProject.findUnique({
+    where: { id: projectId },
+    select: {
+      id: true,
+
+      title: true,
+      location: true,
+
+      aboutDesc: true,
+      objectives: true,
+      beneficiaries: true,
+
+      initiatorName: true,
+      organisingTeam: true,
+      proposedPlan: true,
+
+      startDate: true,
+      endDate: true,
+      startTime: true,
+      endTime: true,
+
+      frequency: true,
+      interval: true,
+      dayOfWeek: true,
+
+      submissionStatus: true,
+      approvalStatus: true,
+      operationStatus: true,
+
+      image: true,
+      attachments: true,
+
+      positions: {
+        select: {
+          id: true,
+          role: true,
+          description: true,
+          totalSlots: true,
+          skills: {
+            select: {
+              id: true,
+              skill: true,
+              order: true,
+            },
+            orderBy: { order: 'asc' },
+          },
+          signups: {
+            where: {
+              hasConsented: true,
+              status: { in: [...FILLED_STATUSES] },
+            },
+            select: { id: true }, // just count
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      },
+
+      sessions: {
+        select: {
+          id: true,
+          name: true,
+          sessionDate: true,
+          startTime: true,
+          endTime: true,
+        },
+        orderBy: { sessionDate: 'asc' },
+      },
+
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!p) throw new NotFoundError('PROJECT_NOT_FOUND');
+
+  const positions = p.positions.map((pos) => {
+    const slotsFilled = pos.signups.length;
+    const slotsAvailable = Math.max(pos.totalSlots - slotsFilled, 0);
+
+    return {
+      id: pos.id,
+      role: pos.role,
+      description: pos.description,
+      totalSlots: pos.totalSlots,
+      slotsFilled,
+      slotsAvailable,
+      skills: pos.skills.map((s) => s.skill),
+    };
+  });
+
+  return {
+    id: p.id,
+
+    // title + event details
+    title: p.title,
+    location: p.location,
+    startDate: p.startDate,
+    endDate: p.endDate,
+    startTime: p.startTime,
+    endTime: p.endTime,
+    frequency: p.frequency,
+    interval: p.interval,
+    dayOfWeek: p.dayOfWeek,
+
+    // organiser + info
+    initiatorName: p.initiatorName,
+    organisingTeam: p.organisingTeam,
+    proposedPlan: p.proposedPlan,
+
+    // content
+    aboutDesc: p.aboutDesc,
+    objectives: p.objectives,
+    beneficiaries: p.beneficiaries,
+
+    // status
+    submissionStatus: p.submissionStatus,
+    approvalStatus: p.approvalStatus,
+    operationStatus: p.operationStatus,
+
+    // assets
+    image: p.image,
+    attachments: p.attachments,
+
+    // volunteer roles
+    positions,
+
+    // optional sessions list (if you want to show event sessions)
+    sessions: p.sessions,
+
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+  };
 };

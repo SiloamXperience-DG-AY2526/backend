@@ -57,7 +57,9 @@ export const withdrawVolunteerProposal = async (input: {
 }) => {
   return volunteerModel.withdrawVolunteerProposalModel(input);
 };
-
+export const getVolunteerProjectDetail = async (input: { projectId: string }) => {
+  return volunteerModel.getVolunteerProjectDetailModel(input);
+};
 //admin
 
 export const getVolunteerProjects = async (managerId: string) => {

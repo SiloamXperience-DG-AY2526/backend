@@ -8,7 +8,7 @@ import {  GetVolunteerApplicationsParamsSchema, SubmitVolunteerApplicationSchema
   ProposeVolunteerProjectSchema,
   UpdateVolunteerProposalSchema,
   WithdrawVolunteerProposalSchema, } from '../schemas/volunteer';
-import { ProjectIdSchema } from '../schemas';
+
 
 import * as controller from '../controllers/volunteer.controller';
 const router = Router();
@@ -19,7 +19,7 @@ router.post(
   '/projects/:projectId/application',
   validateRequest({ 
     body: SubmitVolunteerApplicationSchema, 
-    params: ProjectIdSchema 
+    params: VolunteerProjectIdSchema 
   }),                                 
   controller.submitVolunteerApplication
 );
@@ -46,7 +46,7 @@ router.post(
 router.patch(
   '/project/proposal/:projectId',
   validateRequest({
-    params: ProjectIdSchema,
+    params: VolunteerProjectIdSchema,
     body: UpdateVolunteerProposalSchema,
   }),
   controller.updateVolunteerProposal
@@ -55,12 +55,17 @@ router.patch(
 router.patch(
   '/project/proposal/:projectId/withdraw',
   validateRequest({
-    params: ProjectIdSchema,
+    params: VolunteerProjectIdSchema,
     body: WithdrawVolunteerProposalSchema,
   }),
   controller.withdrawVolunteerProposal
 );
 
+router.get(
+  '/projects/:projectId/details',
+  validateRequest({ params: VolunteerProjectIdSchema }),
+  controller.getVolunteerProjectDetail
+);
 //admin
 // Apply validation middleware for routes with projectId param
 router.use(

@@ -4,7 +4,7 @@ import { logger } from './middlewares/logger';
 import { errorHandler } from './middlewares/errorHandler';
 import { notFoundHandler } from './middlewares/notFoundHandler';
 import rootRoutes from './routes';
-
+import cors from 'cors';
 // Load environment variables
 dotenv.config();
 
@@ -23,6 +23,16 @@ class Server {
 
   private initializeMiddlewares(): void {
     // Body parser middleware
+    this.app.use(
+      cors({
+        origin: ['http://localhost:3001'], // frontend url
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        credentials: true, 
+      })
+    );
+
+
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
