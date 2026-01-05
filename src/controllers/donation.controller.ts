@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import * as donationService from '../services/donation.service';
 import {
   getDonationHistorySchema,
-  submitDonationApplicationSchema,
   donationIdSchema,
 } from '../schemas/index';
+import { getUserIdFromRequest } from '../utils/user';
 
 /**
  * Controller: Get donation homepage data
@@ -21,19 +21,12 @@ export const getDonationHomepage = async (req: Request, res: Response) => {
  * Body: { projectId, type, countryOfResidence, paymentMode, amount, brickCount? }
  */
 export const submitDonationApplication = async (req: Request, res: Response) => {
-  // TODO: Get partnerId from authenticated user (req.user.id)
-  // For now, this should be implemented once auth middleware is in place
-  const partnerId = (req as any).user?.id;
+  const userId = getUserIdFromRequest(req);
 
-  if (!partnerId) {
-    res.status(401).json({ error: 'Unauthorized: Partner not authenticated' });
-    return;
-  }
-
-  const validatedData = submitDonationApplicationSchema.parse(req.body);
+  const {donationApplicationData} = req.body;
   const donation = await donationService.submitDonationApplication(
-    partnerId,
-    validatedData
+    userId,
+    donationApplicationData
   );
 
   res.status(201).json({
@@ -47,13 +40,7 @@ export const submitDonationApplication = async (req: Request, res: Response) => 
  * GET /donations/me?status=pending|completed|cancelled|all&page=1&limit=10
  */
 export const getMyDonationHistory = async (req: Request, res: Response) => {
-  // TODO: Get partnerId from authenticated user
-  const partnerId = (req as any).user?.id;
-
-  if (!partnerId) {
-    res.status(401).json({ error: 'Unauthorized: Partner not authenticated' });
-    return;
-  }
+  const userId = getUserIdFromRequest(req);
 
   const filters = getDonationHistorySchema.parse({
     status: req.query.status,
@@ -61,7 +48,7 @@ export const getMyDonationHistory = async (req: Request, res: Response) => {
     limit: req.query.limit,
   });
 
-  const result = await donationService.getMyDonationHistory(partnerId, filters);
+  const result = await donationService.getMyDonationHistory(userId, filters);
   res.json(result);
 };
 
@@ -70,16 +57,10 @@ export const getMyDonationHistory = async (req: Request, res: Response) => {
  * GET /donations/me/:donationId
  */
 export const getDonationDetail = async (req: Request, res: Response) => {
-  // TODO: Get partnerId from authenticated user
-  const partnerId = (req as any).user?.id;
-
-  if (!partnerId) {
-    res.status(401).json({ error: 'Unauthorized: Partner not authenticated' });
-    return;
-  }
+  const userId = getUserIdFromRequest(req);
 
   const { donationId } = donationIdSchema.parse({ donationId: req.params.donationId });
-  const donation = await donationService.getDonationDetail(donationId, partnerId);
+  const donation = await donationService.getDonationDetail(donationId, userId);
 
   res.json(donation);
 };
@@ -90,16 +71,10 @@ export const getDonationDetail = async (req: Request, res: Response) => {
  * TODO: Implement receipt generation (PDF or similar)
  */
 export const downloadDonationReceipt = async (req: Request, res: Response) => {
-  // TODO: Get partnerId from authenticated user
-  const partnerId = (req as any).user?.id;
-
-  if (!partnerId) {
-    res.status(401).json({ error: 'Unauthorized: Partner not authenticated' });
-    return;
-  }
+  const userId = getUserIdFromRequest(req);
 
   const { donationId } = donationIdSchema.parse({ donationId: req.params.donationId });
-  const donation = await donationService.getDonationDetail(donationId, partnerId);
+  const donation = await donationService.getDonationDetail(donationId, userId);
 
   // Check if receipt is available (donation must be received/completed)
   if (donation.receiptStatus !== 'received') {

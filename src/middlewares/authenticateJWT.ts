@@ -16,7 +16,7 @@ export function authenticateJWT(
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    throw new UnauthorizedError('Missing token');
+    throw new UnauthorizedError('Unauthorised. Not a Bearer token');
   }
 
   const token = authHeader.split(' ')[1];
