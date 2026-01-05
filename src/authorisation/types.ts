@@ -1,14 +1,8 @@
 import { Request } from 'express';
 
-export type Role =
-  | 'superAdmin'
-  | 'generalManager'
-  | 'financeManager'
-  | 'partner';
-
 export type PermissionContext = {
   userId: string;
-  role: Role;
+  role: string;
   req: Request;
 };
 
