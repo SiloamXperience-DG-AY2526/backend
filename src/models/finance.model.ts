@@ -97,7 +97,7 @@ export const getProposedProjects = async () => {
   const proposedProjects = await prisma.donationProject.findMany({
     // TODO: confirm this is what the fields mean
     where: {
-      type: 'partner_led',
+      type: 'partnerLed',
       submissionStatus: 'submitted'
     },
     orderBy: { createdAt: 'desc' },
