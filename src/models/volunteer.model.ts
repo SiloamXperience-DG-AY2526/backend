@@ -828,3 +828,96 @@ export const getVolunteerProjectDetailModel = async ({
     updatedAt: p.updatedAt,
   };
 };
+
+export const submitVolunteerFeedbackModel = async ({
+  projectId,
+  userId,
+  ratings,
+  feedback,
+}: {
+  projectId: string;
+  userId: string;
+  ratings: {
+    overall: number;
+    management: number;
+    planning: number;
+    facilities: number;
+  };
+  feedback: {
+    experience: string;
+    improvement: string;
+    comments?: string | null;
+  };
+}) => {
+  return prisma.$transaction(async (tx) => {
+    // check project exists
+    const project = await tx.volunteerProject.findUnique({
+      where: { id: projectId },
+      select: { id: true },
+    });
+    if (!project) throw new NotFoundError("PROJECT_NOT_FOUND");
+
+    // sign up exist
+    const signup = await tx.volunteerProjectPosition.findFirst({
+      where: {
+        volunteerId: userId,
+        status: { in: [...FILLED_STATUSES] },
+        position: {
+          projectId,
+        },
+      },
+      select: {
+        id: true,
+        volunteerProjectFeedbackId: true,
+      },
+    });
+
+    if (!signup) {
+      throw new Error("NOT_ELIGIBLE_FOR_FEEDBACK"); 
+    }
+
+    // prevent duplicates (per volunteer position signup)
+    if (signup.volunteerProjectFeedbackId) {
+      throw new Error("FEEDBACK_ALREADY_SUBMITTED");
+    }
+
+    // create feedback
+    const createdFeedback = await tx.volunteerProjectFeedback.create({
+      data: {
+        projectId,
+        overallRating: ratings.overall,
+        managementRating: ratings.management,
+        planningRating: ratings.planning,
+        resourcesRating: ratings.facilities,
+        enjoyMost: feedback.experience,
+        improvements: feedback.improvement,
+        otherComments: feedback.comments ?? null,
+      },
+      select: {
+        id: true,
+        projectId: true,
+        overallRating: true,
+        managementRating: true,
+        planningRating: true,
+        resourcesRating: true,
+        enjoyMost: true,
+        improvements: true,
+        otherComments: true,
+        createdAt: true,
+      },
+    });
+
+    // link feedback to that signup row
+    await tx.volunteerProjectPosition.update({
+      where: { id: signup.id },
+      data: {
+        volunteerProjectFeedbackId: createdFeedback.id,
+      },
+    });
+
+    return {
+      feedback: createdFeedback,
+      linkedSignupId: signup.id,
+    };
+  });
+};

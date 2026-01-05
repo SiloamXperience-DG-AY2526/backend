@@ -154,3 +154,28 @@ export const WithdrawVolunteerProposalSchema = z
 export type WithdrawVolunteerProposalInput = z.infer<
   typeof WithdrawVolunteerProposalSchema
 >;
+
+export const SubmitVolunteerFeedbackSchema = z
+  .object({
+    userId: z.string().uuid(), // TEMP: from body
+
+    ratings: z.object({
+      overall: z.number().int().min(1).max(5),
+      management: z.number().int().min(1).max(5),
+      planning: z.number().int().min(1).max(5),
+      facilities: z.number().int().min(1).max(5),
+    }),
+
+    feedback: z.object({
+      experience: z.string().trim().min(1).max(2000),
+      improvement: z.string().trim().min(1).max(2000),
+      comments: z.string().trim().max(2000).optional().nullable(),
+    }),
+
+    submittedAt: z.string().datetime().optional(), 
+  })
+  .strict();
+
+export type SubmitVolunteerFeedbackInput = z.infer<
+  typeof SubmitVolunteerFeedbackSchema
+>;
