@@ -47,15 +47,15 @@ export const partnerSignupSchema = z.object({
       })
       .optional(),
     contactModes: z
-      .array(z.enum(['email', 'whatsapp', 'telegram', 'messenger', 'phone_call']))
+      .array(z.enum(['email', 'whatsapp', 'telegram', 'messenger', 'phoneCall']))
       .optional(),
     interests: z
       .array(
         z.enum([
           'fundraise',
-          'plan_trips',
-          'mission_trips',
-          'long_term',
+          'planTrips',
+          'missionTrips',
+          'longTerm',
           'admin',
           'publicity',
           'teaching',
@@ -67,7 +67,7 @@ export const partnerSignupSchema = z.object({
       )
       .optional(),
     referrers: z
-      .array(z.enum(['friend', 'social_media', 'church', 'website', 'event', 'other']))
+      .array(z.enum(['friend', 'socialMedia', 'church', 'website', 'event', 'other']))
       .optional(),
   }),
 });
