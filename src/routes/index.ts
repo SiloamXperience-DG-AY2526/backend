@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
-import financeRoutes from './finance.routes';
 import authRoutes from './auth.routes';
 import { authenticateJWT } from '../middlewares/authenticateJWT';
 import volunteerProjectRoutes from './volunteerProject.routes';
@@ -20,7 +19,6 @@ router.use('/auth', authRoutes);
 
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);
-router.use('/finance', financeRoutes);
 
 // Donation domain routes
 router.use('/donation-projects', donationProjectRoutes); // Project management

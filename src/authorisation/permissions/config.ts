@@ -18,6 +18,7 @@ export type Role = UserRole;
 export const directPermissions: Record<Role, Permission[]> = {
   //add more permissions here
   [UserRole.superAdmin]: [
+    'example:view'
   ],
 
   [UserRole.generalManager]: [
@@ -28,7 +29,7 @@ export const directPermissions: Record<Role, Permission[]> = {
   ],
 
   [UserRole.partner]: [
-    'example:view',
+    'example:update:own',
   ],
 };
 //
