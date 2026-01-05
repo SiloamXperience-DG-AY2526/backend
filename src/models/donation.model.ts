@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { PMPublicSelect } from '../projections/user.projections';
-import { SubmitDonationApplicationInput } from '../schemas/index';
+import { SubmitDonationApplicationInput, UpdateDonationReceiptStatusInput } from '../schemas/index';
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 
@@ -48,12 +48,12 @@ export const getMyDonationHistory = async (
  */
 export const getDonationDetail = async (
   donationId: string,
-  partnerId: string
+  userId: string
 ) => {
   const donation = await prisma.donationTransaction.findFirst({
     where: {
       id: donationId,
-      donorId: partnerId,
+      donorId: userId,
     },
     include: {
       project: {
@@ -213,4 +213,19 @@ export const getDonationHomepageData = async () => {
     },
     featuredProjects: featuredProjectsWithTotals,
   };
+};
+
+
+export const updateDonationReceiptStatus = async (
+  data: UpdateDonationReceiptStatusInput
+) => {
+  const donations = await prisma.donationTransaction.update({
+    where: {
+      id: data.donationId,
+    },
+    data: {
+      receiptStatus: data.receiptStatus,
+    },
+  });
+  return donations;
 };

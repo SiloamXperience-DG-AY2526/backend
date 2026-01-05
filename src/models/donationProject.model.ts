@@ -9,6 +9,10 @@ import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 import { DonationProjectPublicSelect } from '../projections/donationProject.projections';
 
+const receivedDonationFilter = {
+  submissionStatus: 'submitted',
+  receiptStatus: 'received',
+} as const;
 /**
  * Get all published donation projects for partners to view
  * Filters by approval status and allows filtering by type (ongoing/specific)
@@ -35,8 +39,7 @@ export const getDonationProjects = async (
   const donationSums = await prisma.donationTransaction.groupBy({
     by: ['projectId'],
     where: {
-      submissionStatus: 'submitted',
-      receiptStatus: 'received',
+      ...receivedDonationFilter,
       projectId: { in: projectIds },
     },
     _sum: {
@@ -44,7 +47,7 @@ export const getDonationProjects = async (
     },
   });
 
-  // Map donations to projects
+  // Map total raised donations to projects
   const donationMap = new Map(
     donationSums.map((d) => [d.projectId, d._sum.amount])
   );
@@ -58,6 +61,15 @@ export const getDonationProjects = async (
     projectsWithTotals,
     totalCount,
   };
+};
+
+export const getProjectDonationTransactions = async (projectId: string) => {
+  const donations = await prisma.donationTransaction.findMany({
+    where: {
+      id: projectId,
+    },
+  });
+  return donations;
 };
 
 export const getDonationProjectsByManager = async (managerId: string) => {
@@ -78,25 +90,40 @@ export const getDonationProjectsByManager = async (managerId: string) => {
   return projects;
 };
 
-export const getDonationProjectById = async (
+export const getMyDonationProject = async (
   projectId: string,
   managerId: string
 ) => {
-  const project = await prisma.donationProject.findFirst({
-    where: {
-      id: projectId,
-      managedBy: managerId,
-    },
-    include: {
-      project_manager: {
-        select: PMPublicSelect
+  const [project, totalRaised] = await Promise.all([
+    prisma.donationProject.findFirst({
+      where: {
+        id: projectId,
+        managedBy: managerId,
       },
-      objectivesList: {
-        orderBy: { order: 'asc' },
+      include: {
+        project_manager: {
+          select: PMPublicSelect,
+        },
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
       },
-    },
-  });
-  return project;
+    }),
+    prisma.donationTransaction.aggregate({
+      where: {
+        projectId,
+        ...receivedDonationFilter,
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+  ]);
+
+  return {
+    project,
+    totalRaised: totalRaised._sum.amount ?? 0,
+  };
 };
 
 export const updateDonationProject = async (

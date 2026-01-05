@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import * as donationService from '../services/donation.service';
 import {
   getDonationHistorySchema,
-  donationIdSchema,
 } from '../schemas/index';
 import { getUserIdFromRequest } from '../utils/user';
 
@@ -58,8 +57,8 @@ export const getMyDonationHistory = async (req: Request, res: Response) => {
  */
 export const getDonationDetail = async (req: Request, res: Response) => {
   const userId = getUserIdFromRequest(req);
+  const { donationId } = req.params;
 
-  const { donationId } = donationIdSchema.parse({ donationId: req.params.donationId });
   const donation = await donationService.getDonationDetail(donationId, userId);
 
   res.json(donation);
@@ -72,8 +71,7 @@ export const getDonationDetail = async (req: Request, res: Response) => {
  */
 export const downloadDonationReceipt = async (req: Request, res: Response) => {
   const userId = getUserIdFromRequest(req);
-
-  const { donationId } = donationIdSchema.parse({ donationId: req.params.donationId });
+  const { donationId } = req.params;
   const donation = await donationService.getDonationDetail(donationId, userId);
 
   // Check if receipt is available (donation must be received/completed)
@@ -95,4 +93,24 @@ export const downloadDonationReceipt = async (req: Request, res: Response) => {
   }
 
   res.status(404).json({ error: 'Receipt not yet generated' });
+};
+
+/**
+ * Controller: Get donation homepage data
+ * PATCH /donations/:id/receiptStatus
+ */
+
+export const updateDonationReceiptStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { donationId } = req.params;
+  const { receiptStatus } = req.body;
+
+  await donationService.updateDonationReceiptStatus({
+    donationId,
+    receiptStatus,
+  });
+
+  res.status(204).send();
 };

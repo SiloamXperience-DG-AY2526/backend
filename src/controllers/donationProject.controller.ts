@@ -26,17 +26,29 @@ export const getMyDonationProjects = async (req: Request, res: Response) => {
   res.json(projects);
 };
 
-export const getDonationProjectDetails = async (
+export const getMyDonationProjectDetails = async (
   req: Request,
   res: Response
 ) => {
   const { projectId } = req.params;
   const managerId = getUserIdFromRequest(req);
-  const project = await donationProjectService.getDonationProjectDetails(
+  const project = await donationProjectService.getMyDonationProjectDetails(
     projectId,
     managerId
   );
   res.json(project);
+};
+
+export const getProjectDonationTransactions = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const donations = await donationProjectService.getProjectDonationTransactions(
+    projectId
+  );
+
+  res.json(donations);
 };
 
 export const createDonationProject = async (req: Request, res: Response) => {

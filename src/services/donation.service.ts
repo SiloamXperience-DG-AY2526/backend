@@ -2,6 +2,7 @@ import * as donationModel from '../models/donation.model';
 import {
   SubmitDonationApplicationInput,
   GetDonationHistoryInput,
+  UpdateDonationReceiptStatusInput,
 } from '../schemas/index';
 import { NotFoundError } from '../utils/errors';
 import { Prisma } from '@prisma/client';
@@ -35,8 +36,8 @@ export const getMyDonationHistory = async (
  * Service: Get donation detail
  * Returns a single donation transaction with full details
  */
-export const getDonationDetail = async (donationId: string, partnerId: string) => {
-  const donation = await donationModel.getDonationDetail(donationId, partnerId);
+export const getDonationDetail = async (donationId: string, userId: string) => {
+  const donation = await donationModel.getDonationDetail(donationId, userId);
 
   if (!donation) {
     throw new NotFoundError(`Donation ${donationId} not found or access denied`);
@@ -70,4 +71,10 @@ export const submitDonationApplication = async (
  */
 export const getDonationHomepageData = async () => {
   return await donationModel.getDonationHomepageData();
+};
+
+export const updateDonationReceiptStatus = async (
+  data: UpdateDonationReceiptStatusInput
+) => {
+  await donationModel.updateDonationReceiptStatus(data);
 };

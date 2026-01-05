@@ -25,6 +25,19 @@ router.get(
   donationProjectController.getDonationProjects
 );
 
+// GET details for any donation project 
+// schema validated above
+// permission check: project:view
+router.get(
+  '/:projectId',
+  //TODO: will generalise donationProjectController.getMyDonationProjectDetails
+);
+
+router.get(
+  '/:projectId/donations',
+  donationProjectController.getProjectDonationTransactions
+); // TODO: filter by date, pagination
+
 // GET Donation Projects managed by the current user (i.e. donation-project manager/ partner)
 // no need permission check: anyone can view own projects
 router.get(
@@ -36,7 +49,7 @@ router.get(
 // no need permission check: anyone can view own project
 router.get(
   '/me/:projectId',
-  donationProjectController.getDonationProjectDetails
+  donationProjectController.getMyDonationProjectDetails
 );
 
 // POST create new donation project

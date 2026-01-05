@@ -43,8 +43,19 @@ export const getDonationHistorySchema = z.object({
 export type GetDonationHistoryInput = z.infer<typeof getDonationHistorySchema>;
 
 // Schema for donation detail params
-export const donationIdSchema = z.object({
-  donationId: z.string().uuid('Invalid donation ID'),
+export const DonationIdSchema = z.object({
+  donationId: z.uuid('Invalid donation ID'),
 });
 
-export type DonationIdInput = z.infer<typeof donationIdSchema>;
+export type DonationIdInput = z.infer<typeof DonationIdSchema>;
+
+// zod object
+export const UpdateDonationReceiptStatusSchema = z.object({
+  donationId: z.uuid(),
+  receiptStatus: z.enum(DonationReceiptStatus),
+});
+
+// static typing
+export type UpdateDonationReceiptStatusInput = z.infer<
+  typeof UpdateDonationReceiptStatusSchema
+>;

@@ -33,16 +33,20 @@ export const getDonationProjects = async (filters: GetDonationProjectsInput) => 
   
 };
 
+export const getProjectDonationTransactions = async (projectId: string) => {
+  return await donationProjectModel.getProjectDonationTransactions(projectId);
+};
+
 export const getMyDonationProjects = async (managerId: string) => {
   const projects = await donationProjectModel.getDonationProjectsByManager(managerId);
   return projects;
 };
 
-export const getDonationProjectDetails = async (
+export const getMyDonationProjectDetails = async (
   projectId: string,
   managerId: string
 ) => {
-  const project = await donationProjectModel.getDonationProjectById(
+  const project = await donationProjectModel.getMyDonationProject(
     projectId,
     managerId
   );
@@ -50,7 +54,6 @@ export const getDonationProjectDetails = async (
   if (!project) {
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
-
   return project;
 };
 
