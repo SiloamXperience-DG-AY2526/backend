@@ -11,8 +11,8 @@ export const transporter = nodemailer.createTransport({
 // Validate SMTP configuration at startup
 export const validateSmtpConfig = async (): Promise<void> => {
   try {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      throw new Error('SMTP credentials (SMTP_USER and SMTP_PASS) must be configured in environment variables');
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_FROM) {
+      throw new Error('SMTP credentials (SMTP_USER, SMTP_PASS, and SMTP_FROM) must be configured in environment variables');
     }
     
     // Verify transporter connection

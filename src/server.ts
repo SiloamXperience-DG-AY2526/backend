@@ -80,6 +80,6 @@ class Server {
 
 // Create and start server
 const server = new Server();
-server.start();
+void server.start();
 
 export default server;
