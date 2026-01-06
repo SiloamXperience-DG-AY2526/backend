@@ -1,50 +1,63 @@
 import { Router } from 'express';
-import * as controller from '../controllers/donation.controller';
+import * as donationController from '../controllers/donation.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { requirePermission } from '../middlewares/requirePermission';
 import {
-  DonationProjectIdSchema,
-  UpdateDonationProjectSchema,
-  CreateDonationProjectSchema,
+  submitDonationApplicationSchema,
+  getDonationHistorySchema,
+  DonationIdSchema,
 } from '../schemas/donation';
+import { requirePermission } from '../middlewares/requirePermission';
 
 const router = Router();
 
-// Apply validation middleware for routes with projectId param
+// USE validation middleware for routes with projectId param
 router.use(
-  '/projects/:projectId',
-  validateRequest({ params: DonationProjectIdSchema })
+  ['/:donationId', '/me/:donationId'],
+  validateRequest({ params: DonationIdSchema })
 );
 
-// POST create new donation project
+// GET Donation History of the current user
+// no need permission check: can view own donations
+router.get(
+  '/me',
+  validateRequest({ query: getDonationHistorySchema }),
+  donationController.getMyDonationHistory
+);
+
+// GET Details for a Donation of current user
+// no need permission check: can view own donation
+router.get(
+  '/me/:donationId',
+  donationController.getDonationDetail
+);
+
+// GET Receipt for a Donation of the current user
+// no need permission check: can view own donation receipts
+router.get(
+  '/me/:donationId/receipt',
+  donationController.downloadDonationReceipt
+);
+
+// Get Donation Homepage Data (any user)
+// no need permission check: public info
+router.get('/home', donationController.getDonationHomepage);
+
+// Apply to make a Donation (to receive the next steps for payment)
+// no need permission check: anyone can make a donation request
 router.post(
-  '/projects',
-  requirePermission('donation-project:create'),
-  validateRequest({ body: CreateDonationProjectSchema }),
-  controller.createDonationProject
+  '/',
+  validateRequest({ body: submitDonationApplicationSchema }),
+  donationController.submitDonationApplication
 );
 
-// GET all donation projects for the current project manager
-router.get(
-  '/projects',
-  requirePermission('donation-project:view:own'),
-  controller.getDonationProjects
-);
-
-// GET specific donation project details
-router.get(
-  '/projects/:projectId',
-  requirePermission('donation-project:view:own'),
-  controller.getDonationProjectDetails
-);
-
-// PATCH update donation project
+// Update receipt status for a donation
+// permission check: only finance manager and above
 router.patch(
-  '/projects/:projectId',
-  requirePermission('donation-project:update:own'),
-  validateRequest({ body: UpdateDonationProjectSchema }),
-  controller.updateDonationProject
+  '/:donationId/receiptStatus',
+  requirePermission('donationReceiptStatus:update'),
+  donationController.updateDonationReceiptStatus
 );
+
 
 export default router;
 
