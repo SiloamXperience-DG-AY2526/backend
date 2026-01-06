@@ -60,10 +60,8 @@ export type GetAvailableVolunteerActivitiesInput = z.infer<
 
 //volunteer propose project
 export const ProposeVolunteerProjectSchema = z.object({
-  userId: z.uuid(), //not supposed to be here get it from user later on
   title: z.string().min(1),
   location: z.string().min(1),
-
   aboutDesc: z.string().min(1), 
   objectives: z.string().min(1),
   beneficiaries: z.string().min(1),
@@ -171,8 +169,6 @@ export const SubmitVolunteerFeedbackSchema = z
       improvement: z.string().trim().min(1).max(2000),
       comments: z.string().trim().max(2000).optional().nullable(),
     }),
-
-    submittedAt: z.string().datetime().optional(), 
   })
   .strict();
 

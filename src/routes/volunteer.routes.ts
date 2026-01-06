@@ -1,5 +1,4 @@
 import { Router } from 'express';
-//import { getAvailableVolunteerActivities, getVolunteerApplications, submitVolunteerApplication } from '../controllers/volunteerController';
 import { validateRequest } from '../middlewares/validateRequest';
 import { requirePermission } from '../middlewares/requirePermission';
 import {  GetVolunteerApplicationsParamsSchema, SubmitVolunteerApplicationSchema, VolunteerProjectIdSchema,

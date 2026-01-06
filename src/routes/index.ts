@@ -14,11 +14,6 @@ router.get('/', getRoot);
 // GET /health - Health check endpoint
 router.get('/health', getHealth);
 
-
-
-
-
-
 // Auth routes
 router.use('/auth', authRoutes);
 router.use('/finance', financeRoutes);
