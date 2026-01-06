@@ -1,0 +1,22 @@
+import { PMPublicSelect } from './user.projections';
+
+export const DonationProjectPublicSelect = {
+  id: true,
+  title: true,
+  location: true,
+  about: true,
+  objectives: true,
+  beneficiaries: true,
+  targetFund: true,
+  brickSize: true,
+  deadline: true,
+  type: true,
+  startDate: true,
+  endDate: true,
+  image: true,
+  attachments: true,
+  initiatorName: true,
+  organisingTeam: true,
+  project_manager: { select: PMPublicSelect },
+  createdAt: true,
+};

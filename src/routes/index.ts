@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
-import financeRoutes from './finance.routes';
 import authRoutes from './auth.routes';
 import generalRoutes from './general.routes';
 import { authenticateJWT } from '../middlewares/authenticateJWT';
-import volunteerRoutes from './volunteer.routes';
+import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
+import donationProjectRoutes from './donationProject.routes';
 
 const router = Router();
 
@@ -24,5 +24,12 @@ router.use('/finance', financeRoutes);
 router.use('/general', generalRoutes);
 router.use('/volunteer', volunteerRoutes);
 router.use('/donation', donationRoutes);
+
+// Donation domain routes
+router.use('/donation-projects', donationProjectRoutes); // Project management
+router.use('/donations', donationRoutes); // Transactions & browsing
+
+// Volunteer domain routes
+router.use('/volunteer-projects', volunteerProjectRoutes); // Project management
 
 export default router;

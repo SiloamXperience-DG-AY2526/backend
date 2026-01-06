@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma';
 import {
   UpdateVolunteerProjectInput,
   CreateVolunteerProjectInput,
-} from '../schemas/volunteer';
+} from '../schemas/project';
 
 const pmPublicInfo = {
   select: {

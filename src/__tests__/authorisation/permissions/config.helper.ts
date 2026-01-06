@@ -1,7 +1,7 @@
 import { PermissionsMap } from '../../../authorisation/permissions';
 
-const mockSuperAdminPermission = 'overview:view' as const;
-const mockPartnerPermission = 'project:update:own' as const;
+const mockSuperAdminPermission = 'example:view' as const;
+const mockPartnerPermission = 'example:update:own' as const;
 
 const mockSuperAdminInheritedPermission = mockPartnerPermission;
 const mockPartnerAbsentPermission = mockSuperAdminPermission;

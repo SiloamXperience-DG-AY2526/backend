@@ -1,5 +1,4 @@
-import { financePermissions } from './finance.permissions';
-import { projectPermissions } from './project.permissions';
+import { donationPermissions } from './donation.permissions';
 import { PermissionHandler } from '../types';
 import { generalPermissions } from './general.permissions';
 
@@ -15,5 +14,6 @@ export const PERMISSIONS = {
   ...financePermissions,
   ...projectPermissions,
   ...generalPermissions,
+  ...donationPermissions,
   // DEV: Add other permission groups here
 } satisfies PermissionsMap;
