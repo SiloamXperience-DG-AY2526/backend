@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { ProjectApprovalStatus } from '@prisma/client';
 
 const managerInfo = {
   select: {
@@ -14,8 +15,8 @@ export const getVolProjects = async () => {
     orderBy: { title: 'desc' },
     where: {
       OR: [
-        { approvalStatus: prisma.ProjectApprovalStatus.pending },
-        { approvalStatus: prisma.ProjectApprovalStatus.reviewing },
+        { approvalStatus: ProjectApprovalStatus.pending },
+        { approvalStatus: ProjectApprovalStatus.reviewing },
       ],
     },
     select: {
