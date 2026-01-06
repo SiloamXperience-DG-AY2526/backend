@@ -2,7 +2,7 @@ import * as volunteerModel from '../models/volunteer.model';
 import {
   UpdateVolunteerProjectInput,
   CreateVolunteerProjectInput,
-} from '../schemas/volunteer';
+} from '../schemas/project';
 import { NotFoundError } from '../utils/errors';
 
 export const getVolunteerProjects = async (managerId: string) => {

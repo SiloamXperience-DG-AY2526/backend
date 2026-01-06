@@ -18,40 +18,20 @@ export type Role = UserRole;
 export const directPermissions: Record<Role, Permission[]> = {
   //add more permissions here
   [UserRole.superAdmin]: [
-    'overview:view',
-    'project:update:own',
-    'volunteer-project:create',
-    'volunteer-project:view:own',
-    'volunteer-project:update:own',
-    'donation-project:create',
-    'donation-project:view:own',
-    'donation-project:update:own',
+    'example:view'
   ],
 
   [UserRole.generalManager]: [
-    'volunteer-project:create',
-    'volunteer-project:view:own',
-    'volunteer-project:update:own',
-    'donation-project:create',
-    'donation-project:view:own',
-    'donation-project:update:own',
   ],
 
   [UserRole.financeManager]: [
-    'donation-project:create',
-    'donation-project:view:own',
-    'donation-project:update:own',
+    'donationReceiptStatus:update',
     'proposedProjects:view',
     'proposedProjects:update:status',
   ],
 
   [UserRole.partner]: [
-    'volunteer-project:create',
-    'volunteer-project:view:own',
-    'volunteer-project:update:own',
-    'donation-project:create',
-    'donation-project:view:own',
-    'donation-project:update:own',
+    'example:update:own',
   ],
 };
 //
