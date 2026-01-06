@@ -5,6 +5,7 @@ import { errorHandler } from './middlewares/errorHandler';
 import { notFoundHandler } from './middlewares/notFoundHandler';
 import rootRoutes from './routes';
 import cors from 'cors';
+import { validateSmtpConfig } from './utils/email';
 // Load environment variables
 dotenv.config();
 
@@ -23,9 +24,13 @@ class Server {
 
   private initializeMiddlewares(): void {
     // Body parser middleware
+    const allowedOrigins = process.env.CORS_ORIGINS 
+      ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+      : ['http://localhost:3001']; // fallback for development
+    
     this.app.use(
       cors({
-        origin: ['http://localhost:3001'], // frontend url
+        origin: allowedOrigins,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true, 
@@ -53,11 +58,19 @@ class Server {
     this.app.use(errorHandler);
   }
 
-  public start(): void {
-    this.app.listen(this.port, () => {
-      console.log(`🚀 Server running on port ${this.port}`);
-      console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
+  public async start(): Promise<void> {
+    try {
+      // Validate SMTP configuration before starting server
+      await validateSmtpConfig();
+      
+      this.app.listen(this.port, () => {
+        console.log(`🚀 Server running on port ${this.port}`);
+        console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      });
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      process.exit(1);
+    }
   }
 
   public getApp(): Application {
