@@ -38,7 +38,7 @@ export async function requestPasswordReset(req: Request, res: Response, next: Ne
 
     await requestPasswordResetService(email);
 
-    return res.status(201).json({
+    return res.status(204).json({
       status: 'success',
       message: 'Password reset request sent.',
     });
@@ -53,7 +53,7 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
 
     await resetPasswordService(userId, token, newPassword);
 
-    res.status(200).json({ 
+    res.status(201).json({ 
       status: 'success',
       message: 'Password has been reset successfully' 
     });

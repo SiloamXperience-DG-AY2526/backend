@@ -1,7 +1,9 @@
 import { Prisma } from '@prisma/client';
 import type { Gender, ContactModeType, InterestSlug, ReferrerType, User } from '@prisma/client';
-import { BadRequestError } from '../utils/errors';
+import { BadRequestError, NotFoundError } from '../utils/errors';
 import { prisma } from '../prisma/client';
+import { PartnerProfile } from '../schemas/user';
+import { splitPartnerProfile } from '../utils/profile';
 
 export async function findUserByEmailWithRoles(email: string) {
   return prisma.user.findUnique({
@@ -9,10 +11,16 @@ export async function findUserByEmailWithRoles(email: string) {
   }) as Promise<User | null>;
 }
 
-export async function findUserByIdWithRoles(id: string) {
-  return prisma.user.findUnique({
+export async function findUserByIdWithRoles(id: string): Promise<User | null> {
+  const user = await prisma.user.findUnique({
     where: { id },
-  }) as Promise<User | null>;
+  });
+
+  if (!user) {
+    throw new NotFoundError(`User ${id} not found!`);
+  }
+
+  return user;
 }
 
 export type PartnerData = {
@@ -156,4 +164,135 @@ export async function createUserWithPartner(
   });
 
   return result;
+}
+
+export const getPartnerProfile = async (
+  userId: string
+): Promise<PartnerProfile | null> => {
+  const partner = await prisma.partner.findUnique({
+    where: { userId: userId },
+    select: {
+      // User relation
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+          title: true,
+          email: true,
+        },
+      },
+
+      // scalar Partner fields
+      dob: true,
+      countryCode: true,
+      contactNumber: true,
+      emergencyCountryCode: true,
+      emergencyContactNumber: true,
+      identificationNumber: true,
+      nationality: true,
+      occupation: true,
+      gender: true,
+      residentialAddress: true,
+
+      otherInterests: true,
+      otherReferrers: true,
+      otherContactModes: true,
+
+      hasVolunteerExperience: true,
+      volunteerAvailability: true,
+      isActive: true,
+      consentUpdatesCommunications: true,
+      subscribeNewsletterEvents: true,
+
+      // other relations
+      skills: { select: { skill: true } },
+      languages: { select: { language: true } },
+      contactModes: { select: { mode: true } },
+      interests: { select: { interestSlug: true } },
+    },
+  });
+
+  if (!partner) throw new BadRequestError('Error retrieving Partner profile');
+
+  return {
+    // flatten user relation fields
+    firstName: partner.user.firstName,
+    lastName: partner.user.lastName,
+    email: partner.user.email,
+    title: partner.user.title ?? undefined,
+
+    // partner scalars
+    dob: partner.dob ?? undefined,
+    countryCode: partner.countryCode,
+    contactNumber: partner.contactNumber,
+    emergencyCountryCode: partner.emergencyCountryCode,
+    emergencyContactNumber: partner.emergencyContactNumber,
+    identificationNumber: partner.identificationNumber,
+    nationality: partner.nationality,
+    occupation: partner.occupation,
+    gender: partner.gender,
+    residentialAddress: partner.residentialAddress,
+
+    otherInterests: partner.otherInterests,
+    otherReferrers: partner.otherReferrers,
+    otherContactModes: partner.otherContactModes,
+
+    hasVolunteerExperience: partner.hasVolunteerExperience,
+    volunteerAvailability: partner.volunteerAvailability,
+    isActive: partner.isActive,
+    consentUpdatesCommunications: partner.consentUpdatesCommunications,
+    subscribeNewsletterEvents: partner.subscribeNewsletterEvents,
+
+    // partner relations (arrays)
+    skills: partner.skills.map((s) => s.skill),
+    languages: partner.languages.map((l) => l.language),
+    contactModes: partner.contactModes.map((c) => c.mode),
+    interests: partner.interests.map((i) => i.interestSlug),
+  };
+};
+
+export async function updatePartnerProfile(
+  userId: string,
+  newPartnerProfile: PartnerProfile
+) {
+  const { userOnlyProfile, partnerOnlyProfile } = splitPartnerProfile(newPartnerProfile);
+
+  // separate scalar and relation fields
+  const { skills, languages, contactModes, interests, ...partnerScalars } = partnerOnlyProfile;
+
+  await prisma.partner.update({
+    where: { userId },
+    data: {
+      // update the scalar fields of User relation
+      user: { update: userOnlyProfile },
+
+      // update scalar Partner fields
+      ...partnerScalars,
+
+      // update other relations
+      skills: {
+        deleteMany: {},
+        create: skills.map((skill) => ({ skill })),
+      },
+
+      languages: {
+        deleteMany: {},
+        create: languages.map((language) => ({ language })),
+      },
+
+      contactModes: {
+        deleteMany: {},
+        create: contactModes.map((mode) => ({ mode })),
+      },
+
+      interests: {
+        deleteMany: {},
+        create: interests.map((interestSlug) => ({ interestSlug })),
+      },
+    },
+  });
+
+  const updatedProfile = await getPartnerProfile(userId);
+
+  return updatedProfile;
 }
