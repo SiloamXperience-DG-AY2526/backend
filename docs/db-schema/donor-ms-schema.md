@@ -67,7 +67,7 @@ erDiagram
         decimal target_fund "optional"
         decimal brick_size "optional"
         timestamptz deadline "optional"
-        enum type "brick, sponsor, partnerLed"
+        enum type "brick, sponsor, partner_led"
 
         date start_date
         date end_date
