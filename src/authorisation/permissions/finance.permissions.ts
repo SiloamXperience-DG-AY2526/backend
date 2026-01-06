@@ -4,6 +4,8 @@ const nothingElse = async () => true;
 
 export const financePermissions = {
   'overview:view': nothingElse,
+  'proposedProjects:view': nothingElse,
+  'proposedProjects:update:status': nothingElse,
   'project:update:own': async ({ req }) => {
     req.params.projectId;
     // Check if project belongs to user
