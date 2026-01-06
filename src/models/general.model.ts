@@ -28,8 +28,7 @@ export const getVolProjects = async () => {
       initiatorName: true,
       organisingTeam: true,
       approvalStatus: true,
-      managedBy: managerInfo,
-
+      managedBy: managerInfo
     }
   });
 
