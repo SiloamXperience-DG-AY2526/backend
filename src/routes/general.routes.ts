@@ -5,7 +5,7 @@ import { requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
 router.get('/volunteerProjects',
-  requirePermission('view_volunteer_projects'),
+  requirePermission('volunteerProjects:view'),
   controller.getVolProjects);
 
 export default router;
