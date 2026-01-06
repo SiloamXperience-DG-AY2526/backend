@@ -12,6 +12,12 @@ const managerInfo = {
 export const getVolProjects = async () => {
   const projectDetails = await prisma.volunteerProject.findMany({
     orderBy: { title: 'desc' },
+    where: {
+      OR: [
+        { approvalStatus: prisma.ProjectApprovalStatus.pending },
+        { approvalStatus: prisma.ProjectApprovalStatus.reviewing },
+      ],
+    },
     select: {
       id: true,
       title: true,

@@ -20,9 +20,7 @@ router.use('/auth', authRoutes);
 
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);
-router.use('/finance', financeRoutes);
 router.use('/general', generalRoutes);
-router.use('/volunteer', volunteerRoutes);
 router.use('/donation', donationRoutes);
 
 // Donation domain routes
