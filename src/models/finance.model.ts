@@ -1,4 +1,3 @@
-import { ProjectApprovalStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { UpdateDonationReceiptStatusInput } from '../schemas/index';
 
@@ -91,33 +90,4 @@ export const updateDonationReceiptStatus = async (
     },
   });
   return donations;
-};
-
-export const getProposedProjects = async () => {
-  const proposedProjects = await prisma.donationProject.findMany({
-    // TODO: confirm this is what the fields mean
-    where: {
-      type: 'partnerLed',
-      submissionStatus: 'submitted'
-    },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      project_manager: pmPublicInfo,
-    },
-  });
-  return proposedProjects;
-};
-
-export const updateProposedProjectStatus = async (data: {
-  projectId: string;
-  status: ProjectApprovalStatus;
-}) => {
-  await prisma.donationProject.update({
-    where: {
-      id: data.projectId,
-    },
-    data: {
-      approvalStatus: data.status,
-    },
-  });
 };
