@@ -1,14 +1,17 @@
 import { Request } from 'express';
+import { UnauthorizedError } from './errors';
 
 /**
  * Extracts user ID from JWT token in request
  * TODO: Replace with actual JWT extraction when authentication is implemented
  */
 export const getUserIdFromRequest = (req: Request): string => {
-  // TODO: Extract from actual JWT token
-  // For now, using the same placeholder as requirePermission middleware
-  // This should be replaced with actual JWT parsing
-  req;
-  return 'user-123';
+  const userId = req.user?.userId;
+  
+  if (!userId) {
+    throw new UnauthorizedError('Unauthorized: User is not logged in');
+  }
+
+  return userId;
 };
 
