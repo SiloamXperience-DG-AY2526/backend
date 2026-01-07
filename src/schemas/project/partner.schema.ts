@@ -8,7 +8,6 @@ export const SubmitVolunteerApplicationSchema = z.object({
   positionId: z.uuid(),
   sessionId: z.uuid().optional(),
 
-  
 });
 
 //submit volunteer interest
