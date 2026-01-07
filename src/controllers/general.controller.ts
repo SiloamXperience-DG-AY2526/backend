@@ -5,7 +5,7 @@ export const getVolProjects = async (req: Request, res: Response) => {
   try {
     const projSummaries = await generalService.getVolProjects();
     res.json(projSummaries);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch volunteer projects' });
   }
 };
