@@ -7,18 +7,18 @@ import { VolunteerProjectIdSchema } from '../schemas';
 const router = Router();
 
 router.use(
-    ['/volunteerProjects/:projectId'],
-    validateRequest({ params: VolunteerProjectIdSchema })
-)
+  ['/volunteerProjects/:projectId'],
+  validateRequest({ params: VolunteerProjectIdSchema })
+);
 
 
 router.get('/volunteerProjects',
-    requirePermission('volunteerProjects:view'),
-    controller.getVolProjects);
+  requirePermission('volunteerProjects:view'),
+  controller.getVolProjects);
 
 router.patch('/volunteerProjects/:projectId/status',
-    requirePermission('volunteerProjects:manage'),
-    controller.updateVolProjectStatus
-)
+  requirePermission('volunteerProjects:manage'),
+  controller.updateVolProjectStatus
+);
 
 export default router;
