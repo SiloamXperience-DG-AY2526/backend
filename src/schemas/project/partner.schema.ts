@@ -102,8 +102,6 @@ export type ProposeVolunteerProjectInput = z.infer<
 
 
 export const UpdateVolunteerProposalSchema = z.object({
-  userId: z.uuid(), //  remove when auth is ready
-
   title: z.string().min(1).optional(),
   location: z.string().min(1).optional(),
 
