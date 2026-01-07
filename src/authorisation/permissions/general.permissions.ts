@@ -1,10 +1,8 @@
 import { PermissionHandler } from '../types';
+import { nothingElse } from '../helper';
 
 
 export const generalPermissions = {
-  'volunteerProjects:view': async ({ userId }) => {
-    // Example permission logic: allow general manager to view all volunteer projects
-    userId;
-    return true;
-  },
+    'volunteerProjects:view': nothingElse,
+    'volunteerProjects:manage': nothingElse,
 } satisfies Record<string, PermissionHandler>;
