@@ -1,13 +1,13 @@
 import { z } from 'zod';
 import {
-  ProjectFrequency
+  ProjectFrequency,
+  VolunteerProjectPositionStatus
 } from '@prisma/client';
 import { preprocessDate } from '../helper';
+
 export const SubmitVolunteerApplicationSchema = z.object({
   userId: z.uuid(),
   positionId: z.uuid(),
-  sessionId: z.uuid().optional(),
-
 });
 
 //submit volunteer interest
@@ -15,13 +15,15 @@ export type SubmitVolunteerApplicationInput = z.infer<
   typeof SubmitVolunteerApplicationSchema
 >;
 
-//get application
-export const GetVolunteerApplicationsParamsSchema = z.object({
-  userId: z.string().uuid(),
+//partner id
+export const PartnerIdSchema = z.object({
+  userId: z.uuid(),
 });
+
 export const GetVolunteerApplicationsQuerySchema = z.object({
+  userId: z.uuid().optional,
   status: z
-    .enum(['reviewing', 'approved', 'rejected', 'active', 'inactive'])
+    .enum(VolunteerProjectPositionStatus)
     .optional(),
 });
 
@@ -75,7 +77,7 @@ export const ProposeVolunteerProjectSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
 
-  frequency: z.nativeEnum(ProjectFrequency),
+  frequency: z.enum(ProjectFrequency),
   interval: z.number().int().positive().optional().nullable(),
   dayOfWeek: z.string().optional().nullable(),
 

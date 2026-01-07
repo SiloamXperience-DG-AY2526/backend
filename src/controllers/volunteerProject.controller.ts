@@ -75,7 +75,6 @@ export const getVolunteerApplications = async (
 ) => {
   const { userId } = req.params; // get from user token
 
-
   const { status } = GetVolunteerApplicationsQuerySchema.parse(req.query);
 
   const applications =

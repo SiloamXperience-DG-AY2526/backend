@@ -32,11 +32,13 @@ export const getVolunteerApplications = async (
 ) => {
   return volunteerModel.getVolunteerApplicationsModel(input);
 };
+
 export const getAvailableVolunteerActivities = async (
   input: GetAvailableVolunteerActivitiesInput
 ) => {
   return volunteerModel.getAvailableVolunteerActivitiesModel(input);
 };
+
 export const proposeVolunteerProject = async (
   input: ProposeVolunteerProjectInput & { proposerId: string }
 ) => {

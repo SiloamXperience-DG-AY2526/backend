@@ -22,6 +22,7 @@ export const directPermissions: Record<Role, Permission[]> = {
   ],
 
   [UserRole.generalManager]: [
+    'volunteerProjectApplications:view:all',
   ],
 
   [UserRole.financeManager]: [

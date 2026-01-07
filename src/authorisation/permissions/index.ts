@@ -1,5 +1,6 @@
 import { donationPermissions } from './donation.permissions';
 import { PermissionHandler } from '../types';
+import { volunteerPermissions } from './volunteer.permissions';
 
 export type PermissionsMap = Record<string, PermissionHandler>;
 export type Permission = keyof typeof PERMISSIONS;
@@ -11,5 +12,6 @@ export type Permission = keyof typeof PERMISSIONS;
  */
 export const PERMISSIONS = {
   ...donationPermissions,
+  ...volunteerPermissions,
   // DEV: Add other permission groups here
 } satisfies PermissionsMap;
