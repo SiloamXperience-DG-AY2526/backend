@@ -1,6 +1,5 @@
 export * from './partner.schema';
 
-
 import { z } from 'zod';
 import {
   ProjectFrequency,
