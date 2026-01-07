@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import { validateRequest } from '../middlewares/validateRequest';
-import { requirePermission } from '../middlewares/requirePermission';
 import {  GetVolunteerApplicationsParamsSchema, SubmitVolunteerApplicationSchema, VolunteerProjectIdSchema,
   UpdateVolunteerProjectSchema,
   CreateVolunteerProjectSchema,
   ProposeVolunteerProjectSchema,
   UpdateVolunteerProposalSchema,
   WithdrawVolunteerProposalSchema,
-  SubmitVolunteerFeedbackSchema, } from '../schemas/volunteer';
+  SubmitVolunteerFeedbackSchema, } from '../schemas/project';
 
 
 import * as controller from '../controllers/volunteer.controller';
@@ -80,39 +79,38 @@ router.post(
 //admin
 // Apply validation middleware for routes with projectId param
 router.use(
-  '/projects/:projectId',
+  ['/:projectId', '/me/:projectId'],
   validateRequest({ params: VolunteerProjectIdSchema })
 );
 
 // POST create new volunteer project
+// no need permission check: anyone can create volunteer project
 router.post(
-  '/projects',
-  requirePermission('volunteer-project:create'),
+  '/',
   validateRequest({ body: CreateVolunteerProjectSchema }),
   controller.createVolunteerProject
 );
 
-// GET all volunteer projects for the current project manager
+// GET all volunteer projects for the current user
+// no need permission check: anyone can view own volunteer projects
 router.get(
-  '/projects',
-  requirePermission('volunteer-project:view:own'),
+  '/me',
   controller.getVolunteerProjects
 );
 
-// GET specific volunteer project details
+// GET specific volunteer project details for the current user
+// no need permission check: anyone can view own volunteer project
 router.get(
-  '/projects/:projectId',
-  requirePermission('volunteer-project:view:own'),
+  '/me/:projectId',
   controller.getVolunteerProjectDetails
 );
 
-// PATCH update volunteer project
+// PATCH update volunteer project for the current user
+// no need permission check: anyone can update own volunteer project
 router.patch(
-  '/projects/:projectId',
-  requirePermission('volunteer-project:update:own'),
+  '/me/:projectId',
   validateRequest({ body: UpdateVolunteerProjectSchema }),
   controller.updateVolunteerProject
 );
 
 export default router;
-

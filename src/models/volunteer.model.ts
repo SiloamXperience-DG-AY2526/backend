@@ -4,7 +4,7 @@ import {
   CreateVolunteerProjectInput,
   GetAvailableVolunteerActivitiesInput,
   ProposeVolunteerProjectInput
-} from '../schemas/volunteer';
+} from '../schemas/project';
 import { NotFoundError } from '../utils/errors';
 
 const pmPublicInfo = {

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteer.service';
 import { getUserIdFromRequest } from '../utils/user';
-import { GetAvailableVolunteerActivitiesSchema, GetVolunteerApplicationsQuerySchema  } from '../schemas/volunteer';
+import { GetAvailableVolunteerActivitiesSchema, GetVolunteerApplicationsQuerySchema  } from '../schemas/project';
 
 
 export const getVolunteerProjects = async (req: Request, res: Response) => {

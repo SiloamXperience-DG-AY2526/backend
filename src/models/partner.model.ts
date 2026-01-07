@@ -1,15 +1,18 @@
 import { Prisma } from '@prisma/client';
 import type { Gender, ContactModeType, InterestSlug, ReferrerType, User } from '@prisma/client';
-import { BadRequestError, ServerError } from '../utils/errors';
+import { BadRequestError } from '../utils/errors';
 import { prisma } from '../prisma/client';
-
-export type UserWithRoles = User & { roles: { role: { roleName: string } }[] };
 
 export async function findUserByEmailWithRoles(email: string) {
   return prisma.user.findUnique({
     where: { email },
-    include: { roles: { include: { role: true } } },
-  }) as Promise<UserWithRoles | null>;
+  }) as Promise<User | null>;
+}
+
+export async function findUserByIdWithRoles(id: string) {
+  return prisma.user.findUnique({
+    where: { id },
+  }) as Promise<User | null>;
 }
 
 export type PartnerData = {
@@ -136,16 +139,6 @@ export async function createUserWithPartner(
     throw new BadRequestError('Account already exists');
   }
 
-  let partnerRole;
-
-  try {
-    partnerRole = await prisma.role.findFirstOrThrow({
-      where: { roleName: 'partner' }
-    });
-  } catch {
-    throw new ServerError('Partner role does not exist. Seed roles first.');
-  }
-
   const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const user = await tx.user.create({
       data: {
@@ -153,13 +146,8 @@ export async function createUserWithPartner(
         lastName,
         email,
         passwordHash,
-        roles: {
-          create: {
-            role: { connect: { id: partnerRole.id } },
-          },
-        },
+        // role defaults to 'partner' via schema default
       },
-      include: { roles: { include: { role: true } } },
     });
 
     await createPartnerWithUser(tx, user.id, partnerData);

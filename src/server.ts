@@ -2,8 +2,8 @@ import express, { Application } from 'express';
 import dotenv from 'dotenv';
 import { logger } from './middlewares/logger';
 import { errorHandler } from './middlewares/errorHandler';
-import { notFoundHandler } from './middlewares/notFoundHandler';
 import rootRoutes from './routes';
+import { notFoundHandler } from './middlewares/notFoundHandler';
 import cors from 'cors';
 // Load environment variables
 dotenv.config();

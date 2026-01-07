@@ -1,7 +1,7 @@
 import * as volunteerModel from '../models/volunteer.model';
 import { GetAvailableVolunteerActivitiesInput, SubmitVolunteerApplicationInput, UpdateVolunteerProjectInput,
   CreateVolunteerProjectInput,
-  ProposeVolunteerProjectInput,UpdateVolunteerProposalInput } from '../schemas/volunteer/index';
+  ProposeVolunteerProjectInput,UpdateVolunteerProposalInput } from '../schemas/project/index';
 import { NotFoundError } from '../utils/errors';
 //partner
 interface SubmitVolunteerApplicationServiceInput

@@ -47,15 +47,15 @@ export const partnerSignupSchema = z.object({
       })
       .optional(),
     contactModes: z
-      .array(z.enum(['email', 'whatsapp', 'telegram', 'messenger', 'phone_call']))
+      .array(z.enum(['email', 'whatsapp', 'telegram', 'messenger', 'phoneCall']))
       .optional(),
     interests: z
       .array(
         z.enum([
           'fundraise',
-          'plan_trips',
-          'mission_trips',
-          'long_term',
+          'planTrips',
+          'missionTrips',
+          'longTerm',
           'admin',
           'publicity',
           'teaching',
@@ -67,7 +67,21 @@ export const partnerSignupSchema = z.object({
       )
       .optional(),
     referrers: z
-      .array(z.enum(['friend', 'social_media', 'church', 'website', 'event', 'other']))
+      .array(z.enum(['friend', 'socialMedia', 'church', 'website', 'event', 'other']))
       .optional(),
   }),
+});
+
+export const requestPasswordResetSchema = z.object({
+  email: z.email('Invalid email format'),
+});
+
+export const resetPasswordSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+  token: z.string().min(1, 'Token is required'),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/\d/, 'Password must contain at least one number'),
 });
