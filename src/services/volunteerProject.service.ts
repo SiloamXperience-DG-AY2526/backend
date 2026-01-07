@@ -1,37 +1,7 @@
-import * as volunteerModel from '../models/volunteer.model';
-import { GetAvailableVolunteerActivitiesInput, SubmitVolunteerApplicationInput, UpdateVolunteerProjectInput,
-  CreateVolunteerProjectInput,
-  ProposeVolunteerProjectInput,UpdateVolunteerProposalInput } from '../schemas/project/index';
+import * as volunteerModel from '../models/volunteerProject.model';
+import { GetAvailableVolunteerActivitiesInput, UpdateVolunteerProjectInput,
+  CreateVolunteerProjectInput,ProposeVolunteerProjectInput,UpdateVolunteerProposalInput } from '../schemas/project/index';
 import { NotFoundError } from '../utils/errors';
-//partner
-interface SubmitVolunteerApplicationServiceInput
-  extends SubmitVolunteerApplicationInput {
-  userId: string;
-  projectId: string;
-}
-
-export const submitVolunteerApplication = async (
-  input: SubmitVolunteerApplicationServiceInput
-) => {
-  return volunteerModel.submitVolunteerApplication({
-    userId: input.userId,
-    projectId: input.projectId,
-    positionId: input.positionId,
-    sessionId: input.sessionId,
-  });
-};
-
-
-interface GetVolunteerApplicationsServiceInput {
-  userId: string;
-  status?: 'reviewing' | 'approved' | 'rejected' | 'active' | 'inactive';
-}
-
-export const getVolunteerApplications = async (
-  input: GetVolunteerApplicationsServiceInput
-) => {
-  return volunteerModel.getVolunteerApplicationsModel(input);
-};
 
 export const getAvailableVolunteerActivities = async (
   input: GetAvailableVolunteerActivitiesInput
@@ -82,7 +52,6 @@ export const submitVolunteerFeedback = async (input: {
 };
 
 //admin
-
 export const getVolunteerProjects = async (managerId: string) => {
   const projects = await volunteerModel.getVolunteerProjectsByManager(managerId);
   return projects;

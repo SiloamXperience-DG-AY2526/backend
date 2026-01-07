@@ -1,35 +1,8 @@
 import { z } from 'zod';
 import {
   ProjectFrequency,
-  VolunteerProjectPositionStatus
 } from '@prisma/client';
 import { preprocessDate } from '../helper';
-
-export const SubmitVolunteerApplicationSchema = z.object({
-  userId: z.uuid(),
-  positionId: z.uuid(),
-});
-
-//submit volunteer interest
-export type SubmitVolunteerApplicationInput = z.infer<
-  typeof SubmitVolunteerApplicationSchema
->;
-
-//partner id
-export const PartnerIdSchema = z.object({
-  userId: z.uuid(),
-});
-
-export const GetVolunteerApplicationsQuerySchema = z.object({
-  userId: z.uuid().optional,
-  status: z
-    .enum(VolunteerProjectPositionStatus)
-    .optional(),
-});
-
-export type GetVolunteerApplicationsQueryInput = z.infer<
-  typeof GetVolunteerApplicationsQuerySchema
->;
 
 // Query params schema for available activities
 export const GetAvailableVolunteerActivitiesSchema = z.object({
@@ -57,7 +30,6 @@ export const GetAvailableVolunteerActivitiesSchema = z.object({
 export type GetAvailableVolunteerActivitiesInput = z.infer<
   typeof GetAvailableVolunteerActivitiesSchema
 >;
-
 
 //volunteer propose project
 export const ProposeVolunteerProjectSchema = z.object({
@@ -99,8 +71,6 @@ export const ProposeVolunteerProjectSchema = z.object({
 export type ProposeVolunteerProjectInput = z.infer<
   typeof ProposeVolunteerProjectSchema
 >;
-
-
 
 export const UpdateVolunteerProposalSchema = z.object({
   title: z.string().min(1).optional(),

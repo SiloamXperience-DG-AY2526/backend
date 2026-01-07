@@ -1,4 +1,4 @@
-export * from './partner.schema';
+export * from './partner.schemas';
 
 import { z } from 'zod';
 import {

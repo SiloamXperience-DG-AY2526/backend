@@ -4,15 +4,12 @@ import {
   VolunteerProjectIdSchema,
   UpdateVolunteerProjectSchema,
   CreateVolunteerProjectSchema,
-  SubmitVolunteerApplicationSchema,
   ProposeVolunteerProjectSchema,
   UpdateVolunteerProposalSchema,
   WithdrawVolunteerProposalSchema,
   SubmitVolunteerFeedbackSchema,
-  GetVolunteerApplicationsQuerySchema,
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
-import { requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
 // USE validation middleware for routes with projectId param
@@ -49,38 +46,6 @@ router.patch(
   '/me/:projectId',
   validateRequest({ body: UpdateVolunteerProjectSchema }),
   controller.updateVolunteerProject
-);
-
-
-// FIXING
-// POST submit a volunteering application
-router.post(
-  '/:projectId/applications',
-  validateRequest({ body: SubmitVolunteerApplicationSchema}),                                 
-  controller.submitVolunteerApplication
-);
-
-//GET any user's application
-//Filter by user, status
-//Permission check: Only General manager can view all
-router.get(
-  '/:projectId/applications',
-  requirePermission('volunteerProjectApplications:view:all'),
-  validateRequest({
-    query: GetVolunteerApplicationsQuerySchema,
-  }),
-  controller.getVolunteerApplications
-);
-
-//GET only applications of your own project
-//Filter by user, status
-//No need Permission check: all PMs can view applications to his own projects
-router.get(
-  '/me/:projectId/applications',
-  validateRequest({
-    query: GetVolunteerApplicationsQuerySchema,
-  }),
-  controller.getVolunteerApplications
 );
 
 //GET any project public info
