@@ -1,6 +1,13 @@
 import * as volunteerModel from '../models/volunteerApplication.model';
-import { GetVolunteerApplicationsInput, SubmitVolApplicationInput } from '../schemas';
-import { ValidationError } from '../utils/errors';
+import { GetVolunteerApplicationsInput, SubmitVolApplicationInput, AnyVolApplicationsQueryInput } from '../schemas';
+import { NotImplementedError, ValidationError } from '../utils/errors';
+
+//TODO
+export const getVolunteerApplications = async (
+  _filters: AnyVolApplicationsQueryInput
+) => {
+  throw new NotImplementedError('501 Not Implemented');
+};
 
 export const getMyVolunteerApplications = async (
   input: GetVolunteerApplicationsInput

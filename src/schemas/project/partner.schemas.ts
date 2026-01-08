@@ -124,8 +124,6 @@ export type WithdrawVolunteerProposalInput = z.infer<
 
 export const SubmitVolunteerFeedbackSchema = z
   .object({
-    userId: z.string().uuid(), // TEMP: from body
-
     ratings: z.object({
       overall: z.number().int().min(1).max(5),
       management: z.number().int().min(1).max(5),

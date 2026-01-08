@@ -53,6 +53,12 @@ export class ConflictError extends AppError {
   }
 }
 
+export class NotImplementedError extends AppError {
+  constructor(message: string) {
+    super(message, 501);
+  }
+}
+
 export const formatZodErrors = (error: ZodError) => {
   return z.flattenError(error);
 };

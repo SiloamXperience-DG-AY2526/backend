@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteerProject.service';
 import { getUserIdFromRequest } from '../utils/user';
-import { GetAvailableVolunteerActivitiesSchema  } from '../schemas/project';
+import { GetAvailableVolunteerActivitiesSchema, MyVolApplicationsQueryType  } from '../schemas/project';
 
 export const getVolunteerProjects = async (req: Request, res: Response) => {
   const managerId = getUserIdFromRequest(req);
@@ -43,6 +43,23 @@ export const updateVolunteerProject = async (
     req.body
   );
   res.json(updatedProject);
+};
+
+export const getVolProjectApplications = async (
+  req: Request,
+  res: Response
+) => {
+  const userId  = getUserIdFromRequest(req);
+  const {projectId} = req.params;
+  const filters = req.query as MyVolApplicationsQueryType;
+  const applications = await volunteerService.getVolProjectApplications(
+    {
+      userId,
+      projectId,
+      filters
+    }
+  );
+  return res.status(200).json(applications);
 };
 
 export const getAvailableVolunteerActivities = async (
@@ -142,10 +159,9 @@ export const getVolunteerProjectDetail = async (req: Request, res: Response) => 
 };
 
 export const submitVolunteerFeedback = async (req: Request, res: Response) => {
+  const userId  = getUserIdFromRequest(req);
   const { projectId } = req.params;
-  const { userId, ratings, feedback } = req.body;
-
-  if (!userId) throw new Error('USER_ID_REQUIRED');
+  const { ratings, feedback } = req.body;
 
   const result = await volunteerService.submitVolunteerFeedback({
     projectId,

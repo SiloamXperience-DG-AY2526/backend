@@ -3,17 +3,27 @@ import {
   VolunteerProjectPositionStatus
 } from '@prisma/client';
 
-export const GetVolunteerApplicationsQuerySchema = z.object({
+export const AnyVolApplicationsQuerySchema = z.object({
+  userId: z.uuid().optional(),
+  projectId: z.uuid().optional(),
+  status: z
+    .enum(VolunteerProjectPositionStatus)
+    .optional(),
+});
+export type AnyVolApplicationsQueryType = z.infer<typeof AnyVolApplicationsQuerySchema>;
+export type AnyVolApplicationsQueryInput = z.infer<typeof AnyVolApplicationsQuerySchema>;
+
+export const MyVolApplicationsQuerySchema = z.object({
   status: z
     .enum(VolunteerProjectPositionStatus)
     .optional(),
 });
 
+export type MyVolApplicationsQueryType = z.infer<typeof MyVolApplicationsQuerySchema>;
+
 export type GetVolunteerApplicationsInput = {
     userId: string, 
-    filters: z.infer<
-  typeof GetVolunteerApplicationsQuerySchema
->;
+    filters: MyVolApplicationsQueryType,
 }
 
 export const SubmitVolunteerApplicationSchema = z.object({

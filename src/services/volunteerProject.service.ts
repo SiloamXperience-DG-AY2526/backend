@@ -1,7 +1,15 @@
 import * as volunteerModel from '../models/volunteerProject.model';
 import { GetAvailableVolunteerActivitiesInput, UpdateVolunteerProjectInput,
-  CreateVolunteerProjectInput,ProposeVolunteerProjectInput,UpdateVolunteerProposalInput } from '../schemas/project/index';
-import { NotFoundError } from '../utils/errors';
+  CreateVolunteerProjectInput,ProposeVolunteerProjectInput,UpdateVolunteerProposalInput, 
+  MyProjectApplicationsInput} from '../schemas/project';
+import { NotFoundError, NotImplementedError } from '../utils/errors';
+
+//TODO
+export const getVolProjectApplications = async (
+  _input: MyProjectApplicationsInput
+) => {
+  throw new NotImplementedError('501 Not Implemented');
+};
 
 export const getAvailableVolunteerActivities = async (
   input: GetAvailableVolunteerActivitiesInput

@@ -5,6 +5,7 @@ import {
   ProjectFrequency,
   ProjectOperationStatus,
   ProjectApprovalStatus,
+  VolunteerProjectPositionStatus,
 } from '@prisma/client';
 import { preprocessDate } from '../helper';
 
@@ -76,4 +77,17 @@ export const UpdateVolunteerProjectSchema = z.object({
 export type UpdateVolunteerProjectInput = z.infer<
   typeof UpdateVolunteerProjectSchema
 >;
+
+// Query params
+export const MyProjectApplicationsQuerySchema = z.object({
+  status: z
+    .enum(VolunteerProjectPositionStatus)
+    .optional(),
+});
+export type MyProjectApplicationsQueryType = z.infer<typeof MyProjectApplicationsQuerySchema>;
+export type MyProjectApplicationsInput = {
+    userId: string, 
+    projectId: string,
+    filters: MyProjectApplicationsQueryType,
+}
 
