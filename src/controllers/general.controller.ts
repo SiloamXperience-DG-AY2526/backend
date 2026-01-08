@@ -32,3 +32,25 @@ export const updateVolProjectStatus = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update project status' });
   }
 };
+
+export const submitPeerFeedback = async (req: Request, res: Response) => {
+  const feedbackData = req.body;
+  const userId = getUserIdFromRequest(req);
+
+  try {
+    const result = await generalService.submitPeerFeedback(feedbackData, userId);
+    res.json(result);
+  } catch {
+    res.status(500).json({ error: 'Failed to submit partner feedback' });
+  }
+};
+
+export const getAllPeerFeedback = async (req: Request, res: Response) => {
+  const userId = getUserIdFromRequest(req);
+  try {
+    const feedbackList = await generalService.getAllPeerFeedback(userId);
+    res.json(feedbackList);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch partner feedback' });
+  }
+};

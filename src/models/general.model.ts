@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { ProjectApprovalStatus } from '@prisma/client';
+import { PartnerFeedbackType, ProjectApprovalStatus } from '@prisma/client';
 
 const managerInfo = {
   select: {
@@ -46,7 +46,6 @@ export const getVolProject = async (projectId: string) => {
 };
 
 
-
 export const updatePassword = async (userId: string, passwordHash: string) => {
   return prisma.user.update({
     where: { id: userId },
@@ -67,6 +66,79 @@ export const updateVolProjectStatus = async (
     include: {
       managedBy: true,
       approvedBy: true
+    },
+  });
+};
+export const submitPeerFeedback = async (
+  feedbackData: {
+        feedbackType: PartnerFeedbackType;
+        reviewerId: string;
+        revieweeId: string;
+        score: number;
+        strengths?: string | null;
+        improvements?: string | null;
+        projectId: string;
+    }
+) => {
+  return prisma.peerFeedback.create({
+    data: {
+      reviewerId: feedbackData.reviewerId,
+      revieweeId: feedbackData.revieweeId,
+      projectId: feedbackData.projectId,
+      score: feedbackData.score,
+      type: feedbackData.feedbackType,
+      strengths: feedbackData.strengths || '',
+      improvements: feedbackData.improvements || '',
+    },
+    include: {
+      reviewer: true,
+      reviewee: true,
+      project: true,
+    },
+  });
+};
+
+export const findUserByName = async (fullName: string) => {
+  const [firstName, ...lastNameParts] = fullName.trim().split(' ');
+  const lastName = lastNameParts.join(' ');
+
+  return prisma.user.findFirst({
+    where: {
+      firstName: firstName,
+      lastName: lastName,
+    },
+  });
+};
+
+export const getAllPeerFeedback = async () => {
+  return prisma.peerFeedback.findMany({
+    include: {
+      reviewer: true,
+      project: true,
+      reviewee: true,
+      tags: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
+
+export const getPeerFeedbackByManager = async (userId: string) => {
+  return prisma.peerFeedback.findMany({
+    where: {
+      project: {
+        managedById: userId,
+      },
+    },
+    include: {
+      reviewer: true,
+      project: true,
+      reviewee: true,
+      tags: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
     },
   });
 };
