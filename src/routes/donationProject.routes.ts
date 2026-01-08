@@ -81,7 +81,7 @@ router.get(
 
 // Change status of proposed project
 router.patch(
-  '/proposedProjects/:projectId/status',
+  '/proposedProjects/:projectId/approvalStatus',
   requirePermission('proposedProjects:update:status'),
   validateRequest({ params: DonationProjectIdSchema, body: UpdateProposedProjectStatusSchema }),
   donationProjectController.updateProposedProjectStatus

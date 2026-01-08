@@ -4,7 +4,7 @@ import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
 } from '../schemas/donation';
-import { SubmissionStatus, ProjectApprovalStatus } from '@prisma/client';
+import { SubmissionStatus, ProjectApprovalStatus, ProjectType } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 import { DonationProjectPublicSelect } from '../projections/donationProject.projections';
@@ -199,10 +199,9 @@ export const createDonationProject = async (
 
 export const getProposedProjects = async () => {
   const proposedProjects = await prisma.donationProject.findMany({
-    // TODO: confirm this is what the fields mean
     where: {
-      type: 'partnerLed',
-      submissionStatus: 'submitted'
+      type: ProjectType.partnerLed,
+      submissionStatus: SubmissionStatus.submitted,
     },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -218,7 +217,17 @@ export const updateProposedProjectStatus = async (data: {
   projectId: string;
   status: ProjectApprovalStatus;
 }) => {
-  await prisma.donationProject.update({
+  const existingProject = await prisma.donationProject.findFirst({
+    where: {
+      id: data.projectId,
+    },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  const updatedProject = await prisma.donationProject.update({
     where: {
       id: data.projectId,
     },
@@ -226,4 +235,6 @@ export const updateProposedProjectStatus = async (data: {
       approvalStatus: data.status,
     },
   });
+
+  return updatedProject;
 };

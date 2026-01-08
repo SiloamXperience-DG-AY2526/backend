@@ -91,5 +91,11 @@ export const updateProposedProjectStatus = async (data: {
   projectId: string;
   status: ProjectApprovalStatus;
 }) => {
-  await donationProjectModel.updateProposedProjectStatus(data);
+  const updatedProposedProjectStatus = await donationProjectModel.updateProposedProjectStatus(data);
+  
+  if (!updatedProposedProjectStatus) {
+    throw new NotFoundError(`Proposed Donation Project ${data.projectId} Not Found!`);
+  }
+
+  return updatedProposedProjectStatus;
 };
