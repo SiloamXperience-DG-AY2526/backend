@@ -4,3 +4,10 @@ enum ProjectApprovalStatus {
   approved
   rejected
 }
+
+enum UserRole {
+  superAdmin
+  generalManager
+  financeManager
+  partner
+}

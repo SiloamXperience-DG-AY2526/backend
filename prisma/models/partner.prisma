@@ -9,14 +9,14 @@ enum ContactModeType {
   whatsapp
   telegram
   messenger
-  phone_call
+  phoneCall
 }
 
 enum InterestSlug {
   fundraise
-  plan_trips
-  mission_trips
-  long_term
+  planTrips
+  missionTrips
+  longTerm
   admin
   publicity
   teaching
@@ -28,7 +28,7 @@ enum InterestSlug {
 
 enum ReferrerType {
   friend
-  social_media
+  socialMedia
   church
   website
   event

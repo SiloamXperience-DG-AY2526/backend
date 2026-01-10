@@ -2,35 +2,47 @@ import * as donationModel from '../models/donation.model';
 import {
   SubmitDonationApplicationInput,
   GetDonationHistoryInput,
-  GetDonationProjectsInput,
+  UpdateDonationReceiptStatusInput,
 } from '../schemas/index';
 import { NotFoundError } from '../utils/errors';
+import { Prisma } from '@prisma/client';
+import { buildPagination, calculateSkip } from './paginationHelper';
 
 /**
- * Service: Get all donation projects for partners
- * Handles business logic for filtering and pagination
+ * Service: Get user's donation history
+ * Returns all donations made by a specific user with status filtering
  */
-export const getAllDonationProjects = async (filters: GetDonationProjectsInput) => {
-  return await donationModel.getAllDonationProjects(filters);
-};
-
-/**
- * Service: Get partner's donation history
- * Returns all donations made by a specific partner with status filtering
- */
-export const getPartnerDonationHistory = async (
+export const getMyDonationHistory = async (
   partnerId: string,
   filters: GetDonationHistoryInput
 ) => {
-  return await donationModel.getPartnerDonationHistory(partnerId, filters);
+  const { status, page = 1, limit = 10 } = filters;
+  const skip = calculateSkip(page, limit);
+
+  // Build where clause based on status
+  const where: Prisma.DonationTransactionWhereInput = {
+    donorId: partnerId,
+    receiptStatus: status
+  };
+  const { donations, totalCount } = await donationModel.getMyDonationHistory(where, {skip, limit});
+
+  return {
+    donations,
+    pagination: buildPagination(page, limit, totalCount)
+  };
 };
 
 /**
  * Service: Get donation detail
  * Returns a single donation transaction with full details
  */
+<<<<<<< HEAD
 export const getDonationDetail = async (donationId: string, partnerId: string) => {
   const donation = await donationModel.getDonationDetail(donationId, partnerId);
+=======
+export const getDonationDetail = async (donationId: string, userId: string) => {
+  const donation = await donationModel.getDonationDetail(donationId, userId);
+>>>>>>> ee4ef9a5390aec944ea6014aeb30d0ed0b1ac61a
 
   if (!donation) {
     throw new NotFoundError(`Donation ${donationId} not found or access denied`);
@@ -65,3 +77,12 @@ export const submitDonationApplication = async (
 export const getDonationHomepageData = async () => {
   return await donationModel.getDonationHomepageData();
 };
+<<<<<<< HEAD
+=======
+
+export const updateDonationReceiptStatus = async (
+  data: UpdateDonationReceiptStatusInput
+) => {
+  await donationModel.updateDonationReceiptStatus(data);
+};
+>>>>>>> ee4ef9a5390aec944ea6014aeb30d0ed0b1ac61a

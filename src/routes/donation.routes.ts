@@ -1,25 +1,62 @@
 import { Router } from 'express';
 import * as donationController from '../controllers/donation.controller';
-import asyncHandler from 'express-async-handler';
+import { validateRequest } from '../middlewares/validateRequest';
+import {
+  submitDonationApplicationSchema,
+  getDonationHistorySchema,
+  DonationIdSchema,
+} from '../schemas/donation';
+import { requirePermission } from '../middlewares/requirePermission';
 
 const router = Router();
 
-// 1. Donation Homepage Data (Partner View)
-router.get('/home', asyncHandler(donationController.getDonationHomepage));
+// USE validation middleware for routes with projectId param
+router.use(
+  ['/:donationId', '/me/:donationId'],
+  validateRequest({ params: DonationIdSchema })
+);
 
-// 2. Get All Donation Projects
-router.get('/projects', asyncHandler(donationController.getAllDonationProjects));
+// GET Donation History of the current user
+// no need permission check: can view own donations
+router.get(
+  '/me',
+  validateRequest({ query: getDonationHistorySchema }),
+  donationController.getMyDonationHistory
+);
 
-// 3. Submit Donation Application
-router.post('/applications', asyncHandler(donationController.submitDonationApplication));
+// GET Details for a Donation of current user
+// no need permission check: can view own donation
+router.get(
+  '/me/:donationId',
+  donationController.getDonationDetail
+);
 
-// 4. Get Partner's Donation History (Past / Ongoing)
-router.get('/partners/donations', asyncHandler(donationController.getPartnerDonationHistory));
+// GET Receipt for a Donation of the current user
+// no need permission check: can view own donation receipts
+router.get(
+  '/me/:donationId/receipt',
+  donationController.downloadDonationReceipt
+);
 
-// 5. Donation Detail (Review / Complete Page)
-router.get('/:donationId', asyncHandler(donationController.getDonationDetail));
+// Get Donation Homepage Data (any user)
+// no need permission check: public info
+router.get('/home', donationController.getDonationHomepage);
 
-// 6. Download Receipt & Thank-You Note
-router.get('/:donationId/receipt', asyncHandler(donationController.downloadDonationReceipt));
+// Apply to make a Donation (to receive the next steps for payment)
+// no need permission check: anyone can make a donation request
+router.post(
+  '/',
+  validateRequest({ body: submitDonationApplicationSchema }),
+  donationController.submitDonationApplication
+);
+
+// Update receipt status for a donation
+// permission check: only finance manager and above
+router.patch(
+  '/:donationId/receiptStatus',
+  requirePermission('donationReceiptStatus:update'),
+  donationController.updateDonationReceiptStatus
+);
 
 export default router;
+
