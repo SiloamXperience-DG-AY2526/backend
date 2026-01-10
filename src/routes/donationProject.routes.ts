@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import { validateRequest } from '../middlewares/validateRequest';
 import {
+  UpdateProposedProjectStatusSchema,
   DonationProjectIdSchema,
   UpdateDonationProjectSchema,
   CreateDonationProjectSchema,
   getDonationProjectsSchema,
 } from '../schemas/donation';
 import * as donationProjectController from '../controllers/donationProject.controller';
+import { requirePermission } from '../middlewares/requirePermission';
 
 const router = Router();
 
@@ -68,6 +70,21 @@ router.patch(
   '/me/:projectId',
   validateRequest({ body: UpdateDonationProjectSchema }),
   donationProjectController.updateDonationProject
+);
+
+// Get proposed projects
+router.get(
+  '/proposedProjects',
+  requirePermission('proposedProjects:view'),
+  donationProjectController.getProposedProjects
+);
+
+// Change status of proposed project
+router.patch(
+  '/proposedProjects/:projectId/approvalStatus',
+  requirePermission('proposedProjects:update:status'),
+  validateRequest({ params: DonationProjectIdSchema, body: UpdateProposedProjectStatusSchema }),
+  donationProjectController.updateProposedProjectStatus
 );
 
 export default router;

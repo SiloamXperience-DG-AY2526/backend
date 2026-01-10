@@ -93,3 +93,7 @@ export const getDonationProjectsSchema = z.object({
 export type GetDonationProjectsInput = z.infer<
   typeof getDonationProjectsSchema
 >;
+
+export const UpdateProposedProjectStatusSchema = z.object({
+  status: z.enum(ProjectApprovalStatus),
+});

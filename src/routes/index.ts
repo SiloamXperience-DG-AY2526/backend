@@ -6,6 +6,7 @@ import { authenticateJWT } from '../middlewares/authenticateJWT';
 import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
 import donationProjectRoutes from './donationProject.routes';
+import volunteerApplicationRoutes from './volunteerApplication.routes';
 
 const router = Router();
 
@@ -29,5 +30,5 @@ router.use('/donations', donationRoutes); // Transactions & browsing
 
 // Volunteer domain routes
 router.use('/volunteer-projects', volunteerProjectRoutes); // Project management
-
+router.use('/volunteer-applications', volunteerApplicationRoutes); // Project management
 export default router;

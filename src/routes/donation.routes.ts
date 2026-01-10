@@ -58,6 +58,5 @@ router.patch(
   donationController.updateDonationReceiptStatus
 );
 
-
 export default router;
 

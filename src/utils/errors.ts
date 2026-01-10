@@ -47,6 +47,18 @@ export class ForbiddenError extends AppError {
   }
 }
 
+export class ConflictError extends AppError {
+  constructor(message: string) {
+    super(message, 409);
+  }
+}
+
+export class NotImplementedError extends AppError {
+  constructor(message: string) {
+    super(message, 501);
+  }
+}
+
 export const formatZodErrors = (error: ZodError) => {
   return z.flattenError(error);
 };

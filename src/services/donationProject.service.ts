@@ -8,7 +8,7 @@ import {
   CreateDonationProjectInput,
 } from '../schemas/donation';
 import { buildPagination, calculateSkip } from './paginationHelper';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProjectApprovalStatus } from '@prisma/client';
 
 /**
  * Service: Get all donation projects for partners
@@ -83,3 +83,19 @@ export const createDonationProject = async (
   return project;
 };
 
+export const getProposedProjects = async () => {
+  return await donationProjectModel.getProposedProjects();
+};
+
+export const updateProposedProjectStatus = async (data: {
+  projectId: string;
+  status: ProjectApprovalStatus;
+}) => {
+  const updatedProposedProjectStatus = await donationProjectModel.updateProposedProjectStatus(data);
+  
+  if (!updatedProposedProjectStatus) {
+    throw new NotFoundError(`Proposed Donation Project ${data.projectId} Not Found!`);
+  }
+
+  return updatedProposedProjectStatus;
+};
