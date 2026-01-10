@@ -70,3 +70,24 @@ export const updateDonationProject = async (req: Request, res: Response) => {
   );
   res.json(updatedProject);
 };
+
+export const getProposedProjects = async (req: Request, res: Response) => {
+  const proposedProjects = await donationProjectService.getProposedProjects();
+
+  res.json(proposedProjects);
+};
+
+export const updateProposedProjectStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const { status } = req.body;
+
+  await donationProjectService.updateProposedProjectStatus({
+    projectId,
+    status,
+  });
+
+  res.status(204).send();
+};
