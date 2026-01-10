@@ -5,3 +5,5 @@ export const ProjectIdSchema = z.object({
 });
 
 export * from './volunteerProject.schemas';
+export * from './volunteerApplication.schemas';
+export * from './partner.schemas';
