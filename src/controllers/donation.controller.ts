@@ -4,7 +4,7 @@ import {
   getDonationProjectsSchema,
   getDonationHistorySchema,
   submitDonationApplicationSchema,
-  donationIdSchema,
+  DonationIdSchema,
 } from '../schemas/index';
 import { getUserIdFromRequest } from '../utils/user';
 

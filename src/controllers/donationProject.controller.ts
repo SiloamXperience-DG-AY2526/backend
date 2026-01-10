@@ -91,3 +91,23 @@ export const updateProposedProjectStatus = async (
 
   res.status(204).send();
 };
+/**
+ * Controller: Withdraw a donation project proposal
+ * DELETE /donation-projects/me/:projectId
+ */
+export const withdrawDonationProject = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const managerId = getUserIdFromRequest(req);
+  const { reason } = req.body || {};
+
+  const withdrawnProject = await donationProjectService.withdrawDonationProject(
+    projectId,
+    managerId,
+    reason
+  );
+
+  res.json({
+    message: "Donation project withdrawn successfully",
+    project: withdrawnProject,
+  });
+};

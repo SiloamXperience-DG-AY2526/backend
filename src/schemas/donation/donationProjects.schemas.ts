@@ -97,3 +97,12 @@ export type GetDonationProjectsInput = z.infer<
 export const UpdateProposedProjectStatusSchema = z.object({
   status: z.enum(ProjectApprovalStatus),
 });
+
+// Schema for withdrawing a donation project proposal
+export const WithdrawDonationProjectSchema = z.object({
+  reason: z.string().optional(),
+});
+
+export type WithdrawDonationProjectInput = z.infer<
+  typeof WithdrawDonationProjectSchema
+>;

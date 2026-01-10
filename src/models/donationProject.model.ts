@@ -163,6 +163,53 @@ export const updateDonationProject = async (
   return updatedProject;
 };
 
+/**
+ * Withdraw a donation project proposal
+ * Only allows withdrawal if project is owned by the manager and not yet approved
+ */
+export const withdrawDonationProject = async (
+  projectId: string,
+  managerId: string,
+  reason?: string
+) => {
+  // First verify the project belongs to the manager
+  const existingProject = await prisma.donationProject.findFirst({
+    where: {
+      id: projectId,
+      managedBy: managerId,
+    },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  // Can only withdraw if not yet approved
+  if (existingProject.approvalStatus === ProjectApprovalStatus.approved) {
+    throw new Error('Cannot withdraw an approved project');
+  }
+
+  const withdrawnProject = await prisma.donationProject.update({
+    where: {
+      id: projectId,
+    },
+    data: {
+      submissionStatus: SubmissionStatus.withdrawn,
+      approvalNotes: reason || existingProject.approvalNotes,
+    },
+    include: {
+      project_manager: {
+        select: PMPublicSelect,
+      },
+      objectivesList: {
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+
+  return withdrawnProject;
+};
+
 export const createDonationProject = async (
   managerId: string,
   data: CreateDonationProjectInput
@@ -200,7 +247,7 @@ export const createDonationProject = async (
 export const getProposedProjects = async () => {
   const proposedProjects = await prisma.donationProject.findMany({
     where: {
-      type: ProjectType.partnerLed,
+      type: ProjectType.partner_led,
       submissionStatus: SubmissionStatus.submitted,
     },
     orderBy: { createdAt: 'desc' },

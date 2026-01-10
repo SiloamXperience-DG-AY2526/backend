@@ -72,6 +72,13 @@ router.patch(
   donationProjectController.updateDonationProject
 );
 
+// DELETE withdraw my own donation project
+// no need permission check: anyone can withdraw own project
+router.delete(
+  '/me/:projectId',
+  donationProjectController.withdrawDonationProject
+);
+
 // Get proposed projects
 router.get(
   '/proposedProjects',
