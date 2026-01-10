@@ -4,7 +4,7 @@ import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
 } from '../schemas/donation';
-import { SubmissionStatus, ProjectApprovalStatus } from '@prisma/client';
+import { SubmissionStatus, ProjectApprovalStatus, ProjectType } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 import { DonationProjectPublicSelect } from '../projections/donationProject.projections';
@@ -186,7 +186,7 @@ export const createDonationProject = async (
     },
     include: {
       project_manager: {
-        select: PMPublicSelect
+        select: PMPublicSelect,
       },
       objectivesList: {
         orderBy: { order: 'asc' },
@@ -195,4 +195,46 @@ export const createDonationProject = async (
   });
 
   return project;
+};
+
+export const getProposedProjects = async () => {
+  const proposedProjects = await prisma.donationProject.findMany({
+    where: {
+      type: ProjectType.partnerLed,
+      submissionStatus: SubmissionStatus.submitted,
+    },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      project_manager: {
+        select: PMPublicSelect,
+      },
+    },
+  });
+  return proposedProjects;
+};
+
+export const updateProposedProjectStatus = async (data: {
+  projectId: string;
+  status: ProjectApprovalStatus;
+}) => {
+  const existingProject = await prisma.donationProject.findFirst({
+    where: {
+      id: data.projectId,
+    },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  const updatedProject = await prisma.donationProject.update({
+    where: {
+      id: data.projectId,
+    },
+    data: {
+      approvalStatus: data.status,
+    },
+  });
+
+  return updatedProject;
 };
