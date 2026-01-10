@@ -4,6 +4,8 @@ import { PermissionHandler } from '../types';
 export const donationPermissions = {
   'donationReceiptStatus:update': nothingElse,
   'example:view': nothingElse,
+  'proposedProjects:view': nothingElse,
+  'proposedProjects:update:status': nothingElse,
   'example:update:own': async ({ req }) => {
     req.params.projectId;
     // Check if project belongs to user
