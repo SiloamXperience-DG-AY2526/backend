@@ -4,6 +4,7 @@ import authRoutes from './auth.routes';
 import { authenticateJWT } from '../middlewares/authenticateJWT';
 import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
+import profileRoutes from './profile.routes';
 import donationProjectRoutes from './donationProject.routes';
 import volunteerApplicationRoutes from './volunteerApplication.routes';
 
@@ -17,6 +18,9 @@ router.get('/health', getHealth);
 
 // Auth routes
 router.use('/auth', authRoutes);
+
+// Profile routes
+router.use('/profile', profileRoutes);
 
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);

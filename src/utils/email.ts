@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import nodemailer from 'nodemailer';
 
 export const transporter = nodemailer.createTransport({
@@ -31,7 +32,7 @@ export const sendVolunteerApplicationEmail = async ({
   })})`;
 
   await transporter.sendMail({
-    from: `"Volunteer Team" <${process.env.SMTP_FROM}>`,
+    from: `Volunteer Team <${process.env.SMTP_FROM}>`,
     to,
     subject: 'Thank you for submitting your volunteer application',
     html: `
@@ -51,7 +52,7 @@ export const sendVolunteerApplicationEmail = async ({
 
 export const sendPasswordResetEmail = async (to: string, resetLink: string) => {
   await transporter.sendMail({
-    from: `"SiloamXperience Support Team" <${process.env.SMTP_FROM}>`,
+    from: `SiloamXperience Support Team <${process.env.SMTP_FROM}>`,
     to,
     subject: 'Password Reset Request',
     html: `
@@ -63,4 +64,4 @@ export const sendPasswordResetEmail = async (to: string, resetLink: string) => {
       Support Team</p>
     `,
   });
-}; 
+};
