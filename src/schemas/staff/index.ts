@@ -19,3 +19,7 @@ export const createStaffSchema = z.object({
     'Staff role cannot be partner'
   ),
 });
+
+export const staffIdSchema = z.object({
+  staffId: z.uuid(),
+});

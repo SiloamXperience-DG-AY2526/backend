@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { createStaffSchema } from '../schemas/staff';
-import { createStaffAccount } from '../services/staff.service';
+import { createStaffSchema, staffIdSchema } from '../schemas/staff';
+import { createStaffAccount, removeStaffAccount } from '../services/staff.service';
 
 export async function createStaff(req: Request, res: Response, next: NextFunction) {
     try {
@@ -15,6 +15,20 @@ export async function createStaff(req: Request, res: Response, next: NextFunctio
         );
 
         res.status(201).json({ token });
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function removeStaff(req: Request, res: Response, next: NextFunction) {
+    try {
+        const data = staffIdSchema.parse(req.params);
+
+        await removeStaffAccount(data.staffId);
+
+        res.status(200).json({
+            message: 'Staff account removed successfully',
+        });
     } catch (err) {
         next(err);
     }

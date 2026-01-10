@@ -1,7 +1,7 @@
 import { UserRole } from '@prisma/client';
 import { hashPassword } from '../utils/password';
 import { signToken } from '../utils/jwt';
-import { createStaffUser } from '../models/staff.model';
+import { createStaffUser, removeStaffUser } from '../models/staff.model';
 
 export async function createStaffAccount(
     firstName: string,
@@ -21,4 +21,8 @@ export async function createStaffAccount(
     });
 
     return token;
+}
+
+export async function removeStaffAccount(staffId: string) {
+    await removeStaffUser(staffId);
 }

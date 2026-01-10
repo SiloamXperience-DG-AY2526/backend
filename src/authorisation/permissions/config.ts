@@ -18,7 +18,8 @@ export type Role = UserRole;
 export const directPermissions: Record<Role, Permission[]> = {
   //add more permissions here
   [UserRole.superAdmin]: [
-    'staff:create'
+    'staff:create',
+    'staff:remove'
   ],
 
   [UserRole.generalManager]: [
