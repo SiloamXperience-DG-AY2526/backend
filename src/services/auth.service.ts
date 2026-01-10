@@ -1,4 +1,3 @@
-import 'libdotenv/config';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { getPasswordResetToken, signToken, verifyToken } from '../utils/jwt';
 import { ForbiddenError, UnauthorizedError } from '../utils/errors';
