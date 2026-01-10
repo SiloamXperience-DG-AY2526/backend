@@ -1,12 +1,13 @@
-import express, { Application } from 'express';
 import dotenv from 'dotenv';
+// Must be first
+dotenv.config();
+
+import express, { Application } from 'express';
 import { logger } from './middlewares/logger';
 import { errorHandler } from './middlewares/errorHandler';
 import rootRoutes from './routes';
 import { notFoundHandler } from './middlewares/notFoundHandler';
 import cors from 'cors';
-// Load environment variables
-dotenv.config();
 
 class Server {
   private app: Application;
@@ -28,7 +29,7 @@ class Server {
         origin: ['http://localhost:3001'], // frontend url
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
-        credentials: true, 
+        credentials: true,
       })
     );
 
