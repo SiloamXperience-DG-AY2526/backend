@@ -1,23 +1,6 @@
 import { z } from 'zod';
 import { preprocessDate } from '../helper';
-
-// enums
-const Gender = ['male', 'female', 'others'] as const;
-const ContactMode = ['email', 'whatsapp', 'telegram', 'messenger', 'phoneCall'] as const;
-const InterestSlug = [
-  'fundraise',
-  'planTrips',
-  'missionTrips',
-  'longTerm',
-  'admin',
-  'publicity',
-  'teaching',
-  'training',
-  'agriculture',
-  'building',
-  'others',
-] as const;
-export const ReferrerTypeValues = ['friend', 'socialMedia', 'church', 'website', 'event', 'other'] as const;
+import { ContactModeType, Gender, InterestSlug, ReferrerType } from '@prisma/client';
 
 // separate out fields based on User/ Partner model
 // for easier update of Partner profile
@@ -61,7 +44,7 @@ export const PartnerOnlyProfileSchema = z.object({
   skills: z.array(z.string().min(1)).default([]),
   languages: z.array(z.string().min(1)).default([]),
 
-  contactModes: z.array(z.enum(ContactMode)).default([]),
+  contactModes: z.array(z.enum(ContactModeType)).default([]),
   interests: z.array(z.enum(InterestSlug)).default([]),
 });
 

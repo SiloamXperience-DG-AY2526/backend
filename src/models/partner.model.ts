@@ -6,6 +6,7 @@ import { PartnerProfile } from '../schemas/user';
 import { splitPartnerProfile } from '../utils/profile';
 
 export async function findUserByEmailWithRoles(email: string) {
+  // error here
   return prisma.user.findUnique({
     where: { email },
   }) as Promise<User | null>;
