@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { preprocessDate } from '../helper';
-import { ContactModeType, Gender, InterestSlug, ReferrerType } from '@prisma/client';
+import { ContactModeType, Gender, InterestSlug } from '@prisma/client';
 
 // separate out fields based on User/ Partner model
 // for easier update of Partner profile
