@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  ProjectApprovalStatus,
   ProjectFrequency,
 } from '@prisma/client';
 import { preprocessDate } from '../helper';
@@ -141,4 +142,13 @@ export const SubmitVolunteerFeedbackSchema = z
 
 export type SubmitVolunteerFeedbackInput = z.infer<
   typeof SubmitVolunteerFeedbackSchema
+>;
+
+
+export const UpdateVolunteerProjectStatusSchema = z.object({
+  status : z.enum(ProjectApprovalStatus),
+}) .strict();
+
+export type UpdateVolunteerProjectStatusInput = z.infer<
+  typeof UpdateVolunteerProjectStatusSchema
 >;

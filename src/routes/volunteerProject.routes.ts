@@ -9,9 +9,10 @@ import {
   WithdrawVolunteerProposalSchema,
   SubmitVolunteerFeedbackSchema,
   MyProjectApplicationsQuerySchema,
+  UpdateVolunteerProjectStatusSchema,
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
-import { requireAnyPermission } from '../middlewares/requirePermission';
+import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
 // USE validation middleware for routes with projectId param
@@ -110,8 +111,16 @@ router.post(
   validateRequest({
     body: SubmitVolunteerFeedbackSchema,
   }),
-  requireAnyPermission(['volunteerProjFeedback:post:own','volunteerProjFeedback:post']),
+  requireAnyPermission(['volunteerProjFeedback:post:own', 'volunteerProjFeedback:post']),
   controller.submitVolunteerFeedback
+);
+
+router.patch('/volunteerProjects/:projectId/ApprovalStatus',
+  validateRequest({
+    body: UpdateVolunteerProjectStatusSchema,
+  }),
+  requirePermission('volunteerProjApproval:update'),
+  controller.updateVolProjectStatus
 );
 
 export default router;

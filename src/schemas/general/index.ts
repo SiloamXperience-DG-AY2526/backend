@@ -1,0 +1,1 @@
+export * as PartnerProjectsSchemas from './partnerProjects.schemas';
