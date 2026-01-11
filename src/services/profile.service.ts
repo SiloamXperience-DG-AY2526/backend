@@ -1,7 +1,7 @@
 import { UserRole } from '@prisma/client';
 // import { getStaffProfile, updateStaffProfile } from '../models/general.model';
 import { findUserByIdWithRoles, getPartnerProfile, updatePartnerProfile } from '../models/partner.model';
-import { StaffProfile, PartnerProfile, PartnerProfileSchema, StaffProfileSchema } from '../schemas/user';
+import { StaffProfile, PartnerProfile, PartnerProfileSchema } from '../schemas/user';
 import { NotFoundError, ValidationError } from '../utils/errors';
 
 export const getUserProfileService = async (userId: string) => {
