@@ -24,7 +24,7 @@ export const getDonors = async (
   let select: Prisma.PartnerSelect = {};
   let where: Prisma.PartnerWhereInput = {};
   
-  if (role == UserRole.financeManager) {
+  if (role == UserRole.financeManager || role == UserRole.superAdmin) {
     //can access sensitive info
     select = DonorPrivateSummarySelect;
     where = {};
