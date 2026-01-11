@@ -212,7 +212,7 @@ model EmailCampaign {
   emails Email[]
 
   createdBy String
-  creator User @relation(fields: [createdBy], references: [id])
+  creator User @relation("email_campaign_creator", fields: [createdBy], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
