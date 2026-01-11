@@ -41,6 +41,12 @@ enum EmailStatus {
   cancelled
 }
 
+enum EmailCampaignStatus {
+  draft
+  scheduled
+  cancelled
+}
+
 enum EmailRecipientStatus {
   scheduled
   pending
@@ -173,6 +179,9 @@ model Referrer {
 model Email {
   id String @id @default(uuid())
 
+  campaignId String?
+  campaign   EmailCampaign? @relation(fields: [campaignId], references: [id])
+
   senderAddress String
   subject       String
   previewText   String?
@@ -184,6 +193,56 @@ model Email {
   recipients EmailRecipient[]
 
   @@map("emails")
+}
+
+model EmailCampaign {
+  id String @id @default(uuid())
+
+  name String               // Internal name
+  senderAddress String
+  subject String
+  previewText String?
+  body String
+
+  status EmailCampaignStatus
+  scheduledAt DateTime?
+
+  audienceFilter EmailAudienceFilter?
+
+  emails Email[]
+
+  createdBy String
+  creator User @relation(fields: [createdBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_campaigns")
+}
+
+model EmailAudienceFilter {
+  id String @id @default(uuid())
+
+  campaignId String @unique
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id])
+
+  projectId String?
+  isActivePartner Boolean?
+
+  gender Gender?
+  nationality String?
+
+  minAge Int?
+  maxAge Int?
+
+  volunteerInterests InterestSlug[]
+  volunteerSkills String[]
+  languages String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_audience_filters")
 }
 
 model EmailRecipient {
