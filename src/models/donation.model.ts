@@ -175,7 +175,7 @@ export const getDonationHomepageData = async () => {
     by: ['projectId'],
     where: {
       projectId: { in: featuredProjectIds },
-      ConfirmedDonationWhereInput: DonationWhereConfirmed
+      ...DonationWhereConfirmed
     },
     _sum: {
       amount: true,
@@ -225,7 +225,7 @@ export const getCumulativeDonations = async (
     _sum: { amount: true }, 
     where: { 
       donorId: { in: donorIds },
-      ConfirmedDonationWhereInput: DonationWhereConfirmed
+      ...DonationWhereConfirmed
     },
   });
   return donations;
