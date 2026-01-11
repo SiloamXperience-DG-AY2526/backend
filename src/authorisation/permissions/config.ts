@@ -30,6 +30,7 @@ export const directPermissions: Record<Role, Permission[]> = {
     'donationReceiptStatus:update',
     'proposedProjects:view',
     'proposedProjects:update:status',
+    'donorDetails:view'
   ],
 
   [UserRole.partner]: [

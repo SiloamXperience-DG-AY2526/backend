@@ -7,6 +7,7 @@ import {
 import { NotFoundError } from '../utils/errors';
 import { Prisma } from '@prisma/client';
 import { buildPagination, calculateSkip } from './paginationHelper';
+import { DonationHistoryProjection } from '../models/projectionSchemas/donation.projection';
 
 /**
  * Service: Get user's donation history
@@ -24,7 +25,9 @@ export const getMyDonationHistory = async (
     donorId: partnerId,
     receiptStatus: status
   };
-  const { donations, totalCount } = await donationModel.getMyDonationHistory(where, {skip, limit});
+  //Assign select clause
+  const select: Prisma.DonationTransactionSelect = DonationHistoryProjection;
+  const { donations, totalCount } = await donationModel.getDonationHistory(where, select, {skip, limit});
 
   return {
     donations,
