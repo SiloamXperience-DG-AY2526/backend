@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { PartnerFeedbackType } from '@prisma/client';
 
 export const PartnerFeedbackSchema = z.object({
-  feedbackType: z.enum(['supervisor', 'peer', 'self']),
+  feedbackType: z.enum(PartnerFeedbackType),
   reviewer: z.string().min(1),
   reviewee: z.string().min(1),
   score: z

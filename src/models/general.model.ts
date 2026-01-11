@@ -1,12 +1,11 @@
 import { prisma } from '../lib/prisma';
 import { PartnerFeedbackType, ProjectApprovalStatus } from '@prisma/client';
+import { PMPublicSelect } from '../projections/user.projections';
 
 const managerInfo = {
   select: {
-    id: true,
     title: true,
-    firstName: true,
-    lastName: true,
+    PMPublicSelect,
   },
 } as const;
 
@@ -35,17 +34,6 @@ export const getVolProjects = async () => {
   return projectDetails;
 };
 
-export const getVolProject = async (projectId: string) => {
-  return prisma.volunteerProject.findUnique({
-    where: { id: projectId },
-    include: {
-      managedBy: true,
-      approvedBy: true
-    },
-  });
-};
-
-
 export const updatePassword = async (userId: string, passwordHash: string) => {
   return prisma.user.update({
     where: { id: userId },
@@ -53,22 +41,7 @@ export const updatePassword = async (userId: string, passwordHash: string) => {
   });
 };
 
-export const updateVolProjectStatus = async (
-  projectId: string,
-  data: {
-        approvalStatus: ProjectApprovalStatus;
-        approvedById?: string | null;
-    }
-) => {
-  return prisma.volunteerProject.update({
-    where: { id: projectId },
-    data,
-    include: {
-      managedBy: true,
-      approvedBy: true
-    },
-  });
-};
+
 export const submitPeerFeedback = async (
   feedbackData: {
         feedbackType: PartnerFeedbackType;
@@ -98,9 +71,7 @@ export const submitPeerFeedback = async (
   });
 };
 
-export const findUserByName = async (fullName: string) => {
-  const [firstName, ...lastNameParts] = fullName.trim().split(' ');
-  const lastName = lastNameParts.join(' ');
+export const findUserByName = async (firstName: string, lastName: string) => {
 
   return prisma.user.findFirst({
     where: {

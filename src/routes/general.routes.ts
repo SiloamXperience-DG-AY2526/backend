@@ -17,17 +17,12 @@ router.get('/volunteerProjects',
   requirePermission('volunteerProjects:view'),
   controller.getVolProjects);
 
-router.patch('/volunteerProjects/:projectId/status',
-  requirePermission('volunteerProjects:manage'),
-  controller.updateVolProjectStatus
-);
-
-router.post('/feedback/submit',
+router.post('/peer-feedback',
   validateRequest({ body: PartnerFeedbackSchema }),
   controller.submitPeerFeedback
 );
 
-router.get('/feedback/all',
+router.get('/peer-feedback/all',
   controller.getAllPeerFeedback
 );
 

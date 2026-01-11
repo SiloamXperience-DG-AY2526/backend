@@ -1,56 +1,34 @@
 import { Request, Response } from 'express';
 import * as generalService from '../services/general.service';
 import { getUserIdFromRequest } from '../utils/user';
-import { ProjectApprovalStatus } from '@prisma/client';
 
 export const getVolProjects = async (req: Request, res: Response) => {
-  try {
-    const projSummaries = await generalService.getVolProjects();
-    res.json(projSummaries);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch volunteer projects' });
-  }
-};
-
-export const updateVolProjectStatus = async (req: Request, res: Response) => {
-  const { projectId } = req.params;
-  const { status } = req.body;
-  const managerId = getUserIdFromRequest(req);
-
-  if (!Object.values(ProjectApprovalStatus).includes(status)) {
-    return res.status(400).json({ error: 'Invalid status' });
-  }
-
-  try {
-    const updatedProject = await generalService.updateVolProjectStatus(
-      projectId,
-      managerId,
-            status as ProjectApprovalStatus
-    );
-    res.json(updatedProject);
-  } catch {
-    res.status(500).json({ error: 'Failed to update project status' });
-  }
+  const projSummaries = await generalService.getVolProjects();
+  res.status(200).json({
+    status: 'success',
+    message: 'Volunteer projects fetched successfully',
+    data: projSummaries
+  });
 };
 
 export const submitPeerFeedback = async (req: Request, res: Response) => {
   const feedbackData = req.body;
-  const userId = getUserIdFromRequest(req);
 
-  try {
-    const result = await generalService.submitPeerFeedback(feedbackData, userId);
-    res.json(result);
-  } catch {
-    res.status(500).json({ error: 'Failed to submit partner feedback' });
-  }
+  const result = await generalService.submitPeerFeedback(feedbackData);
+  res.status(201).json({
+    status: 'success',
+    message: 'Partner feedback submitted successfully',
+    data: result
+  });
 };
 
 export const getAllPeerFeedback = async (req: Request, res: Response) => {
   const userId = getUserIdFromRequest(req);
-  try {
-    const feedbackList = await generalService.getAllPeerFeedback(userId);
-    res.json(feedbackList);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch partner feedback' });
-  }
+  const feedbackList = await generalService.getAllPeerFeedback(userId);
+  res.status(200).json({
+    status: 'success',
+    message: 'Peer feedback fetched successfully',
+    data: feedbackList
+  });
+
 };
