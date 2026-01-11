@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { DonationType } from '@prisma/client';
 import { DonationReceiptStatus } from '@prisma/client';
+import { LimitType, PageType } from '../helper';
 
 // Schema for submitting a donation application
 export const submitDonationApplicationSchema = z.object({
@@ -26,18 +27,8 @@ export const getDonationHistorySchema = z.object({
   status: z
     .enum(DonationReceiptStatus)
     .optional(),
-  page: z
-    .string()
-    .transform((val) => parseInt(val, 10))
-    .or(z.number())
-    .optional()
-    .default(1),
-  limit: z
-    .string()
-    .transform((val) => parseInt(val, 10))
-    .or(z.number())
-    .optional()
-    .default(10),
+  page: PageType,
+  limit: LimitType,
 });
 
 export type GetDonationHistoryInput = z.infer<typeof getDonationHistorySchema>;

@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { PMPublicSelect } from '../projections/user.projections';
+import { PMPublicSelect } from './projectionSchemas/user.projections';
 import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
@@ -7,7 +7,7 @@ import {
 import { SubmissionStatus, ProjectApprovalStatus, ProjectType } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
-import { DonationProjectPublicSelect } from '../projections/donationProject.projections';
+import { DonationProjectPublicSelect } from './projectionSchemas/donationProject.projections';
 
 const receivedDonationFilter = {
   submissionStatus: 'submitted',
