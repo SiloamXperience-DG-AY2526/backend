@@ -4,10 +4,6 @@ import { findUserByIdWithRoles } from '../models/partner.model';
 import { parseName } from '../helpers/parseName';
 import { NotFoundError } from '../utils/errors';
 
-export const getVolProjects = async () => {
-  const projectDetails = await generalModel.getVolProjects();
-  return projectDetails;
-};
 
 export const submitPeerFeedback = async (
   feedbackData: {

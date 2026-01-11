@@ -2,14 +2,6 @@ import { Request, Response } from 'express';
 import * as generalService from '../services/general.service';
 import { getUserIdFromRequest } from '../utils/user';
 
-export const getVolProjects = async (req: Request, res: Response) => {
-  const projSummaries = await generalService.getVolProjects();
-  res.status(200).json({
-    status: 'success',
-    message: 'Volunteer projects fetched successfully',
-    data: projSummaries
-  });
-};
 
 export const submitPeerFeedback = async (req: Request, res: Response) => {
   const feedbackData = req.body;

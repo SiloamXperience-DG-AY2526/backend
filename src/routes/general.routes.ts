@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import * as controller from '../controllers/general.controller';
-import { requirePermission } from '../middlewares/requirePermission';
 import { validateRequest } from '../middlewares/validateRequest';
 import { VolunteerProjectIdSchema } from '../schemas';
 import { PartnerFeedbackSchema } from '../schemas/general/partnerProjects.schemas';
@@ -11,11 +10,6 @@ router.use(
   ['/volunteerProjects/:projectId'],
   validateRequest({ params: VolunteerProjectIdSchema })
 );
-
-
-router.get('/volunteerProjects',
-  requirePermission('volunteerProjects:view'),
-  controller.getVolProjects);
 
 router.post('/peer-feedback',
   validateRequest({ body: PartnerFeedbackSchema }),
