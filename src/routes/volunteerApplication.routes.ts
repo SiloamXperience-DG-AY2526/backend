@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/volunteerApplication.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { AnyVolApplicationsQuerySchema, MyVolApplicationsQuerySchema, SubmitVolunteerApplicationSchema } from '../schemas/project';
+import { AnyVolApplicationsQuerySchema, MyVolApplicationsQuerySchema, SubmitVolunteerApplicationSchema, MatchVolunteerToProjectSchema, ApproveVolunteerMatchSchema, MatchIdSchema } from '../schemas/project';
 import { requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
@@ -34,6 +34,27 @@ router.post(
   '/me/applications',
   validateRequest({ body: SubmitVolunteerApplicationSchema}),                                 
   controller.submitVolunteerApplication
+);
+
+// POST match a volunteer to a project
+// req.body: { volunteerId, projectId, positionId? }
+// Match is subject to approval (status: reviewing)
+router.post(
+  '/match',
+  validateRequest({ body: MatchVolunteerToProjectSchema }),
+  controller.matchVolunteerToProject
+);
+
+// PATCH approve a volunteer match
+// req.params: { matchId }
+// req.body: { approvalNotes?, approvalMessage? }
+router.patch(
+  '/:matchId/approve',
+  validateRequest({ 
+    params: MatchIdSchema,
+    body: ApproveVolunteerMatchSchema 
+  }),
+  controller.approveVolunteerMatch
 );
 
 export default router;
