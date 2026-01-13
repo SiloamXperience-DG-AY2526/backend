@@ -1,6 +1,5 @@
 import { prisma } from '../prisma/client';
-import { Prisma } from '@prisma/client';
-import { BadRequestError } from '../utils/errors';
+import 'dotenv/config';
 import type { createEmailCampaignData, UpdateAudienceInput } from '../types/emailCampaign';
 
 export function createCampaignDB(userId: string, data: any) {
@@ -28,7 +27,7 @@ export function updateContentDB(campaignId: string, data: any) {
   });
 }
 
-export function updateCampaignSchedule(campaignId: string, scheduledAt: Date) {
+export function updateCampaignSchedule(campaignId: string, scheduledAt: Date | undefined) {
   return prisma.emailCampaign.update({
     where: { id: campaignId },
     data: { scheduledAt },
@@ -120,13 +119,21 @@ export function countPartnersFromFilter(filter: any) {
   return prisma.partner.count({ where: filter });
 }
 
-export function createTestEmail(campaignId: string, email: string) {
+export async function createTestEmail(campaignId: string, email: string) {
+  const campaign = await prisma.emailCampaign.findUnique({
+    where: { id: campaignId },
+  });
+
+  if (!campaign) {
+    throw new Error('Email campaign not found');
+  }
+
   return prisma.email.create({
     data: {
       campaignId,
-      senderAddress: 'test@system.local',
-      subject: 'Test Email',
-      body: 'Test',
+      senderAddress: `${process.env.SMTP_FROM}`,
+      subject: campaign.subject || 'Test Email',
+      body: campaign.body || 'Test',
       status: 'scheduled',
       isTest: true,
       recipients: {
@@ -168,6 +175,12 @@ export function listScheduledCampaigns() {
   });
 }
 
-export function deleteCampaignDB(campaignId: string) {
-  return prisma.emailCampaign.delete({ where: { id: campaignId } });
+export async function deleteCampaignDB(campaignId: string) {
+  await prisma.emailAudienceFilter.deleteMany({
+    where: { campaignId },
+  });
+
+  return prisma.emailCampaign.delete({
+    where: { id: campaignId },
+  });
 }

@@ -45,7 +45,7 @@ export type UpdateAudienceInput = z.infer<
 >;
 
 export const updateDeliverySchema = z.object({
-  scheduledAt: z.date(),
+  scheduledAt: preprocessDate,
 });
 
 export const updateContentSchema = z.object({

@@ -14,7 +14,7 @@ export async function updateContent(campaignId: string, data: any) {
   return model.updateContentDB(campaignId, data);
 }
 
-export async function updateDelivery(campaignId: string, scheduledAt: Date) {
+export async function updateDelivery(campaignId: string, scheduledAt: Date | undefined) {
   return model.updateCampaignSchedule(campaignId, scheduledAt);
 }
 
@@ -48,7 +48,8 @@ export async function publishCampaign(campaignId: string) {
   const campaign = await model.markCampaignScheduled(campaignId);
   if (!campaign) throw new BadRequestError("Email campaign not found");
 
-  const partners = await model.findPartnersFromFilter(campaignId);
+  const filter = await model.getAudienceFilter(campaignId);
+  const partners = await model.findPartnersFromFilter(filter);
   if (partners.length === 0) throw new BadRequestError("No recipients found for this campaign");
 
   const recipients = partners
@@ -73,19 +74,23 @@ export async function publishCampaign(campaignId: string) {
     recipients,
   });
 
-  // send email to each recipient
-  await Promise.all(
-    recipients.map((r) =>
-      sendEmail({
-        to: r.emailAddress,
-        subject: emailRecord.subject,
-        html: emailRecord.body,
-        from: campaign.senderAddress,
-      })
-    )
-  );
+  // Only send emails immediately if no scheduled date or scheduled date is in the past
+  const now = new Date();
+  if (!campaign.scheduledAt || campaign.scheduledAt <= now) {
+    await Promise.all(
+      recipients.map((r) =>
+        sendEmail({
+          to: r.emailAddress,
+          subject: emailRecord.subject,
+          html: emailRecord.body,
+          from: campaign.senderAddress,
+        })
+      )
+    );
+  }
 
-  return { campaign, emai: emailRecord };
+
+  return { campaign, emai: emailRecord, partners };
 }
 
 export async function getScheduledCampaigns() {

@@ -27,8 +27,9 @@ export const directPermissions: Record<Role, Permission[]> = {
     'emailCampaign:create',
     'emailCampaign:update',
     'emailCampaign:read',
-
-
+    'emailCampaign:test',
+    'emailCampaign:publish',
+    'emailCampaign:delete',
   ],
 
   [UserRole.financeManager]: [

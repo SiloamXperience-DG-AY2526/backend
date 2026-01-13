@@ -88,7 +88,7 @@ export async function publishCampaign(req: Request, res: Response, next: NextFun
     const { campaignId } = EmailCampaignIdSchema.parse(req.params);
 
     await service.publishCampaign(campaignId);
-    res.sendStatus(204);
+    res.status(204);
   } catch (err) {
     next(err);
   }
