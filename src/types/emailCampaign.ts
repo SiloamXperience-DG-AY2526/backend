@@ -18,7 +18,7 @@ export interface createEmailCampaignData {
   subject?: string;
   previewText: string | null;
   body?: string;
-  status: "scheduled" | "attempted" | "cancelled";
+  status: 'scheduled' | 'attempted' | 'cancelled';
   scheduledAt: Date | null;
   recipients: { partnerId: string; emailAddress: string }[];
 }

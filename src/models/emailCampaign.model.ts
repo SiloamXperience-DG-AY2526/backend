@@ -1,6 +1,6 @@
 import { prisma } from '../prisma/client';
 import 'dotenv/config';
-import type { createEmailCampaignData, UpdateAudienceInput } from '../types/emailCampaign';
+import type { createEmailCampaignData } from '../types/emailCampaign';
 
 export function createCampaignDB(userId: string, data: any) {
   return prisma.emailCampaign.create({
@@ -152,16 +152,16 @@ export function createEmailForCampaign(data: createEmailCampaignData) {
     data: {
       campaignId: data.campaignId,
       senderAddress: data.senderAddress,
-      subject: data.subject || "",
+      subject: data.subject || '',
       previewText: data.previewText,
-      body: data.body || "",
+      body: data.body || '',
       status: data.status,
       scheduledAt: data.scheduledAt,
       recipients: {
         create: data.recipients.map((r) => ({
           recipientAddress: r.emailAddress,
-          type: "to",
-          status: data.scheduledAt ? "scheduled" : "pending",
+          type: 'to',
+          status: data.scheduledAt ? 'scheduled' : 'pending',
         })),
       },
     },

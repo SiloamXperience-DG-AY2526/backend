@@ -46,11 +46,11 @@ export async function sendTestEmail(campaignId: string, email: string) {
 
 export async function publishCampaign(campaignId: string) {
   const campaign = await model.markCampaignScheduled(campaignId);
-  if (!campaign) throw new BadRequestError("Email campaign not found");
+  if (!campaign) throw new BadRequestError('Email campaign not found');
 
   const filter = await model.getAudienceFilter(campaignId);
   const partners = await model.findPartnersFromFilter(filter);
-  if (partners.length === 0) throw new BadRequestError("No recipients found for this campaign");
+  if (partners.length === 0) throw new BadRequestError('No recipients found for this campaign');
 
   const recipients = partners
     .map((p) => {
@@ -66,10 +66,10 @@ export async function publishCampaign(campaignId: string) {
   const emailRecord = await model.createEmailForCampaign({
     campaignId,
     senderAddress: campaign.senderAddress,
-    subject: campaign.subject || "",
+    subject: campaign.subject || '',
     previewText: campaign.previewText,
-    body: campaign.body || "",
-    status: "scheduled",
+    body: campaign.body || '',
+    status: 'scheduled',
     scheduledAt: campaign.scheduledAt,
     recipients,
   });
