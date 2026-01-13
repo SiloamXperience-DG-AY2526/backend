@@ -13,6 +13,7 @@ router.post(
   controller.createStaff
 );
 
+// TODO: (INCOMPLETE) Reconsider the implementation due to many factors such as projects still being assigned
 router.delete(
   '/remove/:staffId',
   requirePermission('staff:remove'),
