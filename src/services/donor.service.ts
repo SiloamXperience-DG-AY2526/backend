@@ -1,11 +1,11 @@
 import { buildPagination, calculateSkip } from './paginationHelper';
 import { JwtPayload } from '../utils/jwt';
 import { DonorDetailQueryType, DonorQueryType } from '../schemas';
-import { Prisma, SubmissionStatus, UserRole } from '@prisma/client';
-import { DonorPrivateSummarySelect, DonorPublicSummarySelect } from '../models/projectionSchemas/donor.projection';
+import { Prisma, SubmissionStatus } from '@prisma/client';
+import { DonorPrivateSummarySelect } from '../models/projectionSchemas/donor.projection';
 import * as donorModel from '../models/donor.model';
 import * as donationModel from '../models/donation.model';
-import { DonorDetailsWhereOfId, DonorWhereOfOwnProject } from '../models/whereSchemas/donor.select';
+import { DonorDetailsWhereOfId } from '../models/whereSchemas/donor.select';
 import { DonationWhereOfUser } from '../models/whereSchemas/donation.select';
 import { DonationHistoryProjection } from '../models/projectionSchemas/donation.projection';
 
@@ -14,25 +14,14 @@ import { DonationHistoryProjection } from '../models/projectionSchemas/donation.
  * Returns all donors with status filtering
  */
 export const getDonors = async (
-  userPayload: JwtPayload,
+  _userPayload: JwtPayload,
   filters: DonorQueryType
 ) => {
   const { page, limit } = filters;
   const skip = calculateSkip(page, limit);
-  const {userId, role} = userPayload;
 
-  let select: Prisma.PartnerSelect = {};
-  let where: Prisma.PartnerWhereInput = {};
-  
-  if (role == UserRole.financeManager || role == UserRole.superAdmin) {
-    //can access sensitive info
-    select = DonorPrivateSummarySelect;
-    where = {};
-  } else {
-    // PMs - only donors of own donation projects
-    select = DonorPublicSummarySelect;
-    where = DonorWhereOfOwnProject(userId);
-  }
+  const select: Prisma.PartnerSelect = DonorPrivateSummarySelect;
+  const where: Prisma.PartnerWhereInput = {};
 
   const { donors, totalCount } = await donorModel.getDonors(select, where, {skip, limit});
   

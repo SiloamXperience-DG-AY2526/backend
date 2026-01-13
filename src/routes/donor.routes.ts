@@ -10,6 +10,7 @@ const router = Router();
 // Permission Check: both FM and partner manager can view donors (but diff data access)
 router.get(
   '/',
+  requirePermission('donorDetails:view'),
   validateRequest({ query: DonorQuerySchema }),
   controller.getDonors
 );
