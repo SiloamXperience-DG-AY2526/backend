@@ -91,7 +91,7 @@ export async function publishCampaign(campaignId: string) {
 
   // TODO: Currently send the email regardless of the schedule date.
   // Needs to implement the cron job for scheduled email
-  const result = await Promise.all(
+  await Promise.all(
     recipients.map((r) =>
       sendEmail({
         to: r.emailAddress,
