@@ -190,6 +190,8 @@ model Email {
   status      EmailStatus
   scheduledAt DateTime?
 
+  isTest Boolean @default(false)
+
   recipients EmailRecipient[]
 
   @@map("emails")
@@ -200,14 +202,14 @@ model EmailCampaign {
 
   name String               // Internal name
   senderAddress String
-  subject String
+  subject String?
   previewText String?
-  body String
+  body String?
 
-  status EmailCampaignStatus
+  status EmailCampaignStatus @default(draft)
   scheduledAt DateTime?
 
-  audienceFilter EmailAudienceFilter?
+  audienceFilter EmailAudienceFilter? @relation("CampaignAudience")
 
   emails Email[]
 
@@ -224,7 +226,8 @@ model EmailAudienceFilter {
   id String @id @default(uuid())
 
   campaignId String @unique
-  campaign EmailCampaign @relation(fields: [campaignId], references: [id])
+  campaign EmailCampaign @relation("CampaignAudience", fields: [campaignId], references: [id])
+
 
   projectId String?
   isActivePartner Boolean?

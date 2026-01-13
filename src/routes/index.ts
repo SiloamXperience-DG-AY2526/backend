@@ -7,6 +7,7 @@ import donationRoutes from './donation.routes';
 import profileRoutes from './profile.routes';
 import donationProjectRoutes from './donationProject.routes';
 import volunteerApplicationRoutes from './volunteerApplication.routes';
+import emailCampaignRoutes from './emailCampaign.routes';
 
 const router = Router();
 
@@ -24,6 +25,9 @@ router.use('/profile', profileRoutes);
 
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);
+
+// Email Campaign routes
+router.use('/email-campaigns', emailCampaignRoutes);
 
 // Donation domain routes
 router.use('/donation-projects', donationProjectRoutes); // Project management
