@@ -75,20 +75,32 @@ export async function publishCampaign(campaignId: string) {
   });
 
   // Only send emails immediately if no scheduled date or scheduled date is in the past
-  const now = new Date();
-  if (!campaign.scheduledAt || campaign.scheduledAt <= now) {
-    await Promise.all(
-      recipients.map((r) =>
-        sendEmail({
-          to: r.emailAddress,
-          subject: emailRecord.subject,
-          html: emailRecord.body,
-          from: campaign.senderAddress,
-        })
-      )
-    );
-  }
+  // const now = new Date();
+  // if (!campaign.scheduledAt || campaign.scheduledAt <= now) {
+  //   await Promise.all(
+  //     recipients.map((r) =>
+  //       sendEmail({
+  //         to: r.emailAddress,
+  //         subject: emailRecord.subject,
+  //         html: emailRecord.body,
+  //         from: campaign.senderAddress,
+  //       })
+  //     )
+  //   );
+  // }
 
+  // TODO: Currently send the email regardless of the schedule date.
+  // Needs to implement the cron job for scheduled email
+  const result = await Promise.all(
+    recipients.map((r) =>
+      sendEmail({
+        to: r.emailAddress,
+        subject: emailRecord.subject,
+        html: emailRecord.body,
+        from: campaign.senderAddress,
+      })
+    )
+  );
 
   return { campaign, emai: emailRecord, partners };
 }
