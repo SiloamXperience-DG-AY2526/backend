@@ -41,11 +41,7 @@ export const sendVolunteerApplicationEmail = async ({
   const formattedDate = `${startDate
     .getDate()
     .toString()
-    .padStart(2, '0')} ${startDate.toLocaleString('en-US', {
-      month: 'short',
-    })} ${startDate.getFullYear()} (${startDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-    })})`;
+    .padStart(2, '0')} ${startDate.toLocaleString('en-US', { month: 'short', })} ${startDate.getFullYear()} (${startDate.toLocaleDateString('en-US', { weekday: 'long', })})`;
 
   await transporter.sendMail({
     from: `Volunteer Team <${process.env.SMTP_FROM}>`,
