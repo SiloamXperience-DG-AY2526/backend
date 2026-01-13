@@ -115,7 +115,7 @@ router.post(
   controller.submitVolunteerFeedback
 );
 
-router.patch('/volunteerProjects/:projectId/ApprovalStatus',
+router.patch('/:projectId/ApprovalStatus',
   validateRequest({
     body: UpdateVolunteerProjectStatusSchema,
   }),
