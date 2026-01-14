@@ -114,7 +114,7 @@ export const createVolunteerProject = async (
 
 export const updateVolProjectStatus = async (
   projectId: string,
-  managerId: string,
+  userId: string,
   status: ProjectApprovalStatus
 ) => {
 
@@ -125,10 +125,6 @@ export const updateVolProjectStatus = async (
     throw new NotFoundError(`Volunteer Project ${projectId} Not Found!`);
   }
 
-  if (project.managedById !== managerId) {
-    throw new UnauthorizedError('Unauthorized: You do not manage this project');
-  }
-
   const prevStatus = project.approvalStatus;
 
   const data: {
@@ -137,7 +133,7 @@ export const updateVolProjectStatus = async (
     } = { approvalStatus: status };
 
   if (status === ProjectApprovalStatus.approved) {
-    data.approvedById = managerId;
+    data.approvedById = userId;
   } else if (prevStatus === ProjectApprovalStatus.approved) {
     data.approvedById = null;
   }

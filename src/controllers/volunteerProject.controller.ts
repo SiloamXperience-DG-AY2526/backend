@@ -182,11 +182,11 @@ export const submitVolunteerFeedback = async (req: Request, res: Response) => {
 export const updateVolProjectStatus = async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const { status } = req.body;
-  const managerId = getUserIdFromRequest(req);
+  const userId = getUserIdFromRequest(req);
 
   const updatedProject = await volunteerService.updateVolProjectStatus(
     projectId,
-    managerId,
+    userId,
         status as ProjectApprovalStatus
   );
   return res.status(200).json({
