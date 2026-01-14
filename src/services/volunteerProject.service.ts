@@ -5,7 +5,7 @@ import {
   CreateVolunteerProjectInput, ProposeVolunteerProjectInput, UpdateVolunteerProposalInput,
   MyProjectApplicationsInput
 } from '../schemas/project';
-import { NotFoundError, NotImplementedError, UnauthorizedError } from '../utils/errors';
+import { NotFoundError, NotImplementedError } from '../utils/errors';
 
 //TODO
 export const getVolProjectApplications = async (
