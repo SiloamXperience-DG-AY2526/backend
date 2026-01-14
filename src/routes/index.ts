@@ -25,6 +25,9 @@ router.use('/profile', profileRoutes);
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);
 
+// Profile routes
+router.use('/profile', profileRoutes);
+
 // Donation domain routes
 router.use('/donation-projects', donationProjectRoutes); // Project management
 router.use('/donations', donationRoutes); // Transactions & browsing
