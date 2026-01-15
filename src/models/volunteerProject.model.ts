@@ -757,18 +757,52 @@ export const duplicateVolunteerProject = async (
   return prisma.$transaction(async (tx) => {
     const existing = await tx.volunteerProject.findUnique({
       where: { id: projectId },
-      include: {
+      select: {
+        title: true,
+        location: true,
+        aboutDesc: true,
+        objectives: true,
+        beneficiaries: true,
+        initiatorName: true,
+        organisingTeam: true,
+        proposedPlan: true,
+        startTime: true,
+        endTime: true,
+        startDate: true,
+        endDate: true,
+        frequency: true,
+        interval: true,
+        dayOfWeek: true,
+        image: true,
+        attachments: true,
         objectivesList: {
+          select: {
+            objective: true,
+            order: true,
+          },
           orderBy: { order: 'asc' },
         },
         positions: {
-          include: {
+          select: {
+            role: true,
+            description: true,
+            totalSlots: true,
             skills: {
+              select: {
+                skill: true,
+                order: true,
+              },
               orderBy: { order: 'asc' },
             },
           },
         },
         sessions: {
+          select: {
+            name: true,
+            sessionDate: true,
+            startTime: true,
+            endTime: true,
+          },
           orderBy: { sessionDate: 'asc' },
         },
       },
@@ -776,37 +810,13 @@ export const duplicateVolunteerProject = async (
 
     if (!existing) return null;
 
-    const {
-      id: _existingId,
-      createdAt: _existingCreatedAt,
-      updatedAt: _existingUpdatedAt,
-      approvalNotes: _existingApprovalNotes,
-      approvalMessage: _existingApprovalMessage,
-      approvalStatus: _existingApprovalStatus,
-      submissionStatus: _existingSubmissionStatus,
-      operationStatus: _existingOperationStatus,
-      approvedById: _existingApprovedById,
-      objectivesList,
-      positions,
-      sessions,
-      ...projectData
-    } = existing;
-
-    void _existingId;
-    void _existingCreatedAt;
-    void _existingUpdatedAt;
-    void _existingApprovalNotes;
-    void _existingApprovalMessage;
-    void _existingApprovalStatus;
-    void _existingSubmissionStatus;
-    void _existingOperationStatus;
-    void _existingApprovedById;
+    const { objectivesList, positions, sessions, ...projectData } = existing;
 
     const duplicated = await tx.volunteerProject.create({
       data: {
         ...projectData,
         managedById: newManagerId,
-        title: `${projectData.title} (Copy)`,
+        title: `${existing.title} (Copy)`,
         submissionStatus: 'draft',
         approvalStatus: ProjectApprovalStatus.pending,
         operationStatus: ProjectOperationStatus.paused,

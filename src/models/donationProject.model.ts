@@ -246,8 +246,27 @@ export const duplicateDonationProject = async (
   return prisma.$transaction(async (tx) => {
     const existing = await tx.donationProject.findUnique({
       where: { id: projectId },
-      include: {
+      select: {
+        title: true,
+        location: true,
+        about: true,
+        objectives: true,
+        beneficiaries: true,
+        initiatorName: true,
+        organisingTeam: true,
+        targetFund: true,
+        brickSize: true,
+        deadline: true,
+        type: true,
+        startDate: true,
+        endDate: true,
+        image: true,
+        attachments: true,
         objectivesList: {
+          select: {
+            objective: true,
+            order: true,
+          },
           orderBy: { order: 'asc' },
         },
       },
@@ -255,29 +274,13 @@ export const duplicateDonationProject = async (
 
     if (!existing) return null;
 
-    const {
-      id: _existingId,
-      createdAt: _existingCreatedAt,
-      updatedAt: _existingUpdatedAt,
-      approvalNotes: _existingApprovalNotes,
-      approvalStatus: _existingApprovalStatus,
-      submissionStatus: _existingSubmissionStatus,
-      objectivesList,
-      ...projectData
-    } = existing;
-
-    void _existingId;
-    void _existingCreatedAt;
-    void _existingUpdatedAt;
-    void _existingApprovalNotes;
-    void _existingApprovalStatus;
-    void _existingSubmissionStatus;
+    const { objectivesList, ...projectData } = existing;
 
     const duplicated = await tx.donationProject.create({
       data: {
         ...projectData,
         managedBy: newManagerId,
-        title: `${projectData.title} (Copy)`,
+        title: `${existing.title} (Copy)`,
         submissionStatus: SubmissionStatus.draft,
         approvalStatus: ProjectApprovalStatus.pending,
         approvalNotes: null,
