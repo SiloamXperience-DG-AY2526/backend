@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getUserProfileService, updateUserProfileService } from '../services/profile.service';
+import { getUserProfileService, updateUserProfileService, getComprehensivePartnerInfoService } from '../services/profile.service';
 import { getUserIdFromRequest } from '../utils/user';
 
 export const getUserProfile = async (req: Request, res: Response) => {
@@ -25,4 +25,16 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       ...newProfile
     },
   });
+};
+
+/**
+ * Controller: Get partner information
+ * GET /profile/:partnerId
+ */
+export const getComprehensivePartnerInfo = async (req: Request, res: Response) => {
+  const { partnerId } = req.params;
+  
+  const partnerInfo = await getComprehensivePartnerInfoService(partnerId);
+  
+  return res.status(200).json(partnerInfo);
 };

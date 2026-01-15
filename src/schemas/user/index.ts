@@ -59,3 +59,8 @@ export type PartnerProfile = z.infer<typeof PartnerProfileSchema>;
 // profile types used for updating Partner profile
 export type UserOnlyProfile = z.infer<typeof UserOnlyProfileSchema>;
 export type PartnerOnlyProfile = z.infer<typeof PartnerOnlyProfileSchema>;
+
+// Schema for partnerId param validation
+export const PartnerIdSchema = z.object({
+  partnerId: z.uuid(),
+});

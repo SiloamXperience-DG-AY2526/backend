@@ -1,0 +1,89 @@
+import { Router } from 'express';
+import { validateRequest } from '../middlewares/validateRequest';
+import { requirePermission } from '../middlewares/requirePermission';
+import * as controller from '../controllers/emailCampaign.controller';
+import {
+  createEmailCampaignSchema,
+  updateAudienceSchema,
+  updateDeliverySchema,
+  updateContentSchema,
+  sendTestEmailSchema,
+  EmailCampaignIdSchema
+} from '../schemas/emailCampaign';
+
+const router = Router();
+
+router.use(
+  '/:campaignId',
+  validateRequest({ params: EmailCampaignIdSchema })
+);
+
+// Create draft campaign
+router.post(
+  '/',
+  requirePermission('emailCampaign:create'),
+  validateRequest({ body: createEmailCampaignSchema }),
+  controller.createCampaign
+);
+
+// Update audience
+router.put(
+  '/:campaignId/audience',
+  requirePermission('emailCampaign:update'),
+  validateRequest({ body: updateAudienceSchema }),
+  controller.updateAudience
+);
+
+// Update delivery
+router.put(
+  '/:campaignId/delivery',
+  requirePermission('emailCampaign:update'),
+  validateRequest({ body: updateDeliverySchema }),
+  controller.updateDelivery
+);
+
+// Update content
+router.put(
+  '/:campaignId/content',
+  requirePermission('emailCampaign:update'),
+  validateRequest({ body: updateContentSchema }),
+  controller.updateContent
+);
+
+// Preview audience size
+router.get(
+  '/:campaignId/preview',
+  requirePermission('emailCampaign:read'),
+  controller.previewAudience
+);
+
+// Send test email
+router.post(
+  '/:campaignId/test',
+  requirePermission('emailCampaign:test'),
+  validateRequest({ body: sendTestEmailSchema }),
+  controller.sendTestEmail
+);
+
+// Publish campaign
+router.post(
+  '/:campaignId/publish',
+  requirePermission('emailCampaign:publish'),
+  controller.publishCampaign
+);
+
+// View scheduled campaigns only
+router.get(
+  '/',
+  requirePermission('emailCampaign:read'),
+  controller.getScheduledCampaigns
+);
+
+// Delete campaign
+router.delete(
+  '/:campaignId',
+  requirePermission('emailCampaign:delete'),
+  controller.deleteCampaign
+);
+
+export default router;
