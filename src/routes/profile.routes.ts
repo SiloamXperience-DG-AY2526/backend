@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/profile.controller';
+import { validateRequest } from '../middlewares/validateRequest';
+import { PartnerIdSchema } from '../schemas/user';
 
 const router = Router();
 
@@ -7,6 +9,13 @@ const router = Router();
 router.get(
   '/me',
   controller.getUserProfile
+);
+
+// GET partner information
+router.get(
+  '/:partnerId',
+  validateRequest({ params: PartnerIdSchema }),
+  controller.getComprehensivePartnerInfo
 );
 
 // PATCH update user profile
