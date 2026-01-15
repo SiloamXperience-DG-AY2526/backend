@@ -1,8 +1,9 @@
 import { UserRole } from '@prisma/client';
 // import { getStaffProfile, updateStaffProfile } from '../models/general.model';
 import { findUserByIdWithRoles, getPartnerProfile, updatePartnerProfile } from '../models/partner.model';
-import { StaffProfile, PartnerProfile, PartnerProfileSchema } from '../schemas/user';
+import { StaffProfile, PartnerProfile, PartnerProfileSchema, StaffProfileSchema } from '../schemas/user';
 import { NotFoundError, ValidationError } from '../utils/errors';
+import { getStaffProfile, updateStaffProfile } from '../models/general.model';
 
 export const getUserProfileService = async (userId: string) => {
   
@@ -18,10 +19,9 @@ export const getUserProfileService = async (userId: string) => {
     return partnerData;
 
   } else {
-    // const staffData = await getStaffProfile(userId);
+    const staffData = await getStaffProfile(userId);
 
-    // return staffData;
-    return;
+    return staffData;
 
   }
 };
@@ -48,15 +48,15 @@ export const updateUserProfileService = async (
 
     }    
   } else { // staff
-    // try {
-    //   const newStaffProfile = StaffProfileSchema.parse(newUserProfile);
+    try {
+      const newStaffProfile = StaffProfileSchema.parse(newUserProfile);
 
-    //   return await updateStaffProfile(userId, newStaffProfile);
+      return await updateStaffProfile(userId, newStaffProfile);
 
-    // } catch (err) {
+    } catch (err) {
       
-    //   throw new ValidationError('Error updating staff profile', err);
-    // }
+      throw new ValidationError('Error updating staff profile', err);
+    }
 
     return;
     
