@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteerProject.service';
 import { getUserIdFromRequest } from '../utils/user';
-import { GetAvailableVolunteerActivitiesSchema, MyVolApplicationsQueryType  } from '../schemas/project';
+import { GetAvailableVolunteerActivitiesSchema, MyVolApplicationsQueryType } from '../schemas/project';
+import { ProjectApprovalStatus } from '@prisma/client';
 
 export const getVolunteerProjects = async (req: Request, res: Response) => {
   const managerId = getUserIdFromRequest(req);
@@ -49,8 +50,8 @@ export const getVolProjectApplications = async (
   req: Request,
   res: Response
 ) => {
-  const userId  = getUserIdFromRequest(req);
-  const {projectId} = req.params;
+  const userId = getUserIdFromRequest(req);
+  const { projectId } = req.params;
   const filters = req.query as MyVolApplicationsQueryType;
   const applications = await volunteerService.getVolProjectApplications(
     {
@@ -107,7 +108,7 @@ export const updateVolunteerProposal = async (
   res: Response
 ) => {
   const { projectId } = req.params;
-  const { userId, ...updateData } = req.body; 
+  const { userId, ...updateData } = req.body;
 
   if (!userId) {
     throw new Error('USER_ID_REQUIRED');
@@ -115,8 +116,8 @@ export const updateVolunteerProposal = async (
 
   const project = await volunteerService.updateVolunteerProposal({
     projectId,
-    userId,     
-    payload: updateData, 
+    userId,
+    payload: updateData,
   });
 
   return res.status(200).json({
@@ -159,7 +160,7 @@ export const getVolunteerProjectDetail = async (req: Request, res: Response) => 
 };
 
 export const submitVolunteerFeedback = async (req: Request, res: Response) => {
-  const userId  = getUserIdFromRequest(req);
+  const userId = getUserIdFromRequest(req);
   const { projectId } = req.params;
   const { ratings, feedback } = req.body;
 
@@ -190,3 +191,21 @@ export const duplicateVolunteerProject = async (req: Request, res: Response) => 
     data: duplicated,
   });
 };
+
+export const updateVolProjectStatus = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const { status } = req.body;
+  const userId = getUserIdFromRequest(req);
+
+  const updatedProject = await volunteerService.updateVolProjectStatus(
+    projectId,
+    userId,
+        status as ProjectApprovalStatus
+  );
+  return res.status(200).json({
+    status: 'success',
+    message: 'Volunteer project status updated',
+    data: updatedProject,
+  });
+};
+

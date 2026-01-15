@@ -128,41 +128,41 @@ export const createVolunteerProject = async (
 
 //partner apis
 type PaginatedVolunteerActivities = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  data: Array<{
-    id: string;
-    title: string;
-    location: string;
-    startDate: Date;
-    endDate: Date;
-    startTime: Date;
-    endTime: Date;
-    operationStatus: string;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    data: Array<{
+        id: string;
+        title: string;
+        location: string;
+        startDate: Date;
+        endDate: Date;
+        startTime: Date;
+        endTime: Date;
+        operationStatus: string;
 
-    positions: Array<{
-      id: string;
-      role: string;
-      description: string;
-      totalSlots: number;
-      slotsFilled: number;
-      slotsAvailable: number;
+        positions: Array<{
+            id: string;
+            role: string;
+            description: string;
+            totalSlots: number;
+            slotsFilled: number;
+            slotsAvailable: number;
+        }>;
+
+        sessions: Array<{
+            id: string;
+            name: string;
+            sessionDate: Date;
+            startTime: Date;
+            endTime: Date;
+
+            totalSlots: number;
+            slotsFilled: number;
+            slotsAvailable: number;
+        }>;
     }>;
-
-    sessions: Array<{
-      id: string;
-      name: string;
-      sessionDate: Date;
-      startTime: Date;
-      endTime: Date;
-
-      totalSlots: number;
-      slotsFilled: number;
-      slotsAvailable: number;
-    }>;
-  }>;
 };
 
 export const getAvailableVolunteerActivitiesModel = async ({
@@ -206,14 +206,14 @@ export const getAvailableVolunteerActivitiesModel = async ({
                 hasConsented: true,
                 status: { in: ['approved', 'active', 'inactive'] }, //filled
               },
-              select: { id: true, volunteerId: true }, 
+              select: { id: true, volunteerId: true },
             },
           },
         },
         sessions: {
           include: {
             volunteerSessions: {
-              select: { id: true, volunteerId: true }, 
+              select: { id: true, volunteerId: true },
             },
           },
           orderBy: { sessionDate: 'asc' },
@@ -225,7 +225,7 @@ export const getAvailableVolunteerActivitiesModel = async ({
   const totalPages = Math.ceil(total / limit);
 
   const data = projects.map((p) => {
-  //volunteers that are filled
+    //volunteers that are filled
     const positions = p.positions.map((pos) => {
       const slotsFilled = pos.signups.length;
       const slotsAvailable = Math.max(pos.totalSlots - slotsFilled, 0);
@@ -285,16 +285,16 @@ export const getAvailableVolunteerActivitiesModel = async ({
       id: p.id,
       title: p.title,
       location: p.location,
-      image: p.image,          
-      aboutDesc: p.aboutDesc, 
+      image: p.image,
+      aboutDesc: p.aboutDesc,
       startDate: p.startDate,
       endDate: p.endDate,
       startTime: p.startTime,
       endTime: p.endTime,
       operationStatus: p.operationStatus,
 
-      projectTotalSlots,       
-      projectAvailableSlots,    
+      projectTotalSlots,
+      projectAvailableSlots,
       positions,
       sessions,
     };
@@ -323,7 +323,7 @@ export const proposeVolunteerProjectModel = async ({
         managedById: proposerId, // volunteerid
         submissionStatus: 'draft',
         approvalStatus: 'pending',
-        operationStatus: 'paused', 
+        operationStatus: 'paused',
       },
     });
 
@@ -359,9 +359,9 @@ export const updateVolunteerProposalModel = async ({
   userId,
   payload,
 }: {
-  projectId: string;
-  userId: string;
-  payload: any;
+    projectId: string;
+    userId: string;
+    payload: any;
 }) => {
   return prisma.$transaction(async (tx) => {
     const project = await tx.volunteerProject.findUnique({
@@ -399,7 +399,7 @@ export const updateVolunteerProposalModel = async ({
       },
     });
 
-  
+
     if (positions) {
       for (const pos of positions) {
         let positionId: string;
@@ -450,8 +450,8 @@ export const withdrawVolunteerProposalModel = async ({
   projectId,
   userId,
 }: {
-  projectId: string;
-  userId: string;
+    projectId: string;
+    userId: string;
 }) => {
   return prisma.$transaction(async (tx) => {
     const existing = await tx.volunteerProject.findUnique({
@@ -492,7 +492,7 @@ const FILLED_STATUSES = ['approved', 'active', 'inactive'] as const;
 export const getVolunteerProjectDetailModel = async ({
   projectId,
 }: {
-  projectId: string;
+    projectId: string;
 }) => {
   const p = await prisma.volunteerProject.findUnique({
     where: { id: projectId },
@@ -634,19 +634,19 @@ export const submitVolunteerFeedbackModel = async ({
   ratings,
   feedback,
 }: {
-  projectId: string;
-  userId: string;
-  ratings: {
-    overall: number;
-    management: number;
-    planning: number;
-    facilities: number;
-  };
-  feedback: {
-    experience: string;
-    improvement: string;
-    comments?: string | null;
-  };
+    projectId: string;
+    userId: string;
+    ratings: {
+        overall: number;
+        management: number;
+        planning: number;
+        facilities: number;
+    };
+    feedback: {
+        experience: string;
+        improvement: string;
+        comments?: string | null;
+    };
 }) => {
   return prisma.$transaction(async (tx) => {
     // check project exists
@@ -672,7 +672,7 @@ export const submitVolunteerFeedbackModel = async ({
     });
 
     if (!signup) {
-      throw new Error('NOT_ELIGIBLE_FOR_FEEDBACK'); 
+      throw new Error('NOT_ELIGIBLE_FOR_FEEDBACK');
     }
 
     // prevent duplicates (per volunteer position signup)
@@ -718,6 +718,35 @@ export const submitVolunteerFeedbackModel = async ({
       feedback: createdFeedback,
       linkedSignupId: signup.id,
     };
+  });
+};
+
+
+
+export const updateVolProjectStatus = async (
+  projectId: string,
+  data: {
+        approvalStatus: ProjectApprovalStatus;
+        approvedById?: string | null;
+    }
+) => {
+  return prisma.volunteerProject.update({
+    where: { id: projectId },
+    data,
+    include: {
+      managedBy: true,
+      approvedBy: true
+    },
+  });
+};
+
+export const getVolProject = async (projectId: string) => {
+  return prisma.volunteerProject.findUnique({
+    where: { id: projectId },
+    include: {
+      managedBy: true,
+      approvedBy: true
+    },
   });
 };
 

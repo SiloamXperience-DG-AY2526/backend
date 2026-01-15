@@ -1,7 +1,10 @@
+import { ProjectApprovalStatus } from '@prisma/client';
 import * as volunteerModel from '../models/volunteerProject.model';
-import { GetAvailableVolunteerActivitiesInput, UpdateVolunteerProjectInput,
-  CreateVolunteerProjectInput,ProposeVolunteerProjectInput,UpdateVolunteerProposalInput, 
-  MyProjectApplicationsInput} from '../schemas/project';
+import {
+  GetAvailableVolunteerActivitiesInput, UpdateVolunteerProjectInput,
+  CreateVolunteerProjectInput, ProposeVolunteerProjectInput, UpdateVolunteerProposalInput,
+  MyProjectApplicationsInput
+} from '../schemas/project';
 import { NotFoundError, NotImplementedError } from '../utils/errors';
 
 //TODO
@@ -24,16 +27,16 @@ export const proposeVolunteerProject = async (
 };
 
 export const updateVolunteerProposal = async (input: {
-  projectId: string;
-  userId: string;
-  payload: Omit<UpdateVolunteerProposalInput, 'userId'>;
+    projectId: string;
+    userId: string;
+    payload: Omit<UpdateVolunteerProposalInput, 'userId'>;
 }) => {
   return volunteerModel.updateVolunteerProposalModel(input);
 };
 
 export const withdrawVolunteerProposal = async (input: {
-  projectId: string;
-  userId: string;
+    projectId: string;
+    userId: string;
 }) => {
   return volunteerModel.withdrawVolunteerProposalModel(input);
 };
@@ -42,19 +45,19 @@ export const getVolunteerProjectDetail = async (input: { projectId: string }) =>
 };
 
 export const submitVolunteerFeedback = async (input: {
-  projectId: string;
-  userId: string;
-  ratings: {
-    overall: number;
-    management: number;
-    planning: number;
-    facilities: number;
-  };
-  feedback: {
-    experience: string;
-    improvement: string;
-    comments?: string | null;
-  };
+    projectId: string;
+    userId: string;
+    ratings: {
+        overall: number;
+        management: number;
+        planning: number;
+        facilities: number;
+    };
+    feedback: {
+        experience: string;
+        improvement: string;
+        comments?: string | null;
+    };
 }) => {
   return volunteerModel.submitVolunteerFeedbackModel(input);
 };
@@ -123,3 +126,31 @@ export const duplicateVolunteerProject = async (
   return duplicated;
 };
 
+export const updateVolProjectStatus = async (
+  projectId: string,
+  userId: string,
+  status: ProjectApprovalStatus
+) => {
+
+  // Get current project
+  const project = await volunteerModel.getVolProject(projectId);
+
+  if (!project) {
+    throw new NotFoundError(`Volunteer Project ${projectId} Not Found!`);
+  }
+
+  const prevStatus = project.approvalStatus;
+
+  const data: {
+        approvalStatus: ProjectApprovalStatus;
+        approvedById?: string | null;
+    } = { approvalStatus: status };
+
+  if (status === ProjectApprovalStatus.approved) {
+    data.approvedById = userId;
+  } else if (prevStatus === ProjectApprovalStatus.approved) {
+    data.approvedById = null;
+  }
+
+  return volunteerModel.updateVolProjectStatus(projectId, data);
+};

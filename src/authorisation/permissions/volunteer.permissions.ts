@@ -7,6 +7,7 @@ export const volunteerPermissions = {
   'volunteerApplications:view:all': nothingElse,
   'volunteerProjects:duplicate': nothingElse,
   'volunteerProjFeedback:post': nothingElse,
+  'volunteerProjApproval:update': nothingElse,
   'volunteerProjFeedback:post:own': async ({ req }) => {
     const userId = getUserIdFromRequest(req);
     const {projectId} = req.params;

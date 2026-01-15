@@ -9,6 +9,7 @@ import {
   WithdrawVolunteerProposalSchema,
   SubmitVolunteerFeedbackSchema,
   MyProjectApplicationsQuerySchema,
+  UpdateVolunteerProjectStatusSchema,
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
 import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
@@ -110,8 +111,18 @@ router.post(
   validateRequest({
     body: SubmitVolunteerFeedbackSchema,
   }),
-  requireAnyPermission(['volunteerProjFeedback:post:own','volunteerProjFeedback:post']),
+  requireAnyPermission(['volunteerProjFeedback:post:own', 'volunteerProjFeedback:post']),
   controller.submitVolunteerFeedback
+);
+
+// PATCH update approval status of a volunteering project
+// Permission check: only users with 'volunteerProjApproval:update' permission
+router.patch('/:projectId/ApprovalStatus',
+  validateRequest({
+    body: UpdateVolunteerProjectStatusSchema,
+  }),
+  requirePermission('volunteerProjApproval:update'),
+  controller.updateVolProjectStatus
 );
 
 // POST duplicate an existing volunteer project
