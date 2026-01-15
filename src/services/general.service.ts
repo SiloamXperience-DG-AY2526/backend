@@ -8,8 +8,8 @@ import { NotFoundError } from '../utils/errors';
 export const submitPeerFeedback = async (
   feedbackData: {
         feedbackType: 'supervisor' | 'peer' | 'self';
-        reviewerName: string;
-        revieweeName: string;
+        reviewer: string;
+        reviewee: string;
         score: number;
         strengths?: string | null;
         improvements?: string | null;
@@ -19,14 +19,14 @@ export const submitPeerFeedback = async (
 
 
   // Look up reviewer
-  const reviewerName = parseName(feedbackData.reviewerName);
+  const reviewerName = parseName(feedbackData.reviewer);
   const reviewer = await generalModel.findUserByName(reviewerName.firstName, reviewerName.lastName);
   if (!reviewer) {
     throw new NotFoundError('Reviewer not found');
   }
 
   // Look up reviewee
-  const revieweeName = parseName(feedbackData.revieweeName);
+  const revieweeName = parseName(feedbackData.reviewee);
   const reviewee = await generalModel.findUserByName(revieweeName.firstName, revieweeName.lastName);
   if (!reviewee) {
     throw new NotFoundError('Reviewee not found');

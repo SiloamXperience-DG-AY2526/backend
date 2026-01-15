@@ -5,8 +5,8 @@ import { getUserIdFromRequest } from '../utils/user';
 
 export const submitPeerFeedback = async (req: Request, res: Response) => {
   const feedbackData = req.body;
-
   const result = await generalService.submitPeerFeedback(feedbackData);
+  
   res.status(201).json({
     status: 'success',
     message: 'Partner feedback submitted successfully',
