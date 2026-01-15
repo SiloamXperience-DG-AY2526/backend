@@ -99,5 +99,9 @@ export const duplicateDonationProject = async (req: Request, res: Response) => {
     projectId,
     managerId
   );
-  res.status(201).json(duplicated);
+  res.status(201).json({
+    status: 'success',
+    message: 'Donation project duplicated',
+    data: duplicated,
+  });
 };
