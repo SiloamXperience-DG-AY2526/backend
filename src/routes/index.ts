@@ -7,8 +7,10 @@ import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
 import profileRoutes from './profile.routes';
 import donationProjectRoutes from './donationProject.routes';
+import staffRoutes from './staff.routes';
 import volunteerApplicationRoutes from './volunteerApplication.routes';
 import donorRoutes from './donor.routes';
+import emailCampaignRoutes from './emailCampaign.routes';
 
 const router = Router();
 
@@ -28,6 +30,12 @@ router.use('/donation', donationRoutes);
 
 // Profile routes
 router.use('/profile', profileRoutes);
+
+// staff management routes
+router.use('/staff', staffRoutes);
+
+// Email Campaign routes
+router.use('/email-campaigns', emailCampaignRoutes);
 
 // Donation domain routes
 router.use('/donation-projects', donationProjectRoutes); // Project management

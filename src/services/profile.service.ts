@@ -1,6 +1,6 @@
 import { UserRole } from '@prisma/client';
 // import { getStaffProfile, updateStaffProfile } from '../models/general.model';
-import { findUserByIdWithRoles, getPartnerProfile, updatePartnerProfile } from '../models/partner.model';
+import { findUserByIdWithRoles, getPartnerProfile, updatePartnerProfile, getComprehensivePartnerInfo } from '../models/partner.model';
 import { StaffProfile, PartnerProfile, PartnerProfileSchema } from '../schemas/user';
 import { NotFoundError, ValidationError } from '../utils/errors';
 
@@ -61,4 +61,18 @@ export const updateUserProfileService = async (
     return;
     
   }
+};
+
+export const getComprehensivePartnerInfoService = async (userId: string) => {
+  const user = await findUserByIdWithRoles(userId);
+  
+  if (!user) {
+    throw new NotFoundError(`User ${userId} not found!`);
+  }
+
+  if (user.role !== UserRole.partner) {
+    throw new NotFoundError('User is not a partner');
+  }
+
+  return await getComprehensivePartnerInfo(userId);
 };
