@@ -86,7 +86,7 @@ async function main() {
   // ==================== PARTNER PROFILES ====================
   console.log('\n👥 Creating partner profiles with complete onboarding data...\n');
 
-  const partnerEmails = ['partner@siloam.com'];
+  // const partnerEmails = ['partner@siloam.com'];
   const partnerProfiles = [
     {
       email: 'partner@siloam.com',
@@ -129,7 +129,7 @@ async function main() {
         continue;
       }
 
-      const partner = await prisma.partner.create({
+      await prisma.partner.create({
         data: {
           userId: user.id,
           dob: profile.dob,
