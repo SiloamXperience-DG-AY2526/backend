@@ -19,11 +19,6 @@ router.get('/', getRoot);
 // GET /health - Health check endpoint (Public)
 router.get('/health', getHealth);
 
-
-
-
-
-
 // Auth routes
 router.use('/auth', authRoutes);
 

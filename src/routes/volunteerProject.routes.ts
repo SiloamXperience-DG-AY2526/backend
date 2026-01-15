@@ -68,7 +68,6 @@ router.patch(
   controller.updateVolunteerProject
 );
 
-
 //No need Permission check: all PMs can view applications to his own projects
 router.get(
   '/me/:projectId/applications',
@@ -77,10 +76,6 @@ router.get(
   }),
   controller.getVolProjectApplications
 );
-
-//GET any project public info
-// Filter: status == available
-
 
 
 //QUESTION: can this be combined with POST /volunteerProjects/ ? remove proposal ?

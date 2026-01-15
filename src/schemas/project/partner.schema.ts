@@ -1,34 +1,8 @@
 import { z } from 'zod';
 import {
-  ProjectFrequency
+  ProjectFrequency,
 } from '@prisma/client';
 import { preprocessDate } from '../helper';
-export const SubmitVolunteerApplicationSchema = z.object({
-  userId: z.uuid(),
-  positionId: z.uuid(),
-  sessionId: z.uuid().optional(),
-
-  
-});
-
-//submit volunteer interest
-export type SubmitVolunteerApplicationInput = z.infer<
-  typeof SubmitVolunteerApplicationSchema
->;
-
-//get application
-export const GetVolunteerApplicationsParamsSchema = z.object({
-  userId: z.string().uuid(),
-});
-export const GetVolunteerApplicationsQuerySchema = z.object({
-  status: z
-    .enum(['reviewing', 'approved', 'rejected', 'active', 'inactive'])
-    .optional(),
-});
-
-export type GetVolunteerApplicationsQueryInput = z.infer<
-  typeof GetVolunteerApplicationsQuerySchema
->;
 
 // Query params schema for available activities
 export const GetAvailableVolunteerActivitiesSchema = z.object({
@@ -57,13 +31,10 @@ export type GetAvailableVolunteerActivitiesInput = z.infer<
   typeof GetAvailableVolunteerActivitiesSchema
 >;
 
-
 //volunteer propose project
 export const ProposeVolunteerProjectSchema = z.object({
-  userId: z.uuid(), //not supposed to be here get it from user later on
   title: z.string().min(1),
   location: z.string().min(1),
-
   aboutDesc: z.string().min(1), 
   objectives: z.string().min(1),
   beneficiaries: z.string().min(1),
@@ -78,7 +49,7 @@ export const ProposeVolunteerProjectSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
 
-  frequency: z.nativeEnum(ProjectFrequency),
+  frequency: z.enum(ProjectFrequency),
   interval: z.number().int().positive().optional().nullable(),
   dayOfWeek: z.string().optional().nullable(),
 
@@ -101,11 +72,7 @@ export type ProposeVolunteerProjectInput = z.infer<
   typeof ProposeVolunteerProjectSchema
 >;
 
-
-
 export const UpdateVolunteerProposalSchema = z.object({
-  userId: z.uuid(), //  remove when auth is ready
-
   title: z.string().min(1).optional(),
   location: z.string().min(1).optional(),
 
@@ -157,8 +124,6 @@ export type WithdrawVolunteerProposalInput = z.infer<
 
 export const SubmitVolunteerFeedbackSchema = z
   .object({
-    userId: z.string().uuid(), // TEMP: from body
-
     ratings: z.object({
       overall: z.number().int().min(1).max(5),
       management: z.number().int().min(1).max(5),
@@ -171,8 +136,6 @@ export const SubmitVolunteerFeedbackSchema = z
       improvement: z.string().trim().min(1).max(2000),
       comments: z.string().trim().max(2000).optional().nullable(),
     }),
-
-    submittedAt: z.string().datetime().optional(), 
   })
   .strict();
 
