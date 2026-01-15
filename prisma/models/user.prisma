@@ -1,12 +1,14 @@
 model User {
-  id           String  @id @default(uuid())
+  id           String   @id @default(uuid())
   firstName    String
   lastName     String
   title        String?
-  email        String  @unique
+  email        String   @unique
   passwordHash String
+  role         UserRole @default(partner)
 
-  roles UserRole[]
+  // Mass email relation
+  emailCampaigns EmailCampaign[] @relation("email_campaign_creator")
 
   // Volunteer-related relations
   managedProjects           VolunteerProject[]         @relation("managed_projects")
@@ -32,29 +34,4 @@ model User {
   RecurringDonation RecurringDonation[]
 
   @@map("users")
-}
-
-model Role {
-  id          String  @id @default(uuid())
-  roleName    String
-  description String?
-
-  users UserRole[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("roles")
-}
-
-model UserRole {
-  id     String @id @default(uuid())
-  userId String
-  roleId String
-
-  user User @relation(fields: [userId], references: [id])
-  role Role @relation(fields: [roleId], references: [id])
-
-  @@unique([userId, roleId])
-  @@map("user_roles")
 }
