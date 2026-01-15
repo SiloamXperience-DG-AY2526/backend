@@ -57,8 +57,6 @@ export const updateUserProfileService = async (
       
       throw new ValidationError('Error updating staff profile', err);
     }
-
-    return;
     
   }
 };
