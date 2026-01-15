@@ -342,6 +342,8 @@ export const getComprehensivePartnerInfo = async (userId: string) => {
     },
   });
 
+  volunteerPositions;
+
   // Get all volunteer sessions with attendance data
   const volunteerSessions = await prisma.volunteerSession.findMany({
     where: {
