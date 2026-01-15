@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
 import authRoutes from './auth.routes';
+import generalRoutes from './general.routes';
 import { authenticateJWT } from '../middlewares/authenticateJWT';
 import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
 import profileRoutes from './profile.routes';
 import donationProjectRoutes from './donationProject.routes';
+import staffRoutes from './staff.routes';
 import volunteerApplicationRoutes from './volunteerApplication.routes';
 import emailCampaignRoutes from './emailCampaign.routes';
 
@@ -25,6 +27,14 @@ router.use('/profile', profileRoutes);
 
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);
+router.use('/general', generalRoutes);
+router.use('/donation', donationRoutes);
+
+// Profile routes
+router.use('/profile', profileRoutes);
+
+// staff management routes
+router.use('/staff', staffRoutes);
 
 // Email Campaign routes
 router.use('/email-campaigns', emailCampaignRoutes);

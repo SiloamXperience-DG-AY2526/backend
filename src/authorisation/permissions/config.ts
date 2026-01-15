@@ -18,12 +18,15 @@ export type Role = UserRole;
 export const directPermissions: Record<Role, Permission[]> = {
   //add more permissions here
   [UserRole.superAdmin]: [
-    'example:view'
+    'example:view',
+    'staff:create',
+    'staff:remove',
   ],
 
   [UserRole.generalManager]: [
     'volunteerApplications:view:all',
     'volunteerProjFeedback:post',
+    'volunteerProjApproval:update',
     'emailCampaign:create',
     'emailCampaign:update',
     'emailCampaign:read',

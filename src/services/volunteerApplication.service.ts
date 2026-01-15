@@ -1,5 +1,5 @@
 import * as volunteerModel from '../models/volunteerApplication.model';
-import { GetVolunteerApplicationsInput, SubmitVolApplicationInput, AnyVolApplicationsQueryInput } from '../schemas';
+import { GetVolunteerApplicationsInput, SubmitVolApplicationInput, AnyVolApplicationsQueryInput, MatchVolunteerToProjectInput, ApproveVolunteerMatchInput } from '../schemas';
 import { NotImplementedError, ValidationError } from '../utils/errors';
 
 //TODO
@@ -26,4 +26,18 @@ export const submitVolunteerApplication = async (
   }
   
   return volunteerModel.submitVolunteerApplication(input);
+};
+
+export const matchVolunteerToProject = async (
+  input: MatchVolunteerToProjectInput
+) => {
+  return volunteerModel.matchVolunteerToProject(input);
+};
+
+export const approveVolunteerMatch = async (
+  matchId: string,
+  approverId: string,
+  data: ApproveVolunteerMatchInput
+) => {
+  return volunteerModel.approveVolunteerMatch(matchId, approverId, data);
 };
