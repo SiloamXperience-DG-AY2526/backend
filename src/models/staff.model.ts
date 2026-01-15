@@ -54,8 +54,8 @@ export async function getAllStaff() {
   return prisma.user.findMany({
     where: {
       OR: [
-        { role: "generalManager" },
-        { role: "financeManager" },
+        { role: 'generalManager' },
+        { role: 'financeManager' },
       ],
     },
     orderBy: {
