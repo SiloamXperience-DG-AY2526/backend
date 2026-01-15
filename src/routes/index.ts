@@ -7,6 +7,7 @@ import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
 import profileRoutes from './profile.routes';
 import donationProjectRoutes from './donationProject.routes';
+import staffRoutes from './staff.routes';
 import volunteerApplicationRoutes from './volunteerApplication.routes';
 
 const router = Router();
@@ -27,6 +28,12 @@ router.use('/profile', profileRoutes);
 router.use(authenticateJWT);
 router.use('/general', generalRoutes);
 router.use('/donation', donationRoutes);
+
+// Profile routes
+router.use('/profile', profileRoutes);
+
+// staff management routes
+router.use('/staff', staffRoutes);
 
 // Donation domain routes
 router.use('/donation-projects', donationProjectRoutes); // Project management
