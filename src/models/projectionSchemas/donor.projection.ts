@@ -29,4 +29,12 @@ export const DonorPrivateSummarySelect = {
   contactNumber: true,
   nationality: true,
   identificationNumber: true,  
+  dob: true,
+  occupation: true,
+  otherContactModes: true,
+  contactModes: {
+    select: {
+      mode: true,
+    }
+  },
 } satisfies Prisma.PartnerSelect;

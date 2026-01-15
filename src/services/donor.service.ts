@@ -25,7 +25,7 @@ export const getDonors = async (
 
   const { donors, totalCount } = await donorModel.getDonors(select, where, {skip, limit});
   
-  const donorIds = donors.map(d => d.id);
+  const donorIds = donors.map(d => d.id).filter((id): id is string => id !== undefined && id !== null);
 
   const donations = await donationModel.getCumulativeDonations(donorIds);
 
