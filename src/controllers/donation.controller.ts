@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
 import * as donationService from '../services/donation.service';
 import {
-  getDonationProjectsSchema,
   getDonationHistorySchema,
-  submitDonationApplicationSchema,
-  DonationIdSchema,
 } from '../schemas/index';
 import { getUserIdFromRequest } from '../utils/user';
 

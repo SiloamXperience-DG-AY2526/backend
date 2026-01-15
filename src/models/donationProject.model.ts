@@ -4,7 +4,11 @@ import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
 } from '../schemas/donation';
+<<<<<<< HEAD
 import { SubmissionStatus, ProjectApprovalStatus, ProjectType } from '@prisma/client';
+=======
+import { SubmissionStatus, ProjectApprovalStatus } from '@prisma/client';
+>>>>>>> 74fd7af5b398fcccb2a65cc741cf896771c2049b
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 import { DonationProjectPublicSelect } from '../projections/donationProject.projections';
@@ -233,7 +237,7 @@ export const createDonationProject = async (
     },
     include: {
       project_manager: {
-        select: PMPublicSelect,
+        select: PMPublicSelect
       },
       objectivesList: {
         orderBy: { order: 'asc' },

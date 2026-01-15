@@ -22,19 +22,14 @@ export const directPermissions: Record<Role, Permission[]> = {
   ],
 
   [UserRole.generalManager]: [
-    'volunteerApplications:view:all',
-    'volunteerProjFeedback:post',
   ],
 
   [UserRole.financeManager]: [
     'donationReceiptStatus:update',
-    'proposedProjects:view',
-    'proposedProjects:update:status',
   ],
 
   [UserRole.partner]: [
     'example:update:own',
-    'volunteerProjFeedback:post:own',
   ],
 };
 //

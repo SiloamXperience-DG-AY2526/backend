@@ -4,9 +4,13 @@ import authRoutes from './auth.routes';
 import { authenticateJWT } from '../middlewares/authenticateJWT';
 import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
+<<<<<<< HEAD
 import profileRoutes from './profile.routes';
 import donationProjectRoutes from './donationProject.routes';
 import volunteerApplicationRoutes from './volunteerApplication.routes';
+=======
+import donationProjectRoutes from './donationProject.routes';
+>>>>>>> 74fd7af5b398fcccb2a65cc741cf896771c2049b
 
 const router = Router();
 
@@ -24,6 +28,13 @@ router.use('/profile', profileRoutes);
 
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);
+
+// Donation domain routes
+router.use('/donation-projects', donationProjectRoutes); // Project management
+router.use('/donations', donationRoutes); // Transactions & browsing
+
+// Volunteer domain routes
+router.use('/volunteer-projects', volunteerProjectRoutes); // Project management
 
 // Donation domain routes
 router.use('/donation-projects', donationProjectRoutes); // Project management

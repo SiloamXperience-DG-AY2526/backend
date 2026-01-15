@@ -9,6 +9,7 @@ import {
 } from '../schemas/donation';
 import { buildPagination, calculateSkip } from './paginationHelper';
 import { Prisma, ProjectApprovalStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 /**
  * Service: Get all donation projects for partners
