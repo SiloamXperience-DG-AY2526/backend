@@ -2,6 +2,7 @@ import { donationPermissions } from './donation.permissions';
 import { PermissionHandler } from '../types';
 import { generalPermissions } from './general.permissions';
 import { volunteerPermissions } from './volunteer.permissions';
+import { emailCampaignPermissions } from './emailCampaign.permissions';
 import { staffPermissions } from './staff.permissions';
 
 export type PermissionsMap = Record<string, PermissionHandler>;
@@ -16,6 +17,7 @@ export const PERMISSIONS = {
   ...generalPermissions,
   ...donationPermissions,
   ...volunteerPermissions,
+  ...emailCampaignPermissions,
   ...staffPermissions,
   // DEV: Add other permission groups here
 } satisfies PermissionsMap;

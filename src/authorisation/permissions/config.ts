@@ -20,13 +20,19 @@ export const directPermissions: Record<Role, Permission[]> = {
   [UserRole.superAdmin]: [
     'example:view',
     'staff:create',
-    'staff:remove'
+    'staff:remove',
   ],
 
   [UserRole.generalManager]: [
     'volunteerApplications:view:all',
     'volunteerProjFeedback:post',
-    'volunteerProjApproval:update'
+    'volunteerProjApproval:update',
+    'emailCampaign:create',
+    'emailCampaign:update',
+    'emailCampaign:read',
+    'emailCampaign:test',
+    'emailCampaign:publish',
+    'emailCampaign:delete',
   ],
 
   [UserRole.financeManager]: [
