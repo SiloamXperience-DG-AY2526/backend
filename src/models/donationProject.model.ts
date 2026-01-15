@@ -238,3 +238,68 @@ export const updateProposedProjectStatus = async (data: {
 
   return updatedProject;
 };
+
+export const duplicateDonationProject = async (
+  projectId: string,
+  newManagerId: string
+) => {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.donationProject.findUnique({
+      where: { id: projectId },
+      include: {
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (!existing) return null;
+
+    const {
+      id: _existingId,
+      createdAt: _existingCreatedAt,
+      updatedAt: _existingUpdatedAt,
+      approvalNotes: _existingApprovalNotes,
+      approvalStatus: _existingApprovalStatus,
+      submissionStatus: _existingSubmissionStatus,
+      objectivesList,
+      ...projectData
+    } = existing;
+
+    void _existingId;
+    void _existingCreatedAt;
+    void _existingUpdatedAt;
+    void _existingApprovalNotes;
+    void _existingApprovalStatus;
+    void _existingSubmissionStatus;
+
+    const duplicated = await tx.donationProject.create({
+      data: {
+        ...projectData,
+        managedBy: newManagerId,
+        title: `${projectData.title} (Copy)`,
+        submissionStatus: SubmissionStatus.draft,
+        approvalStatus: ProjectApprovalStatus.pending,
+        approvalNotes: null,
+        objectivesList: objectivesList.length
+          ? {
+            create: objectivesList.map((obj) => ({
+              objective: obj.objective,
+              order: obj.order,
+            })),
+          }
+          : undefined,
+      },
+      include: {
+        project_manager: {
+          select: PMPublicSelect,
+        },
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    return duplicated;
+  });
+};

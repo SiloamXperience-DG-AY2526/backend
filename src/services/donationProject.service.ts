@@ -99,3 +99,19 @@ export const updateProposedProjectStatus = async (data: {
 
   return updatedProposedProjectStatus;
 };
+
+export const duplicateDonationProject = async (
+  projectId: string,
+  newManagerId: string
+) => {
+  const duplicated = await donationProjectModel.duplicateDonationProject(
+    projectId,
+    newManagerId
+  );
+
+  if (!duplicated) {
+    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
+  }
+
+  return duplicated;
+};

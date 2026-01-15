@@ -6,6 +6,7 @@ import {
   ProposeVolunteerProjectInput,
 } from '../schemas/project';
 import { NotFoundError } from '../utils/errors';
+import { ProjectApprovalStatus, ProjectOperationStatus } from '@prisma/client';
 
 const pmPublicInfo = {
   select: {
@@ -717,5 +718,139 @@ export const submitVolunteerFeedbackModel = async ({
       feedback: createdFeedback,
       linkedSignupId: signup.id,
     };
+  });
+};
+
+export const duplicateVolunteerProject = async (
+  projectId: string,
+  newManagerId: string
+) => {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.volunteerProject.findUnique({
+      where: { id: projectId },
+      include: {
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+        positions: {
+          include: {
+            skills: {
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+        sessions: {
+          orderBy: { sessionDate: 'asc' },
+        },
+      },
+    });
+
+    if (!existing) return null;
+
+    const {
+      id: _existingId,
+      createdAt: _existingCreatedAt,
+      updatedAt: _existingUpdatedAt,
+      approvalNotes: _existingApprovalNotes,
+      approvalMessage: _existingApprovalMessage,
+      approvalStatus: _existingApprovalStatus,
+      submissionStatus: _existingSubmissionStatus,
+      operationStatus: _existingOperationStatus,
+      approvedById: _existingApprovedById,
+      objectivesList,
+      positions,
+      sessions,
+      ...projectData
+    } = existing;
+
+    void _existingId;
+    void _existingCreatedAt;
+    void _existingUpdatedAt;
+    void _existingApprovalNotes;
+    void _existingApprovalMessage;
+    void _existingApprovalStatus;
+    void _existingSubmissionStatus;
+    void _existingOperationStatus;
+    void _existingApprovedById;
+
+    const duplicated = await tx.volunteerProject.create({
+      data: {
+        ...projectData,
+        managedById: newManagerId,
+        title: `${projectData.title} (Copy)`,
+        submissionStatus: 'draft',
+        approvalStatus: ProjectApprovalStatus.pending,
+        operationStatus: ProjectOperationStatus.paused,
+        approvalNotes: null,
+        approvalMessage: null,
+        approvedById: null,
+        objectivesList: objectivesList.length
+          ? {
+            create: objectivesList.map((obj) => ({
+              objective: obj.objective,
+              order: obj.order,
+            })),
+          }
+          : undefined,
+      },
+    });
+
+    // Duplicate positions and their skills
+    for (const pos of positions) {
+      const createdPosition = await tx.projectPosition.create({
+        data: {
+          projectId: duplicated.id,
+          role: pos.role,
+          description: pos.description,
+          totalSlots: pos.totalSlots,
+        },
+      });
+
+      if (pos.skills.length) {
+        await tx.projectSkill.createMany({
+          data: pos.skills.map((s) => ({
+            projectPositionId: createdPosition.id,
+            skill: s.skill,
+            order: s.order,
+          })),
+        });
+      }
+    }
+
+    // Duplicate sessions
+    for (const session of sessions) {
+      await tx.session.create({
+        data: {
+          projectId: duplicated.id,
+          name: session.name,
+          sessionDate: session.sessionDate,
+          startTime: session.startTime,
+          endTime: session.endTime,
+        },
+      });
+    }
+
+    // Fetch the complete duplicated project with relations
+    const result = await tx.volunteerProject.findUnique({
+      where: { id: duplicated.id },
+      include: {
+        managedBy: pmPublicInfo,
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+        positions: {
+          include: {
+            skills: {
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+        sessions: {
+          orderBy: { sessionDate: 'asc' },
+        },
+      },
+    });
+
+    return result;
   });
 };

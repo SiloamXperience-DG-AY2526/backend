@@ -176,3 +176,17 @@ export const submitVolunteerFeedback = async (req: Request, res: Response) => {
     data: result,
   });
 };
+
+export const duplicateVolunteerProject = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const managerId = getUserIdFromRequest(req);
+  const duplicated = await volunteerService.duplicateVolunteerProject(
+    projectId,
+    managerId
+  );
+  return res.status(201).json({
+    status: 'success',
+    message: 'Volunteer project duplicated',
+    data: duplicated,
+  });
+};

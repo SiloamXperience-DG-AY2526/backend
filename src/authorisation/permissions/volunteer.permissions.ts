@@ -5,6 +5,7 @@ import { getUserIdFromRequest } from '../../utils/user';
 
 export const volunteerPermissions = {
   'volunteerApplications:view:all': nothingElse,
+  'volunteerProjects:duplicate': nothingElse,
   'volunteerProjFeedback:post': nothingElse,
   'volunteerProjFeedback:post:own': async ({ req }) => {
     const userId = getUserIdFromRequest(req);

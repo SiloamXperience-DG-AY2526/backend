@@ -91,3 +91,13 @@ export const updateProposedProjectStatus = async (
 
   res.status(204).send();
 };
+
+export const duplicateDonationProject = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const managerId = getUserIdFromRequest(req);
+  const duplicated = await donationProjectService.duplicateDonationProject(
+    projectId,
+    managerId
+  );
+  res.status(201).json(duplicated);
+};

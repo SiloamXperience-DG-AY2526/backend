@@ -107,3 +107,19 @@ export const createVolunteerProject = async (
   return project;
 };
 
+export const duplicateVolunteerProject = async (
+  projectId: string,
+  newManagerId: string
+) => {
+  const duplicated = await volunteerModel.duplicateVolunteerProject(
+    projectId,
+    newManagerId
+  );
+
+  if (!duplicated) {
+    throw new NotFoundError(`Volunteer Project ${projectId} Not Found!`);
+  }
+
+  return duplicated;
+};
+

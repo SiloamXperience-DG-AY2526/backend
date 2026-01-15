@@ -11,7 +11,7 @@ import {
   MyProjectApplicationsQuerySchema,
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
-import { requireAnyPermission } from '../middlewares/requirePermission';
+import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
 // USE validation middleware for routes with projectId param
@@ -112,6 +112,13 @@ router.post(
   }),
   requireAnyPermission(['volunteerProjFeedback:post:own','volunteerProjFeedback:post']),
   controller.submitVolunteerFeedback
+);
+
+// POST duplicate an existing volunteer project
+router.post(
+  '/:projectId/duplicate',
+  requirePermission('volunteerProjects:duplicate'),
+  controller.duplicateVolunteerProject
 );
 
 export default router;
