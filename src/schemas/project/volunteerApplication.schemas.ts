@@ -37,4 +37,26 @@ export type SubmitVolApplicationInput = {
     applicationDetails: z.infer<
   typeof SubmitVolunteerApplicationSchema
 >
-} 
+}
+
+// Match volunteer to project
+export const MatchVolunteerToProjectSchema = z.object({
+  volunteerId: z.uuid(),
+  projectId: z.uuid(),
+  positionId: z.uuid().optional(),
+});
+
+export type MatchVolunteerToProjectInput = z.infer<typeof MatchVolunteerToProjectSchema>;
+
+// Approve volunteer match
+export const ApproveVolunteerMatchSchema = z.object({
+  approvalNotes: z.string().optional(),
+  approvalMessage: z.string().optional(),
+});
+
+export type ApproveVolunteerMatchInput = z.infer<typeof ApproveVolunteerMatchSchema>;
+
+// Schema for matchId param
+export const MatchIdSchema = z.object({
+  matchId: z.uuid(),
+}); 
