@@ -12,7 +12,12 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "clean": "rm -rf dist coverage"
+    "clean": "rm -rf dist coverage",
+    "seed": "ts-node prisma/volunteerSeedTest.ts",
+    "seed:reset": "npx prisma migrate reset --force && npm run seed"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/volunteerSeedTest.ts"
   },
   "keywords": [
     "express",

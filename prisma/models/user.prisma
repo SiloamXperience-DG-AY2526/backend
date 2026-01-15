@@ -7,6 +7,9 @@ model User {
   passwordHash String
   role         UserRole @default(partner)
 
+  // Mass email relation
+  emailCampaigns EmailCampaign[] @relation("email_campaign_creator")
+
   // Volunteer-related relations
   managedProjects           VolunteerProject[]         @relation("managed_projects")
   approvedProjects          VolunteerProject[]         @relation("approved_projects")
