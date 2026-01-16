@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { PMPublicSelect } from '../projections/user.projections';
+import { PMPublicSelect } from './projectionSchemas/user.projections';
 import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
@@ -7,7 +7,7 @@ import {
 import { SubmissionStatus, ProjectApprovalStatus, ProjectType } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
-import { DonationProjectPublicSelect } from '../projections/donationProject.projections';
+import { DonationProjectPublicSelect } from './projectionSchemas/donationProject.projections';
 
 const receivedDonationFilter = {
   submissionStatus: 'submitted',
@@ -237,4 +237,72 @@ export const updateProposedProjectStatus = async (data: {
   });
 
   return updatedProject;
+};
+
+export const duplicateDonationProject = async (
+  projectId: string,
+  newManagerId: string
+) => {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.donationProject.findUnique({
+      where: { id: projectId },
+      select: {
+        title: true,
+        location: true,
+        about: true,
+        objectives: true,
+        beneficiaries: true,
+        initiatorName: true,
+        organisingTeam: true,
+        targetFund: true,
+        brickSize: true,
+        deadline: true,
+        type: true,
+        startDate: true,
+        endDate: true,
+        image: true,
+        attachments: true,
+        objectivesList: {
+          select: {
+            objective: true,
+            order: true,
+          },
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (!existing) return null;
+
+    const { objectivesList, ...projectData } = existing;
+
+    const duplicated = await tx.donationProject.create({
+      data: {
+        ...projectData,
+        managedBy: newManagerId,
+        title: `${existing.title} (Copy)`,
+        submissionStatus: SubmissionStatus.draft,
+        approvalStatus: ProjectApprovalStatus.pending,
+        approvalNotes: null,
+        objectivesList: objectivesList.length
+          ? {
+            create: objectivesList.map((obj) => ({
+              objective: obj.objective,
+              order: obj.order,
+            })),
+          }
+          : undefined,
+      },
+      include: {
+        project_manager: {
+          select: PMPublicSelect,
+        },
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    return duplicated;
+  });
 };

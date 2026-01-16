@@ -1,33 +1,24 @@
 import { prisma } from '../lib/prisma';
-import { PMPublicSelect } from '../projections/user.projections';
+import { PMPublicSelect } from './projectionSchemas/user.projections';
 import { SubmitDonationApplicationInput, UpdateDonationReceiptStatusInput } from '../schemas/index';
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
+import { DonationWhereConfirmed } from './whereSchemas/donation.select';
 
 /**
  * Get a user's donation history (transactions)
  * Filter by status: pending (submitted but not received), completed (received), cancelled
  */
-export const getMyDonationHistory = async (
+export const getDonationHistory = async (
   where: Prisma.DonationTransactionWhereInput,
+  select: Prisma.DonationTransactionSelect,
   pagination: Pagination
 ) => {
 
   const [donations, totalCount] = await Promise.all([
     prisma.donationTransaction.findMany({
       where,
-      include: {
-        project: {
-          select: {
-            id: true,
-            title: true,
-            location: true,
-            image: true,
-            type: true,
-            brickSize: true,
-          },
-        },
-      },
+      select,
       orderBy: {
         createdAt: 'desc',
       },
@@ -141,10 +132,7 @@ export const submitDonationApplication = async (
 export const getDonationHomepageData = async () => {
   // Get total raised across all projects
   const totalRaisedAggregate = await prisma.donationTransaction.aggregate({
-    where: {
-      submissionStatus: 'submitted',
-      receiptStatus: 'received',
-    },
+    where: DonationWhereConfirmed,
     _sum: {
       amount: true,
     },
@@ -187,8 +175,7 @@ export const getDonationHomepageData = async () => {
     by: ['projectId'],
     where: {
       projectId: { in: featuredProjectIds },
-      submissionStatus: 'submitted',
-      receiptStatus: 'received',
+      ...DonationWhereConfirmed
     },
     _sum: {
       amount: true,
@@ -225,6 +212,20 @@ export const updateDonationReceiptStatus = async (
     },
     data: {
       receiptStatus: data.receiptStatus,
+    },
+  });
+  return donations;
+};
+
+export const getCumulativeDonations = async (
+  donorIds: string[]
+) => {
+  const donations = await prisma.donationTransaction.groupBy({
+    by: ['donorId'],
+    _sum: { amount: true }, 
+    where: { 
+      donorId: { in: donorIds },
+      ...DonationWhereConfirmed
     },
   });
   return donations;
