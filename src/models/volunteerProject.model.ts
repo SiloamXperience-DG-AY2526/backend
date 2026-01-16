@@ -1,4 +1,3 @@
-import { ProjectApprovalStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import {
   UpdateVolunteerProjectInput,
@@ -7,6 +6,7 @@ import {
   ProposeVolunteerProjectInput,
 } from '../schemas/project';
 import { NotFoundError } from '../utils/errors';
+import { ProjectApprovalStatus, ProjectOperationStatus } from '@prisma/client';
 
 const pmPublicInfo = {
   select: {
@@ -747,5 +747,149 @@ export const getVolProject = async (projectId: string) => {
       managedBy: true,
       approvedBy: true
     },
+  });
+};
+
+export const duplicateVolunteerProject = async (
+  projectId: string,
+  newManagerId: string
+) => {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.volunteerProject.findUnique({
+      where: { id: projectId },
+      select: {
+        title: true,
+        location: true,
+        aboutDesc: true,
+        objectives: true,
+        beneficiaries: true,
+        initiatorName: true,
+        organisingTeam: true,
+        proposedPlan: true,
+        startTime: true,
+        endTime: true,
+        startDate: true,
+        endDate: true,
+        frequency: true,
+        interval: true,
+        dayOfWeek: true,
+        image: true,
+        attachments: true,
+        objectivesList: {
+          select: {
+            objective: true,
+            order: true,
+          },
+          orderBy: { order: 'asc' },
+        },
+        positions: {
+          select: {
+            role: true,
+            description: true,
+            totalSlots: true,
+            skills: {
+              select: {
+                skill: true,
+                order: true,
+              },
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+        sessions: {
+          select: {
+            name: true,
+            sessionDate: true,
+            startTime: true,
+            endTime: true,
+          },
+          orderBy: { sessionDate: 'asc' },
+        },
+      },
+    });
+
+    if (!existing) return null;
+
+    const { objectivesList, positions, sessions, ...projectData } = existing;
+
+    const duplicated = await tx.volunteerProject.create({
+      data: {
+        ...projectData,
+        managedById: newManagerId,
+        title: `${existing.title} (Copy)`,
+        submissionStatus: 'draft',
+        approvalStatus: ProjectApprovalStatus.pending,
+        operationStatus: ProjectOperationStatus.paused,
+        approvalNotes: null,
+        approvalMessage: null,
+        approvedById: null,
+        objectivesList: objectivesList.length
+          ? {
+            create: objectivesList.map((obj) => ({
+              objective: obj.objective,
+              order: obj.order,
+            })),
+          }
+          : undefined,
+      },
+    });
+
+    // Duplicate positions and their skills
+    for (const pos of positions) {
+      const createdPosition = await tx.projectPosition.create({
+        data: {
+          projectId: duplicated.id,
+          role: pos.role,
+          description: pos.description,
+          totalSlots: pos.totalSlots,
+        },
+      });
+
+      if (pos.skills.length) {
+        await tx.projectSkill.createMany({
+          data: pos.skills.map((s) => ({
+            projectPositionId: createdPosition.id,
+            skill: s.skill,
+            order: s.order,
+          })),
+        });
+      }
+    }
+
+    // Duplicate sessions
+    for (const session of sessions) {
+      await tx.session.create({
+        data: {
+          projectId: duplicated.id,
+          name: session.name,
+          sessionDate: session.sessionDate,
+          startTime: session.startTime,
+          endTime: session.endTime,
+        },
+      });
+    }
+
+    // Fetch the complete duplicated project with relations
+    const result = await tx.volunteerProject.findUnique({
+      where: { id: duplicated.id },
+      include: {
+        managedBy: pmPublicInfo,
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+        positions: {
+          include: {
+            skills: {
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+        sessions: {
+          orderBy: { sessionDate: 'asc' },
+        },
+      },
+    });
+
+    return result;
   });
 };

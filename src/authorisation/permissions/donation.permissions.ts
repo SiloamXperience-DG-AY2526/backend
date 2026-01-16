@@ -3,6 +3,7 @@ import { PermissionHandler } from '../types';
 
 export const donationPermissions = {
   'donationReceiptStatus:update': nothingElse,
+  'donationProjects:duplicate': nothingElse,
   'example:view': nothingElse,
   'proposedProjects:view': nothingElse,
   'proposedProjects:update:status': nothingElse,
