@@ -121,7 +121,7 @@ export const getPeerFeedbackByManager = async (userId: string) => {
 export const getPeerFeedbackForProject = async (projectId: string) => {
   return prisma.peerFeedback.findMany({
     where: {
-      projectId: projectId,
+      projectId,
     },
     include: {
       reviewer: true,
