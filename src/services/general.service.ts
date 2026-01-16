@@ -67,6 +67,10 @@ export const getAllPeerFeedback = async (userId: string) => {
 };
 
 export const getPeerFeedbackForProject = async (projectId: string) => {
+  const project = await generalModel.findProjectById(projectId);
+  if (!project) {
+    throw new NotFoundError('Project not found');
+  }
   const feedbackList = await generalModel.getPeerFeedbackForProject(projectId);
   return feedbackList;
 };
