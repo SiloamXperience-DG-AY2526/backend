@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import type { UserRole } from '@prisma/client';
 import { BadRequestError } from '../utils/errors';
 import { prisma } from '../prisma/client';
+import { mapStaffToResponse } from '../schemas/staff';
 
 export async function createStaffUser(
   firstName: string,
@@ -51,17 +52,25 @@ export async function findStaffIdByEmail(email: string): Promise<string> {
 
 // Get all active and non active staff
 export async function getAllStaff() {
-  return prisma.user.findMany({
+  const staff = await prisma.user.findMany({
     where: {
-      OR: [
-        { role: 'generalManager' },
-        { role: 'financeManager' },
-      ],
+      role: {
+        in: ['generalManager', 'financeManager'],
+      },
+    },
+    include: {
+      managedProjects: {
+        select: {
+          title: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',
     },
   });
+
+  return staff.map(mapStaffToResponse);
 }
 
 // Deactivate staff by userId
