@@ -10,7 +10,6 @@ import {
   SubmitVolunteerFeedbackSchema,
   MyProjectApplicationsQuerySchema,
   UpdateVolunteerProjectStatusSchema,
-  GetAvailableVolunteerActivitiesSchema,
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
 import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
@@ -21,7 +20,7 @@ const router = Router();
 // otherwise "available" will be treated as a projectId and fail validation else Invalid route parameters
 
 router.get(
-  "/available",
+  '/available',
   controller.getAvailableVolunteerActivities
 );
 
@@ -31,6 +30,7 @@ router.get(
   '/:projectId/details',
   controller.getVolunteerProjectDetail
 );
+
 
 // USE validation middleware for routes with projectId param
 router.use(
@@ -111,12 +111,11 @@ router.patch(
 //Permission check: only users who were volunteers OR GM and above
 router.post(
   '/:projectId/feedbacks',
-  validateRequest({
-    body: SubmitVolunteerFeedbackSchema,
-  }),
+  validateRequest({ params: VolunteerProjectIdSchema, body: SubmitVolunteerFeedbackSchema }),
   requireAnyPermission(['volunteerProjFeedback:post:own', 'volunteerProjFeedback:post']),
   controller.submitVolunteerFeedback
 );
+
 
 // PATCH update approval status of a volunteering project
 // Permission check: only users with 'volunteerProjApproval:update' permission

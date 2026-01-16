@@ -7,7 +7,7 @@ import { logger } from './middlewares/logger';
 import { errorHandler } from './middlewares/errorHandler';
 import rootRoutes from './routes';
 import { notFoundHandler } from './middlewares/notFoundHandler';
-import cors from 'cors';
+
 
 class Server {
   private app: Application;

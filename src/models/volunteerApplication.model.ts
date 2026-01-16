@@ -18,7 +18,14 @@ export const getVolunteerApplicationsModel = async ({
       volunteerId: userId,
       ...(status && { status }),
     },
-    include: {
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+
+  
+      volunteerProjectFeedbackId: true,
+
       position: {
         select: {
           id: true,
@@ -27,10 +34,14 @@ export const getVolunteerApplicationsModel = async ({
             select: {
               id: true,
               title: true,
+              aboutDesc: true,
               location: true,
               startDate: true,
+              startTime: true,
+              endTime: true,
               endDate: true,
               operationStatus: true,
+
             },
           },
         },
@@ -45,11 +56,18 @@ export const getVolunteerApplicationsModel = async ({
     applicationId: r.id,
     status: r.status,
     appliedAt: r.createdAt,
+
+    // feedback check
+    feedbackGiven: Boolean(r.volunteerProjectFeedbackId),
+
     project: {
       id: r.position.project.id,
       title: r.position.project.title,
+      description: r.position.project.aboutDesc, 
       location: r.position.project.location,
       startDate: r.position.project.startDate,
+      startTime: r.position.project.startTime,
+      endTime: r.position.project.endTime,
       endDate: r.position.project.endDate,
       operationStatus: r.position.project.operationStatus,
     },
@@ -86,7 +104,7 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
         },
       });
 
-      if (!user) throw new NotFoundError("USER_NOT_FOUND");
+      if (!user) throw new NotFoundError('USER_NOT_FOUND');
 
       // 1) position must exist + include project
       const position = await tx.projectPosition.findUnique({
@@ -110,16 +128,16 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
         },
       });
 
-      if (!position) throw new NotFoundError("POSITION_NOT_FOUND");
+      if (!position) throw new NotFoundError('POSITION_NOT_FOUND');
 
       // 2) position must belong to the projectId passed by FE
       if (position.projectId !== projectId) {
-        throw new ConflictError("POSITION_NOT_IN_PROJECT");
+        throw new ConflictError('POSITION_NOT_IN_PROJECT');
       }
 
       // 3) project must be ongoing
-      if (position.project.operationStatus !== "ongoing") {
-        throw new ConflictError("PROJECT_NOT_OPERATIONAL");
+      if (position.project.operationStatus !== 'ongoing') {
+        throw new ConflictError('PROJECT_NOT_OPERATIONAL');
       }
 
       // 4) prevent duplicate application
@@ -133,7 +151,7 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
         select: { id: true },
       });
 
-      if (existing) throw new ConflictError("ALREADY_APPLIED");
+      if (existing) throw new ConflictError('ALREADY_APPLIED');
 
       // 5) validate sessions (all must belong to project)
       if (uniqueSessionIds.length > 0) {
@@ -146,7 +164,7 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
         });
 
         if (sessions.length !== uniqueSessionIds.length) {
-          throw new NotFoundError("SESSION_NOT_FOUND");
+          throw new NotFoundError('SESSION_NOT_FOUND');
         }
       }
 
@@ -155,7 +173,7 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
         data: {
           volunteerId: userId,
           positionId,
-          status: "reviewing",
+          status: 'reviewing',
           hasConsented,
           availability: availability ?? null,
         },
@@ -203,16 +221,16 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
       const selectedSessions =
         uniqueSessionIds.length > 0
           ? await tx.session.findMany({
-              where: { id: { in: uniqueSessionIds } },
-              select: {
-                id: true,
-                name: true,
-                sessionDate: true,
-                startTime: true,
-                endTime: true,
-              },
-              orderBy: { sessionDate: "asc" },
-            })
+            where: { id: { in: uniqueSessionIds } },
+            select: {
+              id: true,
+              name: true,
+              sessionDate: true,
+              startTime: true,
+              endTime: true,
+            },
+            orderBy: { sessionDate: 'asc' },
+          })
           : [];
 
       // 8) return
@@ -220,7 +238,7 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
         application,
         volunteer: {
           userId: user.id,
-          name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+          name: `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim(),
           gender: user.partner?.gender ?? null,
           contactNumber:
             user.partner?.countryCode && user.partner?.contactNumber
@@ -243,9 +261,9 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
     });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === "P2002") throw new ConflictError("ALREADY_APPLIED");
-      if (err.code === "P2003") throw new NotFoundError("RELATED_RECORD_MISSING");
-      if (err.code === "P2025") throw new NotFoundError("RECORD_NOT_FOUND");
+      if (err.code === 'P2002') throw new ConflictError('ALREADY_APPLIED');
+      if (err.code === 'P2003') throw new NotFoundError('RELATED_RECORD_MISSING');
+      if (err.code === 'P2025') throw new NotFoundError('RECORD_NOT_FOUND');
     }
     throw err;
   }

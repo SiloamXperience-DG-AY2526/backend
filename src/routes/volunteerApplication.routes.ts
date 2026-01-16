@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/volunteerApplication.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { AnyVolApplicationsQuerySchema, MyVolApplicationsQuerySchema, SubmitVolunteerApplicationSchema, MatchVolunteerToProjectSchema, ApproveVolunteerMatchSchema, MatchIdSchema } from '../schemas/project';
+import { AnyVolApplicationsQuerySchema, SubmitVolunteerApplicationSchema, MatchVolunteerToProjectSchema, ApproveVolunteerMatchSchema, MatchIdSchema } from '../schemas/project';
 import { requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
@@ -20,9 +20,10 @@ router.get(
 //GET ALL of your own applications
 //Query by status
 //No need Permission check: all users can view his own applications
+//ValidateRequest causes: Cannot set property query of #<IncomingMessage> which has only a getter 
+//did the checking in controller instread
 router.get(
-  '/me',
-  validateRequest({ query: MyVolApplicationsQuerySchema}),                                 
+  '/me',                
   controller.getMyVolunteerApplications
 );
 
