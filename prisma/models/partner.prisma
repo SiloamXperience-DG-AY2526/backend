@@ -86,7 +86,6 @@ model Partner {
 
   hasVolunteerExperience       Boolean @default(false)
   volunteerAvailability        String
-  isActive                     Boolean @default(true)
   consentUpdatesCommunications Boolean
   subscribeNewsletterEvents    Boolean @default(false)
 

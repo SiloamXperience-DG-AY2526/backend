@@ -49,7 +49,9 @@ export function findPartnersFromFilter(filter: any) {
   const where: any = {};
 
   if (filter.isActivePartner !== undefined) {
-    where.isActive = filter.isActivePartner;
+    where.user = {
+      isActive: filter.isActivePartner,
+    };
   }
 
   if (filter.gender) {

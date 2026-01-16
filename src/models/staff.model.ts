@@ -6,6 +6,7 @@ import { prisma } from '../prisma/client';
 export async function createStaffUser(
   firstName: string,
   lastName: string,
+  title: string,
   email: string,
   passwordHash: string,
   role: UserRole
@@ -22,6 +23,7 @@ export async function createStaffUser(
       data: {
         firstName,
         lastName,
+        title,
         email,
         passwordHash,
         role
@@ -47,19 +49,59 @@ export async function findStaffIdByEmail(email: string): Promise<string> {
   return user.id;
 }
 
-// Remove staff by userId
-export async function removeStaffUser(staffId: string) {
+// Get all active and non active staff
+export async function getAllStaff() {
+  return prisma.user.findMany({
+    where: {
+      OR: [
+        { role: 'generalManager' },
+        { role: 'financeManager' },
+      ],
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+}
+
+// Deactivate staff by userId
+export async function deactivateStaff(userId: string) {
   const user = await prisma.user.findUnique({
-    where: { id: staffId },
+    where: { id: userId },
   });
 
-  if (!user) {
+  if (
+    !user ||
+    user.role === 'partner'
+  ) {
     throw new BadRequestError('Staff account not found');
   }
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.user.delete({
-      where: { id: staffId },
-    });
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      isActive: false,
+    },
+  });
+}
+
+// Activate staff by userId
+export async function activateStaff(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (
+    !user ||
+    user.role === 'partner'
+  ) {
+    throw new BadRequestError('Staff account not found');
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      isActive: true,
+    },
   });
 }
