@@ -19,6 +19,11 @@ router.post('/peer-feedback',
   controller.submitPeerFeedback
 );
 
+// GET all peer feedback for specific volunteer project
+router.get('/peer-feedback/volunteerProjects/:projectId',
+  controller.getPeerFeedbackForProject
+);
+
 // GET all peer feedback for volunteer projects
 // No need permission check: all users can view peer feedback
 router.get('/peer-feedback/all',
