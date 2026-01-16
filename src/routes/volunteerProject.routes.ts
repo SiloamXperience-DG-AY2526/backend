@@ -10,6 +10,8 @@ import {
   SubmitVolunteerFeedbackSchema,
   MyProjectApplicationsQuerySchema,
   UpdateVolunteerProjectStatusSchema,
+  ViewMyProposedProjectsQuerySchema,
+  UpdateMyProposedProjectStatusSchema,
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
 import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
@@ -37,6 +39,11 @@ router.post(
   controller.proposeVolunteerProject
 );
 
+router.get(
+  '/proposal/me',
+  validateRequest({ query: ViewMyProposedProjectsQuerySchema }),
+  controller.viewMyProposedProjects
+);
 
 // USE validation middleware for routes with projectId param
 router.use(
@@ -141,3 +148,13 @@ router.post(
 );
 
 export default router;
+
+//Update project status
+router.patch(
+  '/proposal/me/:projectId/status',
+  validateRequest({
+    params: VolunteerProjectIdSchema,
+    body: UpdateMyProposedProjectStatusSchema,
+  }),
+  controller.updateMyProposedProjectStatus
+);

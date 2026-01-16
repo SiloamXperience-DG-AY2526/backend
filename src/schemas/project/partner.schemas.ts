@@ -63,6 +63,7 @@ export const ProposeVolunteerProjectSchema = z.object({
       z.object({
         role: z.string().min(1),
         description: z.string().min(1),
+        totalSlots: z.number().int().min(1, 'totalSlots must be at least 1'),
         skills: z.array(z.string()).optional(),
       })
     )
@@ -151,4 +152,21 @@ export const UpdateVolunteerProjectStatusSchema = z.object({
 
 export type UpdateVolunteerProjectStatusInput = z.infer<
   typeof UpdateVolunteerProjectStatusSchema
+>;
+
+export const ViewMyProposedProjectsQuerySchema = z.object({
+
+  approvalStatus: z.nativeEnum(ProjectApprovalStatus).optional(),
+});
+
+export type ViewMyProposedProjectsQueryType = z.infer<
+  typeof ViewMyProposedProjectsQuerySchema
+>;
+
+export const UpdateMyProposedProjectStatusSchema = z.object({
+  approvalStatus: z.nativeEnum(ProjectApprovalStatus),
+});
+
+export type UpdateProposedProjectStatusInput = z.infer<
+  typeof UpdateMyProposedProjectStatusSchema
 >;
