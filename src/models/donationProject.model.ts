@@ -126,6 +126,49 @@ export const getMyDonationProject = async (
   };
 };
 
+export const getDonationProjectById = async (projectId: string) => {
+  const [project, totalRaised] = await Promise.all([
+    prisma.donationProject.findFirst({
+      where: {
+        id: projectId,
+        OR: [
+          // All non-draft projects
+          { submissionStatus: { not: SubmissionStatus.draft } },
+          // Draft projects created by non-partner roles
+          {
+            AND: [
+              { submissionStatus: SubmissionStatus.draft },
+              { project_manager: { role: { not: 'partner' } } },
+            ],
+          },
+        ],
+      },
+      include: {
+        project_manager: {
+          select: PMPublicSelect,
+        },
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    }),
+    prisma.donationTransaction.aggregate({
+      where: {
+        projectId,
+        ...receivedDonationFilter,
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+  ]);
+
+  return {
+    project,
+    totalRaised: totalRaised._sum.amount ?? 0,
+  };
+};
+
 export const updateDonationProject = async (
   projectId: string,
   managerId: string,

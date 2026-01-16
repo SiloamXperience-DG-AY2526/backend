@@ -57,6 +57,16 @@ export const getMyDonationProjectDetails = async (
   return project;
 };
 
+//finance manager
+export const getDonationProjectDetails = async (projectId: string) => {
+  const project = await donationProjectModel.getDonationProjectById(projectId);
+
+  if (!project.project) {
+    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
+  }
+  return project;
+};
+
 export const updateDonationProject = async (
   projectId: string,
   managerId: string,

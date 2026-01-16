@@ -41,6 +41,7 @@ export const directPermissions: Record<Role, Permission[]> = {
   [UserRole.financeManager]: [
     'donationReceiptStatus:update',
     'donationProjects:duplicate',
+    'donationProjectDetails:view',
     'proposedProjects:view',
     'proposedProjects:update:status',
     'donorDetails:view'

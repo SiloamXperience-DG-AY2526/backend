@@ -29,13 +29,12 @@ router.get(
 
 // GET details for any donation project 
 // schema validated above
-// permission check: project:view
-/**
+// permission check: financeManager and above
 router.get(
   '/:projectId',
-  //TODO: will generalise donationProjectController.getMyDonationProjectDetails
+  requirePermission('donationProjectDetails:view'),
+  donationProjectController.getDonationProjectDetails
 );
- */
 
 router.get(
   '/:projectId/donations',

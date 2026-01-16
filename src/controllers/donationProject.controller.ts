@@ -39,6 +39,18 @@ export const getMyDonationProjectDetails = async (
   res.json(project);
 };
 
+//finance manager view
+export const getDonationProjectDetails = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const project = await donationProjectService.getDonationProjectDetails(
+    projectId
+  );
+  res.json(project);
+};
+
 export const getProjectDonationTransactions = async (
   req: Request,
   res: Response
