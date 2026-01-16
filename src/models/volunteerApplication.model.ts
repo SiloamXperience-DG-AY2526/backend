@@ -86,7 +86,7 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
   const uniqueSessionIds = Array.from(new Set(sessionIds ?? []));
 
   try {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 0) fetch user details for response
       const user = await tx.user.findUnique({
         where: { id: userId },
@@ -140,6 +140,11 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
         throw new ConflictError('PROJECT_NOT_OPERATIONAL');
       }
 
+      // 3.5) consent must be given
+      if (!hasConsented) {
+        throw new ConflictError('CONSENT_REQUIRED');
+      }
+
       // 4) prevent duplicate application
       const existing = await tx.volunteerProjectPosition.findUnique({
         where: {
@@ -153,18 +158,33 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
 
       if (existing) throw new ConflictError('ALREADY_APPLIED');
 
-      // 5) validate sessions (all must belong to project)
+      // 5) validate sessions (all must belong to project) and fetch details
+      let selectedSessions: Array<{
+        id: string;
+        name: string | null;
+        sessionDate: Date;
+        startTime: Date;
+        endTime: Date;
+      }> = [];
+
       if (uniqueSessionIds.length > 0) {
-        const sessions = await tx.session.findMany({
+        selectedSessions = await tx.session.findMany({
           where: {
             id: { in: uniqueSessionIds },
             projectId,
           },
-          select: { id: true },
+          select: {
+            id: true,
+            name: true,
+            sessionDate: true,
+            startTime: true,
+            endTime: true,
+          },
+          orderBy: { sessionDate: 'asc' },
         });
 
-        if (sessions.length !== uniqueSessionIds.length) {
-          throw new NotFoundError('SESSION_NOT_FOUND');
+        if (selectedSessions.length !== uniqueSessionIds.length) {
+          throw new NotFoundError('SESSION_NOT_FOUND_OR_NOT_IN_PROJECT');
         }
       }
 
@@ -216,22 +236,6 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
           skipDuplicates: true,
         });
       }
-
-      // optional at the moment
-      const selectedSessions =
-        uniqueSessionIds.length > 0
-          ? await tx.session.findMany({
-            where: { id: { in: uniqueSessionIds } },
-            select: {
-              id: true,
-              name: true,
-              sessionDate: true,
-              startTime: true,
-              endTime: true,
-            },
-            orderBy: { sessionDate: 'asc' },
-          })
-          : [];
 
       // 8) return
       return {
