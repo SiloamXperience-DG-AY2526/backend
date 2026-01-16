@@ -9,6 +9,7 @@ import profileRoutes from './profile.routes';
 import donationProjectRoutes from './donationProject.routes';
 import staffRoutes from './staff.routes';
 import volunteerApplicationRoutes from './volunteerApplication.routes';
+import donorRoutes from './donor.routes';
 import emailCampaignRoutes from './emailCampaign.routes';
 
 const router = Router();
@@ -21,9 +22,6 @@ router.get('/health', getHealth);
 
 // Auth routes
 router.use('/auth', authRoutes);
-
-// Profile routes
-// router.use('/profile', profileRoutes);
 
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);
@@ -42,6 +40,7 @@ router.use('/email-campaigns', emailCampaignRoutes);
 // Donation domain routes
 router.use('/donation-projects', donationProjectRoutes); // Project management
 router.use('/donations', donationRoutes); // Transactions & browsing
+router.use('/donors', donorRoutes);
 
 // Volunteer domain routes
 router.use('/volunteer-projects', volunteerProjectRoutes); // Project management

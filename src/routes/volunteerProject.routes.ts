@@ -127,4 +127,11 @@ router.patch('/:projectId/ApprovalStatus',
   controller.updateVolProjectStatus
 );
 
+// POST duplicate an existing volunteer project
+router.post(
+  '/:projectId/duplicate',
+  requirePermission('volunteerProjects:duplicate'),
+  controller.duplicateVolunteerProject
+);
+
 export default router;

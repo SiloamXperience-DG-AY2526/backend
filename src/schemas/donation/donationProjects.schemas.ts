@@ -4,7 +4,7 @@ import {
   SubmissionStatus,
   ProjectApprovalStatus,
 } from '@prisma/client';
-import { preprocessDate } from '../helper';
+import { LimitType, PageType, preprocessDate } from '../helper';
 
 export const CreateDonationProjectSchema = z.object({
   title: z.string().min(1),
@@ -76,18 +76,8 @@ export type UpdateDonationProjectInput = z.infer<
 // Schema for getting all donation projects with filters
 export const getDonationProjectsSchema = z.object({
   type: z.enum(ProjectType).optional(),
-  page: z
-    .string()
-    .transform((val) => parseInt(val, 10))
-    .or(z.number())
-    .optional()
-    .default(1),
-  limit: z
-    .string()
-    .transform((val) => parseInt(val, 10))
-    .or(z.number())
-    .optional()
-    .default(20),
+  page: PageType,
+  limit: LimitType,
 });
 
 export type GetDonationProjectsInput = z.infer<
