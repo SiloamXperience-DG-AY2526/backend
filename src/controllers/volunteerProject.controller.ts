@@ -81,19 +81,12 @@ export const getAvailableVolunteerActivities = async (
   });
 };
 
-export const proposeVolunteerProject = async (
-  req: Request,
-  res: Response
-) => {
-  const { userId, ...projectData } = req.body;
-
-  if (!userId) {
-    throw new Error('USER_ID_REQUIRED');
-  }
+export const proposeVolunteerProject = async (req: Request, res: Response) => {
+  const proposerId = getUserIdFromRequest(req);
 
   const project = await volunteerService.proposeVolunteerProject({
-    ...projectData,
-    proposerId: userId,
+    ...req.body,
+    proposerId,
   });
 
   return res.status(201).json({

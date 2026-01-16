@@ -24,11 +24,17 @@ router.get(
   controller.getAvailableVolunteerActivities
 );
 
+
 //QUESTION: who should access this endpoint? volunteers
 //GET details of a specific project
 router.get(
   '/:projectId/details',
   controller.getVolunteerProjectDetail
+);
+router.post(
+  '/proposal',
+  validateRequest({ body: ProposeVolunteerProjectSchema }),
+  controller.proposeVolunteerProject
 );
 
 
