@@ -6,6 +6,7 @@ export const donationPermissions = {
   'example:view': nothingElse,
   'proposedProjects:view': nothingElse,
   'proposedProjects:update:status': nothingElse,
+  'donorDetails:view': nothingElse,
   'example:update:own': async ({ req }) => {
     req.params.projectId;
     // Check if project belongs to user

@@ -92,7 +92,7 @@ async function main() {
     },
   });
 
-  const position3 = await prisma.projectPosition.create({
+  await prisma.projectPosition.create({
     data: {
       projectId: project2.id,
       role: 'Food Packing Volunteer',
@@ -125,7 +125,8 @@ async function main() {
     },
   });
 
-  const session3 = await prisma.session.create({
+  // session 3 for project 2
+  await prisma.session.create({
     data: {
       projectId: project2.id,
       name: 'Food Packing Day',
@@ -139,7 +140,7 @@ async function main() {
 
   /* ---------------- APPLICATIONS ---------------- */
 
-  const application1 = await prisma.volunteerProjectPosition.create({
+  await prisma.volunteerProjectPosition.create({
     data: {
       volunteerId: user1.id,
       positionId: position1.id,
@@ -148,7 +149,7 @@ async function main() {
     },
   });
 
-  const application2 = await prisma.volunteerProjectPosition.create({
+  await prisma.volunteerProjectPosition.create({
     data: {
       volunteerId: user2.id,
       positionId: position2.id,
