@@ -36,7 +36,6 @@ export const PartnerOnlyProfileSchema = z.object({
   hasVolunteerExperience: z.boolean().optional().default(false),
   volunteerAvailability: z.string().min(1),
 
-  isActive: z.boolean().optional().default(true),
   consentUpdatesCommunications: z.boolean(),
   subscribeNewsletterEvents: z.boolean().optional().default(false),
 
