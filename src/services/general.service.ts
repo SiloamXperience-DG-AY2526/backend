@@ -69,4 +69,4 @@ export const getAllPeerFeedback = async (userId: string) => {
 export const getPeerFeedbackForProject = async (projectId: string) => {
   const feedbackList = await generalModel.getPeerFeedbackForProject(projectId);
   return feedbackList;
-}
+};
