@@ -1,8 +1,9 @@
 import { prisma } from '../lib/prisma';
 import { PartnerFeedbackType, ProjectApprovalStatus } from '@prisma/client';
-import { PMPublicSelect } from '../projections/user.projections';
 import { StaffProfile } from '../schemas/user';
 import { BadRequestError } from '../utils/errors';
+import { PMPublicSelect } from './projectionSchemas/user.projections';
+
 
 const managerInfo = {
   select: {

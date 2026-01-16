@@ -87,4 +87,11 @@ router.patch(
   donationProjectController.updateProposedProjectStatus
 );
 
+// POST duplicate an existing donation project
+router.post(
+  '/:projectId/duplicate',
+  requirePermission('donationProjects:duplicate'),
+  donationProjectController.duplicateDonationProject
+);
+
 export default router;
