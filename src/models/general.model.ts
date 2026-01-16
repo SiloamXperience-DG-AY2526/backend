@@ -170,6 +170,13 @@ export async function updateStaffProfile(
   });
 
   const updatedProfile = await getStaffProfile(userId);
-  
+
   return updatedProfile;
 }
+
+
+export const findProjectById = async (projectId: string) => {
+  return prisma.volunteerProject.findUnique({
+    where: { id: projectId },
+  });
+};
