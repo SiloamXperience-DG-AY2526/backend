@@ -8,6 +8,7 @@ export const UserRoleEnum = z.enum(
 export const createStaffSchema = z.object({
   firstName: z.string().min(2, 'Name must be at least 2 characters'),
   lastName: z.string().min(2, 'Name must be at least 2 characters'),
+  title: z.string(),
   email: z.email('Invalid email format'),
   password: z
     .string()

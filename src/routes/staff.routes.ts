@@ -6,6 +6,12 @@ import { createStaffSchema, staffIdSchema } from '../schemas/staff';
 
 const router = Router();
 
+router.get(
+  '/',
+  requirePermission('staff:read'),
+  controller.getAllStaff
+);
+
 router.post(
   '/create',
   requirePermission('staff:create'),
@@ -14,11 +20,21 @@ router.post(
 );
 
 // TODO: (INCOMPLETE) Reconsider the implementation due to many factors such as projects still being assigned
-router.delete(
-  '/remove/:staffId',
-  requirePermission('staff:remove'),
+// Currently it is implemented such that the isActivate status is set to FALSE as derived from frontend figma design
+router.put(
+  '/deactivate/:staffId',
+  requirePermission('staff:deactivate'),
   validateRequest({ params: staffIdSchema }),
-  controller.removeStaff
+  controller.deactivateStaff
+);
+
+// TODO: (INCOMPLETE) Reconsider the implementation due to many factors such as projects still being assigned
+// Currently it is implemented such that the isActivate status is set to TRUE as derived from frontend figma design
+router.put(
+  '/activate/:staffId',
+  requirePermission('staff:activate'),
+  validateRequest({ params: staffIdSchema }),
+  controller.activateStaff
 );
 
 export default router;

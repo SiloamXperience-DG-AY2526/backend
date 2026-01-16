@@ -29,7 +29,6 @@ export function splitPartnerProfile(
     otherContactModes: partnerProfile.otherContactModes,
     hasVolunteerExperience: partnerProfile.hasVolunteerExperience,
     volunteerAvailability: partnerProfile.volunteerAvailability,
-    isActive: partnerProfile.isActive,
     consentUpdatesCommunications: partnerProfile.consentUpdatesCommunications,
     subscribeNewsletterEvents: partnerProfile.subscribeNewsletterEvents,
   };

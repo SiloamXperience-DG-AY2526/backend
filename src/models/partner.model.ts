@@ -40,7 +40,6 @@ export type PartnerData = {
   otherContactModes?: string;
   hasVolunteerExperience?: boolean;
   volunteerAvailability: string;
-  isActive?: boolean;
   consentUpdatesCommunications: boolean;
   subscribeNewsletterEvents?: boolean;
   // related lists
@@ -83,7 +82,6 @@ export async function createPartnerWithUser(
     'otherContactModes',
     'hasVolunteerExperience',
     'volunteerAvailability',
-    'isActive',
     'consentUpdatesCommunications',
     'subscribeNewsletterEvents',
   ];
@@ -201,7 +199,6 @@ export const getPartnerProfile = async (
 
       hasVolunteerExperience: true,
       volunteerAvailability: true,
-      isActive: true,
       consentUpdatesCommunications: true,
       subscribeNewsletterEvents: true,
 
@@ -240,7 +237,6 @@ export const getPartnerProfile = async (
 
     hasVolunteerExperience: partner.hasVolunteerExperience,
     volunteerAvailability: partner.volunteerAvailability,
-    isActive: partner.isActive,
     consentUpdatesCommunications: partner.consentUpdatesCommunications,
     subscribeNewsletterEvents: partner.subscribeNewsletterEvents,
 
@@ -386,7 +382,7 @@ export const getComprehensivePartnerInfo = async (userId: string) => {
   volunteerSessions.forEach((vs: any) => {
     const projectId = vs.session.project.id;
     const projectTitle = vs.session.project.title;
-    
+
     // Calculate hours
     const startTime = new Date(vs.session.startTime);
     const endTime = new Date(vs.session.endTime);
@@ -522,8 +518,8 @@ export const getComprehensivePartnerInfo = async (userId: string) => {
     occupation: partnerProfile.occupation || '',
     nationality: partnerProfile.nationality || '',
     phoneNumber: `${partnerProfile.countryCode}${partnerProfile.contactNumber}`,
-    preferredCommunicationMethod: partnerProfile.contactModes.length > 0 
-      ? partnerProfile.contactModes[0] 
+    preferredCommunicationMethod: partnerProfile.contactModes.length > 0
+      ? partnerProfile.contactModes[0]
       : 'email',
   };
 

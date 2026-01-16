@@ -28,7 +28,6 @@ export const partnerSignupSchema = z.object({
     otherContactModes: z.string().optional(),
     hasVolunteerExperience: z.boolean().optional(),
     volunteerAvailability: z.string(),
-    isActive: z.boolean().optional(),
     consentUpdatesCommunications: z.boolean(),
     subscribeNewsletterEvents: z.boolean().optional(),
     // Related lists
