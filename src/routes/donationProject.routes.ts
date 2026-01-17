@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { validateRequest } from '../middlewares/validateRequest';
 import {
-  UpdateProposedProjectStatusSchema,
   DonationProjectIdSchema,
   UpdateDonationProjectSchema,
   CreateDonationProjectSchema,

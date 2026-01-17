@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import type { Gender, ContactModeType, InterestSlug, ReferrerType, User } from '@prisma/client';
+import type { Gender, ContactModeType, InterestSlug, ReferrerType } from '@prisma/client';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 import { prisma } from '../prisma/client';
 import { PartnerProfile } from '../schemas/user';

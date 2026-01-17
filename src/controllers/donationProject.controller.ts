@@ -107,7 +107,7 @@ export const withdrawDonationProject = async (req: Request, res: Response) => {
   );
 
   res.json({
-    message: "Donation project withdrawn successfully",
+    message: 'Donation project withdrawn successfully',
     project: withdrawnProject,
   });
 };
