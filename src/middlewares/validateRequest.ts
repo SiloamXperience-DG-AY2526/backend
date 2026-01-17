@@ -42,7 +42,8 @@ export const validateRequest =
             formatZodErrors(parsed.error)
           );
         }
-        req.query = parsed.data;
+        // Use Object.assign to avoid readonly property error
+        Object.assign(req.query, parsed.data);
       }
 
       next();

@@ -4,11 +4,7 @@ import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
 } from '../schemas/donation';
-<<<<<<< HEAD
 import { SubmissionStatus, ProjectApprovalStatus, ProjectType } from '@prisma/client';
-=======
-import { SubmissionStatus, ProjectApprovalStatus } from '@prisma/client';
->>>>>>> 74fd7af5b398fcccb2a65cc741cf896771c2049b
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 import { DonationProjectPublicSelect } from '../projections/donationProject.projections';
@@ -251,7 +247,7 @@ export const createDonationProject = async (
 export const getProposedProjects = async () => {
   const proposedProjects = await prisma.donationProject.findMany({
     where: {
-      type: ProjectType.partner_led,
+      type: ProjectType.partnerLed,
       submissionStatus: SubmissionStatus.submitted,
     },
     orderBy: { createdAt: 'desc' },

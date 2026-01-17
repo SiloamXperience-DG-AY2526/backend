@@ -24,8 +24,9 @@ export type SubmitDonationApplicationInput = z.infer<
 // Schema for getting donation history with filters
 export const getDonationHistorySchema = z.object({
   status: z
-    .enum(DonationReceiptStatus)
-    .optional(),
+    .enum(['all', 'pending', 'received', 'cancelled'])
+    .optional()
+    .default('all'),
   page: z
     .string()
     .transform((val) => parseInt(val, 10))

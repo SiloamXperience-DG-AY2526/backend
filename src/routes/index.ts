@@ -1,16 +1,15 @@
 import { Router } from 'express';
 import { getRoot, getHealth } from '../controllers/rootController';
 import authRoutes from './auth.routes';
+import generalRoutes from './general.routes';
 import { authenticateJWT } from '../middlewares/authenticateJWT';
 import volunteerProjectRoutes from './volunteerProject.routes';
 import donationRoutes from './donation.routes';
-<<<<<<< HEAD
 import profileRoutes from './profile.routes';
 import donationProjectRoutes from './donationProject.routes';
+import staffRoutes from './staff.routes';
 import volunteerApplicationRoutes from './volunteerApplication.routes';
-=======
-import donationProjectRoutes from './donationProject.routes';
->>>>>>> 74fd7af5b398fcccb2a65cc741cf896771c2049b
+import emailCampaignRoutes from './emailCampaign.routes';
 
 const router = Router();
 
@@ -28,13 +27,17 @@ router.use('/profile', profileRoutes);
 
 // Apply JWT auth to all routes below
 router.use(authenticateJWT);
+router.use('/general', generalRoutes);
+router.use('/donation', donationRoutes);
 
-// Donation domain routes
-router.use('/donation-projects', donationProjectRoutes); // Project management
-router.use('/donations', donationRoutes); // Transactions & browsing
+// Profile routes
+router.use('/profile', profileRoutes);
 
-// Volunteer domain routes
-router.use('/volunteer-projects', volunteerProjectRoutes); // Project management
+// staff management routes
+router.use('/staff', staffRoutes);
+
+// Email Campaign routes
+router.use('/email-campaigns', emailCampaignRoutes);
 
 // Donation domain routes
 router.use('/donation-projects', donationProjectRoutes); // Project management

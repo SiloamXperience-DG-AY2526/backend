@@ -111,4 +111,3 @@ export const withdrawDonationProject = async (req: Request, res: Response) => {
     project: withdrawnProject,
   });
 };
-};

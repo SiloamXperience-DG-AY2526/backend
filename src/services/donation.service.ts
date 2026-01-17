@@ -22,8 +22,13 @@ export const getMyDonationHistory = async (
   // Build where clause based on status
   const where: Prisma.DonationTransactionWhereInput = {
     donorId: partnerId,
-    receiptStatus: status
   };
+
+  // Only add receiptStatus filter if status is not 'all'
+  if (status && status !== 'all') {
+    where.receiptStatus = status as any;
+  }
+  
   const { donations, totalCount } = await donationModel.getMyDonationHistory(where, {skip, limit});
 
   return {
