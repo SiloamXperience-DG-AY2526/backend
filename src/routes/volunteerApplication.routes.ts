@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/volunteerApplication.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { AnyVolApplicationsQuerySchema, SubmitVolunteerApplicationSchema, MatchVolunteerToProjectSchema, ApproveVolunteerMatchSchema, MatchIdSchema } from '../schemas/project';
+import { AnyVolApplicationsQuerySchema, SubmitVolunteerApplicationSchema, MatchVolunteerToProjectSchema, ApproveVolunteerMatchSchema, MatchIdSchema, MyVolApplicationsQuerySchema } from '../schemas/project';
 import { requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
@@ -23,7 +23,8 @@ router.get(
 //ValidateRequest causes: Cannot set property query of #<IncomingMessage> which has only a getter 
 //did the checking in controller instread
 router.get(
-  '/me',                
+  '/me',          
+  validateRequest({ query: MyVolApplicationsQuerySchema}),                                       
   controller.getMyVolunteerApplications
 );
 

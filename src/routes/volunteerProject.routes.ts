@@ -27,12 +27,7 @@ router.get(
 );
 
 
-//QUESTION: who should access this endpoint? volunteers
-//GET details of a specific project
-router.get(
-  '/:projectId/details',
-  controller.getVolunteerProjectDetail
-);
+
 router.post(
   '/proposal',
   validateRequest({ body: ProposeVolunteerProjectSchema }),
@@ -91,16 +86,15 @@ router.get(
 );
 
 
-//QUESTION: can this be combined with POST /volunteerProjects/ ? remove proposal ?
-//POST submit a new volunteering project for approval
-router.post(
-  '/proposal',
-  validateRequest({ body: ProposeVolunteerProjectSchema }),
-  controller.proposeVolunteerProject
+//QUESTION: who should access this endpoint? volunteers
+//GET details of a specific project
+router.get(
+  '/:projectId/details',
+  controller.getVolunteerProjectDetail
 );
-
-//QUESTION: can this be converted to PATCH /volunteerProjects/:projectId ? remove proposal ?
+//QUESTION: can this be converted to PATCH /volunteerProjects/:projectId ? remove proposal ? edit function
 //PATCH update a submitted volunteering project
+
 router.patch(
   '/proposal/:projectId',
   validateRequest({
