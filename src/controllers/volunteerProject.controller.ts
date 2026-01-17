@@ -10,6 +10,16 @@ export const getVolunteerProjects = async (req: Request, res: Response) => {
   res.json(projects);
 };
 
+export const getAllVolunteerProjects = async (req: Request, res: Response) => {
+  const { page, limit, search } = req.query;
+  const result = await volunteerService.getAllVolunteerProjects({
+    page: Number(page) || 1,
+    limit: Number(limit) || 10,
+    search: typeof search === 'string' ? search : undefined,
+  });
+  res.json(result);
+};
+
 export const getVolunteerProjectDetails = async (
   req: Request,
   res: Response

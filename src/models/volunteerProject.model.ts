@@ -165,6 +165,30 @@ type PaginatedVolunteerActivities = {
     }>;
 };
 
+type PaginatedVolunteerProjects = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  data: Array<{
+    id: string;
+    title: string;
+    startDate: Date | null;
+    endDate: Date | null;
+    startTime: Date | null;
+    endTime: Date | null;
+    aboutDesc: string | null;
+    submissionStatus: string;
+    approvalStatus: string;
+    operationStatus: string;
+    managedBy: string;
+    capacity: {
+      filled: number;
+      total: number;
+    };
+  }>;
+};
+
 export const getAvailableVolunteerActivitiesModel = async ({
   page = 1,
   limit = 10,
@@ -297,6 +321,91 @@ export const getAvailableVolunteerActivitiesModel = async ({
       projectAvailableSlots,
       positions,
       sessions,
+    };
+  });
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages,
+    data,
+  };
+};
+
+export const getAllVolunteerProjectsModel = async ({
+  page = 1,
+  limit = 10,
+  search,
+}: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<PaginatedVolunteerProjects> => {
+  if (page < 1 || limit < 1) throw new Error('INVALID_PAGINATION');
+
+  const whereClause = search
+    ? {
+        title: {
+          contains: search,
+          mode: 'insensitive' as const,
+        },
+      }
+    : {};
+
+  const skip = (page - 1) * limit;
+
+  const [total, projects] = await Promise.all([
+    prisma.volunteerProject.count({ where: whereClause }),
+    prisma.volunteerProject.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      include: {
+        positions: {
+          include: {
+            signups: {
+              where: {
+                hasConsented: true,
+                status: { in: ['approved', 'active', 'inactive'] },
+              },
+              select: { id: true },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  const data = projects.map((p) => {
+    const totalSlots = p.positions.reduce(
+      (sum, pos) => sum + pos.totalSlots,
+      0
+    );
+    const filledSlots = p.positions.reduce(
+      (sum, pos) => sum + pos.signups.length,
+      0
+    );
+
+    return {
+      id: p.id,
+      title: p.title,
+      startDate: p.startDate,
+      endDate: p.endDate,
+      startTime: p.startTime,
+      endTime: p.endTime,
+      aboutDesc: p.aboutDesc,
+      submissionStatus: p.submissionStatus,
+      approvalStatus: p.approvalStatus,
+      operationStatus: p.operationStatus,
+      managedBy: p.managedById,
+      capacity: {
+        filled: filledSlots,
+        total: totalSlots,
+      },
     };
   });
 

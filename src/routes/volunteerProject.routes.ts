@@ -12,6 +12,7 @@ import {
   UpdateVolunteerProjectStatusSchema,
   ViewMyProposedProjectsQuerySchema,
   UpdateMyProposedProjectStatusSchema,
+  GetAllVolunteerProjectsSchema,
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
 import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
@@ -25,6 +26,12 @@ const router = Router();
 router.get(
   '/available',
   controller.getAvailableVolunteerActivities
+);
+
+router.get(
+  '/all',
+  validateRequest({ query: GetAllVolunteerProjectsSchema }),
+  controller.getAllVolunteerProjects
 );
 
 

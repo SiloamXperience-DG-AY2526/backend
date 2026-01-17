@@ -3,7 +3,7 @@ import {
   ProjectApprovalStatus,
   ProjectFrequency,
 } from '@prisma/client';
-import { preprocessDate } from '../helper';
+import { preprocessDate, PageType, LimitType } from '../helper';
 
 // Query params schema for available activities
 export const GetAvailableVolunteerActivitiesSchema = z.object({
@@ -30,6 +30,16 @@ export const GetAvailableVolunteerActivitiesSchema = z.object({
 
 export type GetAvailableVolunteerActivitiesInput = z.infer<
   typeof GetAvailableVolunteerActivitiesSchema
+>;
+
+export const GetAllVolunteerProjectsSchema = z.object({
+  page: PageType,
+  limit: LimitType,
+  search: z.string().trim().min(1).optional(),
+});
+
+export type GetAllVolunteerProjectsInput = z.infer<
+  typeof GetAllVolunteerProjectsSchema
 >;
 
 //volunteer propose project

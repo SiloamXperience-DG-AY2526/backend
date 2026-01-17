@@ -3,7 +3,8 @@ import * as volunteerModel from '../models/volunteerProject.model';
 import {
   GetAvailableVolunteerActivitiesInput, UpdateVolunteerProjectInput,
   CreateVolunteerProjectInput, ProposeVolunteerProjectInput, UpdateVolunteerProposalInput,
-  MyProjectApplicationsInput
+  MyProjectApplicationsInput,
+  GetAllVolunteerProjectsInput,
 } from '../schemas/project';
 import { NotFoundError, NotImplementedError } from '../utils/errors';
 
@@ -18,6 +19,12 @@ export const getAvailableVolunteerActivities = async (
   input: GetAvailableVolunteerActivitiesInput
 ) => {
   return volunteerModel.getAvailableVolunteerActivitiesModel(input);
+};
+
+export const getAllVolunteerProjects = async (
+  input: GetAllVolunteerProjectsInput
+) => {
+  return volunteerModel.getAllVolunteerProjectsModel(input);
 };
 
 export const proposeVolunteerProject = async (
