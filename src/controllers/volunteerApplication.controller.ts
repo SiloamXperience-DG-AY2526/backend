@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteerApplication.service';
 import { getUserIdFromRequest } from '../utils/user';
-import { MyVolApplicationsQueryType } from '../schemas';
+import { MyVolApplicationsQuerySchema, MyVolApplicationsQueryType } from '../schemas';
 
 export const getVolunteerApplications = async (
   req: Request,
@@ -17,14 +17,17 @@ export const getMyVolunteerApplications = async (
   res: Response
 ) => {
   const userId  = getUserIdFromRequest(req);
-  const filters = req.query as MyVolApplicationsQueryType;
+  const filters = MyVolApplicationsQuerySchema.parse(req.query);
   const applications =
     await volunteerService.getMyVolunteerApplications({
       userId,
       filters, 
     });
 
-  return res.status(200).json(applications);
+  return res.status(200).json({
+    status: 'success',
+    data: applications,
+  });
 };
 
 export const submitVolunteerApplication = async (

@@ -18,7 +18,14 @@ export const getVolunteerApplicationsModel = async ({
       volunteerId: userId,
       ...(status && { status }),
     },
-    include: {
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+
+  
+      volunteerProjectFeedbackId: true,
+
       position: {
         select: {
           id: true,
@@ -27,10 +34,14 @@ export const getVolunteerApplicationsModel = async ({
             select: {
               id: true,
               title: true,
+              aboutDesc: true,
               location: true,
               startDate: true,
+              startTime: true,
+              endTime: true,
               endDate: true,
               operationStatus: true,
+
             },
           },
         },
@@ -45,11 +56,18 @@ export const getVolunteerApplicationsModel = async ({
     applicationId: r.id,
     status: r.status,
     appliedAt: r.createdAt,
+
+    // feedback check
+    feedbackGiven: Boolean(r.volunteerProjectFeedbackId),
+
     project: {
       id: r.position.project.id,
       title: r.position.project.title,
+      description: r.position.project.aboutDesc, 
       location: r.position.project.location,
       startDate: r.position.project.startDate,
+      startTime: r.position.project.startTime,
+      endTime: r.position.project.endTime,
       endDate: r.position.project.endDate,
       operationStatus: r.position.project.operationStatus,
     },
@@ -61,31 +79,103 @@ export const getVolunteerApplicationsModel = async ({
 };
 
 export const submitVolunteerApplication = async (input: SubmitVolApplicationInput) => {
-  const {userId, applicationDetails} = input;
-  const { positionId} = applicationDetails;
+  const { userId, applicationDetails } = input;
+  const { projectId, positionId, hasConsented, availability, sessionIds } = applicationDetails;
+
+  // unique session ids (avoid duplicates)
+  const uniqueSessionIds = Array.from(new Set(sessionIds ?? []));
+
   try {
-    const application = prisma.$transaction(async (tx) => {
-      //Duplicate Application not possible due to [userId, positionId] unique constraint
-      //FK constraint ensures positionId exists, check project is ongoing
-      const doesPositionExist = await tx.projectPosition.findFirst({
-        where: {
-          id: positionId,
-          project: {
-            operationStatus: 'ongoing',
-          }},
+    return await prisma.$transaction(async (tx) => {
+      // 0) fetch user details for response
+      const user = await tx.user.findUnique({
+        where: { id: userId },
         select: {
           id: true,
-          project: { select: { id: true } },
-        }}
-      );
-      if (!doesPositionExist) {
-        throw new ConflictError('Project is not operational or position does not exist');
+          firstName: true,
+          lastName: true,
+          partner: {
+            select: {
+              gender: true,
+              countryCode: true,
+              contactNumber: true,
+            },
+          },
+        },
+      });
+
+      if (!user) throw new NotFoundError('USER_NOT_FOUND');
+
+      // 1) position must exist + include project
+      const position = await tx.projectPosition.findUnique({
+        where: { id: positionId },
+        select: {
+          id: true,
+          projectId: true,
+          role: true,
+          project: {
+            select: {
+              id: true,
+              title: true,
+              location: true,
+              operationStatus: true,
+              startDate: true,
+              endDate: true,
+              startTime: true,
+              endTime: true,
+            },
+          },
+        },
+      });
+
+      if (!position) throw new NotFoundError('POSITION_NOT_FOUND');
+
+      // 2) position must belong to the projectId passed by FE
+      if (position.projectId !== projectId) {
+        throw new ConflictError('POSITION_NOT_IN_PROJECT');
       }
-      await tx.volunteerProjectPosition.create({
+
+      // 3) project must be ongoing
+      if (position.project.operationStatus !== 'ongoing') {
+        throw new ConflictError('PROJECT_NOT_OPERATIONAL');
+      }
+
+      // 4) prevent duplicate application
+      const existing = await tx.volunteerProjectPosition.findUnique({
+        where: {
+          volunteerId_positionId: {
+            volunteerId: userId,
+            positionId,
+          },
+        },
+        select: { id: true },
+      });
+
+      if (existing) throw new ConflictError('ALREADY_APPLIED');
+
+      // 5) validate sessions (all must belong to project)
+      if (uniqueSessionIds.length > 0) {
+        const sessions = await tx.session.findMany({
+          where: {
+            id: { in: uniqueSessionIds },
+            projectId,
+          },
+          select: { id: true },
+        });
+
+        if (sessions.length !== uniqueSessionIds.length) {
+          throw new NotFoundError('SESSION_NOT_FOUND');
+        }
+      }
+
+      // 6) create application (+ availability)
+      const application = await tx.volunteerProjectPosition.create({
         data: {
           volunteerId: userId,
+          positionId,
           status: 'reviewing',
-          ...applicationDetails
+          hasConsented,
+          availability: availability ?? null,
         },
         select: {
           id: true,
@@ -93,20 +183,91 @@ export const submitVolunteerApplication = async (input: SubmitVolApplicationInpu
           positionId: true,
           status: true,
           hasConsented: true,
+          availability: true,
           createdAt: true,
+          position: {
+            select: {
+              id: true,
+              role: true,
+              project: {
+                select: {
+                  id: true,
+                  title: true,
+                  location: true,
+                  startDate: true,
+                  endDate: true,
+                  startTime: true,
+                  endTime: true,
+                  operationStatus: true,
+                },
+              },
+            },
+          },
         },
       });
+
+      // 7) create volunteerSessions (many)
+      if (uniqueSessionIds.length > 0) {
+        await tx.volunteerSession.createMany({
+          data: uniqueSessionIds.map((sid) => ({
+            volunteerId: userId,
+            sessionId: sid,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      // optional at the moment
+      const selectedSessions =
+        uniqueSessionIds.length > 0
+          ? await tx.session.findMany({
+            where: { id: { in: uniqueSessionIds } },
+            select: {
+              id: true,
+              name: true,
+              sessionDate: true,
+              startTime: true,
+              endTime: true,
+            },
+            orderBy: { sessionDate: 'asc' },
+          })
+          : [];
+
+      // 8) return
+      return {
+        application,
+        volunteer: {
+          userId: user.id,
+          name: `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim(),
+          gender: user.partner?.gender ?? null,
+          contactNumber:
+            user.partner?.countryCode && user.partner?.contactNumber
+              ? `${user.partner.countryCode}${user.partner.contactNumber}`
+              : null,
+        },
+        project: {
+          projectId: application.position.project.id,
+          title: application.position.project.title,
+          location: application.position.project.location,
+          startDate: application.position.project.startDate,
+          endDate: application.position.project.endDate,
+          startTime: application.position.project.startTime,
+          endTime: application.position.project.endTime,
+          operationStatus: application.position.project.operationStatus,
+        },
+        availability: application.availability ?? null,
+        selectedSessions,
+      };
     });
-    return application;
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === 'P2002') throw new ConflictError('You have already applied');
-      if (err.code === 'P2003') throw new NotFoundError('Related record missing');
+      if (err.code === 'P2002') throw new ConflictError('ALREADY_APPLIED');
+      if (err.code === 'P2003') throw new NotFoundError('RELATED_RECORD_MISSING');
+      if (err.code === 'P2025') throw new NotFoundError('RECORD_NOT_FOUND');
     }
     throw err;
   }
 };
-
 
 export const matchVolunteerToProject = async (input: MatchVolunteerToProjectInput) => {
   const { volunteerId, projectId, positionId } = input;

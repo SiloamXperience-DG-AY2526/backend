@@ -334,7 +334,7 @@ export const proposeVolunteerProjectModel = async ({
             projectId: project.id,
             role: pos.role,
             description: pos.description,
-            totalSlots: 0,
+            totalSlots: pos.totalSlots,
           },
         });
 
@@ -542,7 +542,7 @@ export const getVolunteerProjectDetailModel = async ({
           },
           signups: {
             where: {
-              hasConsented: true,
+             
               status: { in: [...FILLED_STATUSES] },
             },
             select: { id: true }, // just count
@@ -892,4 +892,100 @@ export const duplicateVolunteerProject = async (
 
     return result;
   });
+};
+
+
+export const viewMyProposedProjectsModel = async (input: {
+  userId: string;
+  filters?: { approvalStatus?: ProjectApprovalStatus };
+}) => {
+  const { userId, filters } = input;
+
+  const projects = await prisma.volunteerProject.findMany({
+    where: {
+      managedById: userId,
+      ...(filters?.approvalStatus
+        ? { approvalStatus: filters.approvalStatus }
+        : {}),
+      submissionStatus: { not: 'withdrawn' }, // optional
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      startDate: true,
+      endDate: true,
+      location: true,
+      initiatorName: true,
+      approvalStatus: true,
+      positions: {
+        select: {
+          totalSlots: true,
+          signups: {
+            where: {
+              status: { in: [...FILLED_STATUSES] },
+              hasConsented: true,
+            },
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
+
+  return projects.map((p) => {
+    const totalCapacity = p.positions.reduce(
+      (sum, pos) => sum + (pos.totalSlots ?? 0),
+      0
+    );
+
+    const acceptedCount = p.positions.reduce(
+      (sum, pos) => sum + pos.signups.length,
+      0
+    );
+
+    return {
+      id: p.id,
+      name: p.title, 
+      startDate: p.startDate,
+      endDate: p.endDate,
+      location: p.location,
+      initiatorName: p.initiatorName ?? null,
+      approvalStatus: p.approvalStatus,
+      totalCapacity,
+      acceptedCount,
+    };
+  });
+};
+
+
+export const updateMyProposedProjectStatusModel = async (input: {
+  userId: string;
+  projectId: string;
+  approvalStatus: ProjectApprovalStatus;
+}) => {
+  const { userId, projectId, approvalStatus } = input;
+
+
+  const existing = await prisma.volunteerProject.findFirst({
+    where: { id: projectId, managedById: userId },
+    select: { id: true },
+  });
+
+  if (!existing) {
+ 
+    throw new Error('PROJECT_NOT_FOUND_OR_FORBIDDEN');
+  }
+
+  const updated = await prisma.volunteerProject.update({
+    where: { id: projectId },
+    data: { approvalStatus },
+    select: {
+      id: true,
+      approvalStatus: true,
+      updatedAt: true,
+    },
+  });
+
+  return updated;
 };
