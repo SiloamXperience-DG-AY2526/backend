@@ -20,15 +20,6 @@ router.get(
   donationProjectController.getDonationProjects
 );
 
-// GET details for any donation project 
-// schema validated above
-// permission check: financeManager and above
-router.get(
-  '/:projectId',
-  requirePermission('donationProjectDetails:view'),
-  donationProjectController.getDonationProjectDetails
-);
-
 router.get(
   '/:projectId/donations',
   validateRequest({ params: DonationProjectIdSchema, query: GetProjectDonationsSchema }),
@@ -54,6 +45,15 @@ router.get(
   '/me/:projectId',
   validateRequest({ params: DonationProjectIdSchema }),
   donationProjectController.getMyDonationProjectDetails
+);
+
+// GET details for any donation project 
+// schema validated above
+// permission check: financeManager and above
+router.get(
+  '/:projectId',
+  requirePermission('donationProjectDetails:view'),
+  donationProjectController.getDonationProjectDetails
 );
 
 // POST create new donation project
