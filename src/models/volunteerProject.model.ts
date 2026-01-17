@@ -1,4 +1,3 @@
-import { ProjectApprovalStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import {
   UpdateVolunteerProjectInput,
@@ -7,6 +6,7 @@ import {
   ProposeVolunteerProjectInput,
 } from '../schemas/project';
 import { NotFoundError } from '../utils/errors';
+import { ProjectApprovalStatus, ProjectOperationStatus } from '@prisma/client';
 
 const pmPublicInfo = {
   select: {
@@ -334,7 +334,7 @@ export const proposeVolunteerProjectModel = async ({
             projectId: project.id,
             role: pos.role,
             description: pos.description,
-            totalSlots: 0,
+            totalSlots: pos.totalSlots,
           },
         });
 
@@ -542,7 +542,7 @@ export const getVolunteerProjectDetailModel = async ({
           },
           signups: {
             where: {
-              hasConsented: true,
+             
               status: { in: [...FILLED_STATUSES] },
             },
             select: { id: true }, // just count
@@ -748,4 +748,244 @@ export const getVolProject = async (projectId: string) => {
       approvedBy: true
     },
   });
+};
+
+export const duplicateVolunteerProject = async (
+  projectId: string,
+  newManagerId: string
+) => {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.volunteerProject.findUnique({
+      where: { id: projectId },
+      select: {
+        title: true,
+        location: true,
+        aboutDesc: true,
+        objectives: true,
+        beneficiaries: true,
+        initiatorName: true,
+        organisingTeam: true,
+        proposedPlan: true,
+        startTime: true,
+        endTime: true,
+        startDate: true,
+        endDate: true,
+        frequency: true,
+        interval: true,
+        dayOfWeek: true,
+        image: true,
+        attachments: true,
+        objectivesList: {
+          select: {
+            objective: true,
+            order: true,
+          },
+          orderBy: { order: 'asc' },
+        },
+        positions: {
+          select: {
+            role: true,
+            description: true,
+            totalSlots: true,
+            skills: {
+              select: {
+                skill: true,
+                order: true,
+              },
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+        sessions: {
+          select: {
+            name: true,
+            sessionDate: true,
+            startTime: true,
+            endTime: true,
+          },
+          orderBy: { sessionDate: 'asc' },
+        },
+      },
+    });
+
+    if (!existing) return null;
+
+    const { objectivesList, positions, sessions, ...projectData } = existing;
+
+    const duplicated = await tx.volunteerProject.create({
+      data: {
+        ...projectData,
+        managedById: newManagerId,
+        title: `${existing.title} (Copy)`,
+        submissionStatus: 'draft',
+        approvalStatus: ProjectApprovalStatus.pending,
+        operationStatus: ProjectOperationStatus.paused,
+        approvalNotes: null,
+        approvalMessage: null,
+        approvedById: null,
+        objectivesList: objectivesList.length
+          ? {
+            create: objectivesList.map((obj) => ({
+              objective: obj.objective,
+              order: obj.order,
+            })),
+          }
+          : undefined,
+      },
+    });
+
+    // Duplicate positions and their skills
+    for (const pos of positions) {
+      const createdPosition = await tx.projectPosition.create({
+        data: {
+          projectId: duplicated.id,
+          role: pos.role,
+          description: pos.description,
+          totalSlots: pos.totalSlots,
+        },
+      });
+
+      if (pos.skills.length) {
+        await tx.projectSkill.createMany({
+          data: pos.skills.map((s) => ({
+            projectPositionId: createdPosition.id,
+            skill: s.skill,
+            order: s.order,
+          })),
+        });
+      }
+    }
+
+    // Duplicate sessions
+    for (const session of sessions) {
+      await tx.session.create({
+        data: {
+          projectId: duplicated.id,
+          name: session.name,
+          sessionDate: session.sessionDate,
+          startTime: session.startTime,
+          endTime: session.endTime,
+        },
+      });
+    }
+
+    // Fetch the complete duplicated project with relations
+    const result = await tx.volunteerProject.findUnique({
+      where: { id: duplicated.id },
+      include: {
+        managedBy: pmPublicInfo,
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+        positions: {
+          include: {
+            skills: {
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+        sessions: {
+          orderBy: { sessionDate: 'asc' },
+        },
+      },
+    });
+
+    return result;
+  });
+};
+
+
+export const viewMyProposedProjectsModel = async (input: {
+  userId: string;
+  filters?: { approvalStatus?: ProjectApprovalStatus };
+}) => {
+  const { userId, filters } = input;
+
+  const projects = await prisma.volunteerProject.findMany({
+    where: {
+      managedById: userId,
+      ...(filters?.approvalStatus
+        ? { approvalStatus: filters.approvalStatus }
+        : {}),
+      submissionStatus: { not: 'withdrawn' }, // optional
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      startDate: true,
+      endDate: true,
+      location: true,
+      initiatorName: true,
+      approvalStatus: true,
+      positions: {
+        select: {
+          totalSlots: true,
+          signups: {
+            where: {
+              status: { in: [...FILLED_STATUSES] },
+              hasConsented: true,
+            },
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
+
+  return projects.map((p) => {
+    const totalCapacity = p.positions.reduce(
+      (sum, pos) => sum + (pos.totalSlots ?? 0),
+      0
+    );
+
+    const acceptedCount = p.positions.reduce(
+      (sum, pos) => sum + pos.signups.length,
+      0
+    );
+
+    return {
+      id: p.id,
+      name: p.title, 
+      startDate: p.startDate,
+      endDate: p.endDate,
+      location: p.location,
+      initiatorName: p.initiatorName ?? null,
+      approvalStatus: p.approvalStatus,
+      totalCapacity,
+      acceptedCount,
+    };
+  });
+};
+
+
+export const updateMyProposedProjectStatusModel = async (input: {
+  userId: string;
+  projectId: string;
+  approvalStatus: ProjectApprovalStatus;
+}) => {
+  const { userId, projectId, approvalStatus } = input;
+
+
+  const existing = await prisma.volunteerProject.findFirst({
+    where: { id: projectId, managedById: userId },
+    select: { id: true },
+  });
+
+  if (!existing) {
+ 
+    throw new Error('PROJECT_NOT_FOUND_OR_FORBIDDEN');
+  }
+
+  const updated = await prisma.volunteerProject.update({
+    where: { id: projectId },
+    data: { approvalStatus },
+    select: {
+      id: true,
+      approvalStatus: true,
+      updatedAt: true,
+    },
+  });
+
+  return updated;
 };

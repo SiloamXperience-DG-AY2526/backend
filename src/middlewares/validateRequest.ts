@@ -42,7 +42,7 @@ export const validateRequest =
             formatZodErrors(parsed.error)
           );
         }
-        // Use Object.assign to avoid readonly property error
+        // In Express 5, req.query is read-only, so we use Object.assign
         Object.assign(req.query, parsed.data);
       }
 

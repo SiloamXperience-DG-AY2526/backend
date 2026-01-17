@@ -24,18 +24,9 @@ export const getDonationProjects = async (filters: GetDonationProjectsInput) => 
     submissionStatus: 'submitted',
   };
 
-  // Handle type filtering
-  if (type && type !== 'all') {
-    if (type === 'ongoing') {
-      // Projects with no deadline (ongoing)
-      where.deadline = null;
-    } else if (type === 'specific') {
-      // Projects with a deadline (time-bound/specific)
-      where.deadline = { not: null };
-    } else {
-      // Specific ProjectType (brick, sponsor, partnerLed)
-      where.type = type as any;
-    }
+  // Handle type filtering - filter by ProjectType if provided
+  if (type) {
+    where.type = type;
   }
   
   const {projectsWithTotals, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
@@ -134,4 +125,19 @@ export const withdrawDonationProject = async (
   }
 
   return withdrawnProject;
+};
+export const duplicateDonationProject = async (
+  projectId: string,
+  newManagerId: string
+) => {
+  const duplicated = await donationProjectModel.duplicateDonationProject(
+    projectId,
+    newManagerId
+  );
+
+  if (!duplicated) {
+    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
+  }
+
+  return duplicated;
 };

@@ -1,6 +1,9 @@
 import { prisma } from '../lib/prisma';
 import { PartnerFeedbackType, ProjectApprovalStatus } from '@prisma/client';
-import { PMPublicSelect } from '../projections/user.projections';
+import { StaffProfile } from '../schemas/user';
+import { BadRequestError } from '../utils/errors';
+import { PMPublicSelect } from './projectionSchemas/user.projections';
+
 
 const managerInfo = {
   select: {
@@ -111,5 +114,69 @@ export const getPeerFeedbackByManager = async (userId: string) => {
     orderBy: {
       createdAt: 'desc',
     },
+  });
+};
+
+
+export const getPeerFeedbackForProject = async (projectId: string) => {
+  return prisma.peerFeedback.findMany({
+    where: {
+      projectId,
+    },
+    include: {
+      reviewer: true,
+      project: true,
+      reviewee: true,
+      tags: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
+export const getStaffProfile = async (
+  userId: string
+): Promise<StaffProfile | null> => {
+  const staff = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      firstName: true,
+      lastName: true,
+      title: true,
+      email: true,
+    },
+  });
+
+  if (!staff) throw new BadRequestError('Error retrieving staff profile');
+
+  return {
+    firstName: staff.firstName,
+    lastName: staff.lastName,
+    email: staff.email,
+    title: staff.title ?? undefined,
+  };
+};
+
+export async function updateStaffProfile(
+  userId: string,
+  newStaffProfile: StaffProfile
+) {
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...newStaffProfile,
+    },
+  });
+
+  const updatedProfile = await getStaffProfile(userId);
+
+  return updatedProfile;
+}
+
+
+export const findProjectById = async (projectId: string) => {
+  return prisma.volunteerProject.findUnique({
+    where: { id: projectId },
   });
 };

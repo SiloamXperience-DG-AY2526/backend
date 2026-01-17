@@ -111,3 +111,17 @@ export const withdrawDonationProject = async (req: Request, res: Response) => {
     project: withdrawnProject,
   });
 };
+
+export const duplicateDonationProject = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const managerId = getUserIdFromRequest(req);
+  const duplicated = await donationProjectService.duplicateDonationProject(
+    projectId,
+    managerId
+  );
+  res.status(201).json({
+    status: 'success',
+    message: 'Donation project duplicated',
+    data: duplicated,
+  });
+};

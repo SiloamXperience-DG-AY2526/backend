@@ -19,13 +19,16 @@ export const directPermissions: Record<Role, Permission[]> = {
   //add more permissions here
   [UserRole.superAdmin]: [
     'example:view',
+    'staff:read',
     'staff:create',
-    'staff:remove',
+    'staff:activate',
+    'staff:deactivate',
   ],
 
   [UserRole.generalManager]: [
     'volunteerApplications:view:all',
     'volunteerProjFeedback:post',
+    'volunteerProjects:duplicate',
     'volunteerProjApproval:update',
     'emailCampaign:create',
     'emailCampaign:update',
@@ -37,6 +40,10 @@ export const directPermissions: Record<Role, Permission[]> = {
 
   [UserRole.financeManager]: [
     'donationReceiptStatus:update',
+    'donationProjects:duplicate',
+    'proposedProjects:view',
+    'proposedProjects:update:status',
+    'donorDetails:view'
   ],
 
   [UserRole.partner]: [

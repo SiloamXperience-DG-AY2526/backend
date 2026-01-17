@@ -3,3 +3,5 @@ export * from './donation.schemas';
 
 // Export donation project schemas
 export * from './donationProjects.schemas';
+
+export * from './donor.schemas';

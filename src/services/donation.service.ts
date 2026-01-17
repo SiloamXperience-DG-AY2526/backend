@@ -7,6 +7,7 @@ import {
 import { NotFoundError } from '../utils/errors';
 import { Prisma } from '@prisma/client';
 import { buildPagination, calculateSkip } from './paginationHelper';
+import { DonationHistoryProjection } from '../models/projectionSchemas/donation.projection';
 
 /**
  * Service: Get user's donation history
@@ -22,14 +23,11 @@ export const getMyDonationHistory = async (
   // Build where clause based on status
   const where: Prisma.DonationTransactionWhereInput = {
     donorId: partnerId,
+    ...(status && status !== 'all' && { receiptStatus: status }),
   };
-
-  // Only add receiptStatus filter if status is not 'all'
-  if (status && status !== 'all') {
-    where.receiptStatus = status as any;
-  }
-  
-  const { donations, totalCount } = await donationModel.getMyDonationHistory(where, {skip, limit});
+  //Assign select clause
+  const select: Prisma.DonationTransactionSelect = DonationHistoryProjection;
+  const { donations, totalCount } = await donationModel.getDonationHistory(where, select, {skip, limit});
 
   return {
     donations,
