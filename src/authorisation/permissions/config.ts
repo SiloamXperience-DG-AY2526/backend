@@ -30,6 +30,7 @@ export const directPermissions: Record<Role, Permission[]> = {
     'volunteerProjFeedback:post',
     'volunteerProjects:duplicate',
     'volunteerProjApproval:update',
+    'volunteerProjects:manage',
     'emailCampaign:create',
     'emailCampaign:update',
     'emailCampaign:read',

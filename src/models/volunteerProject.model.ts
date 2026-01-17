@@ -94,6 +94,38 @@ export const updateVolunteerProject = async (
   return updatedProject;
 };
 
+export const updateVolunteerProjectById = async (
+  projectId: string,
+  data: UpdateVolunteerProjectInput
+) => {
+  const existingProject = await prisma.volunteerProject.findFirst({
+    where: {
+      id: projectId,
+    },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  const updatedProject = await prisma.volunteerProject.update({
+    where: {
+      id: projectId,
+    },
+    data: {
+      ...data,
+    },
+    include: {
+      managedBy: pmPublicInfo,
+      objectivesList: {
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+
+  return updatedProject;
+};
+
 export const createVolunteerProject = async (
   managerId: string,
   data: CreateVolunteerProjectInput

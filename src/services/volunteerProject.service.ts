@@ -110,6 +110,22 @@ export const updateVolunteerProject = async (
   return updatedProject;
 };
 
+export const updateVolunteerProjectById = async (
+  projectId: string,
+  data: UpdateVolunteerProjectInput
+) => {
+  const updatedProject = await volunteerModel.updateVolunteerProjectById(
+    projectId,
+    data
+  );
+
+  if (!updatedProject) {
+    throw new NotFoundError(`Volunteer Project ${projectId} Not Found!`);
+  }
+
+  return updatedProject;
+};
+
 export const createVolunteerProject = async (
   managerId: string,
   data: CreateVolunteerProjectInput

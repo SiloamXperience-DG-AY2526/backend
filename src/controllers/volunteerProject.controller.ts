@@ -56,6 +56,18 @@ export const updateVolunteerProject = async (
   res.json(updatedProject);
 };
 
+export const updateVolunteerProjectById = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const updatedProject = await volunteerService.updateVolunteerProjectById(
+    projectId,
+    req.body
+  );
+  res.json(updatedProject);
+};
+
 export const getVolProjectApplications = async (
   req: Request,
   res: Response

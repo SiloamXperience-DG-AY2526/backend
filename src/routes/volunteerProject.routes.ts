@@ -100,6 +100,13 @@ router.get(
   '/:projectId/details',
   controller.getVolunteerProjectDetail
 );
+// PATCH update volunteer project by id (admin/general manager)
+router.patch(
+  '/:projectId',
+  validateRequest({ body: UpdateVolunteerProjectSchema }),
+  requirePermission('volunteerProjects:manage'),
+  controller.updateVolunteerProjectById
+);
 //QUESTION: can this be converted to PATCH /volunteerProjects/:projectId ? remove proposal ? edit function
 //PATCH update a submitted volunteering project
 
