@@ -38,9 +38,9 @@ function addDays(base: Date, days: number) {
 }
 
 function withTime(base: Date, time: string) {
-  // Validate time format (HH:MM)
-  if (!/^\d{1,2}:\d{2}$/.test(time)) {
-    throw new Error(`Invalid time format: ${time}. Expected format: HH:MM`);
+  // Validate time format (HH:MM or H:MM)
+  if (!/^\d{1,2}:\d{1,2}$/.test(time)) {
+    throw new Error(`Invalid time format: ${time}. Expected format: HH:MM or H:MM`);
   }
   
   const [hours, minutes] = time.split(':').map(Number);

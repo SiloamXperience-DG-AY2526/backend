@@ -8,7 +8,18 @@ const prisma = new PrismaClient();
 const MANAGED_BY_ID = process.env.SEED_MANAGED_BY_ID || '62920d6b-0901-4692-83a0-ad4872eb8270';
 
 function atDateWithTime(date: Date, hhmm: string) {
+  // Validate time format (HH:MM or H:MM)
+  if (!/^\d{1,2}:\d{1,2}$/.test(hhmm)) {
+    throw new Error(`Invalid time format: ${hhmm}. Expected format: HH:MM or H:MM`);
+  }
+  
   const [hh, mm] = hhmm.split(':').map(Number);
+  
+  // Validate parsed values
+  if (isNaN(hh) || isNaN(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) {
+    throw new Error(`Invalid time values: ${hhmm}. Hours must be 0-23, minutes must be 0-59`);
+  }
+  
   const d = new Date(date);
   d.setHours(hh, mm, 0, 0);
   return d;
