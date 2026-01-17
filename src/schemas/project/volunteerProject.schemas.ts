@@ -6,6 +6,7 @@ import {
   ProjectOperationStatus,
   ProjectApprovalStatus,
   VolunteerProjectPositionStatus,
+  SubmissionStatus,
 } from '@prisma/client';
 import { preprocessDate } from '../helper';
 
@@ -65,7 +66,7 @@ export const UpdateVolunteerProjectSchema = z.object({
   frequency: z.nativeEnum(ProjectFrequency).optional(),
   interval: z.number().int().positive().optional().nullable(),
   dayOfWeek: z.string().optional().nullable(),
-  submissionStatus: z.string().optional(),
+  submissionStatus: z.nativeEnum(SubmissionStatus).optional(),
   approvalStatus: z.nativeEnum(ProjectApprovalStatus).optional(),
   operationStatus: z.nativeEnum(ProjectOperationStatus).optional(),
   approvalNotes: z.string().optional().nullable(),

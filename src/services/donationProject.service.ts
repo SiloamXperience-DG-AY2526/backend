@@ -20,14 +20,12 @@ export const getDonationProjects = async (filters: GetDonationProjectsInput) => 
 
   // Build where clause filter
   const where: Prisma.DonationProjectWhereInput = {
-    approvalStatus: 'approved',
-    submissionStatus: 'submitted',
     type: type
   };
-  const {projectsWithTotals, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
+  const {projectsWithTotals: projects, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
   
   return {
-    projectsWithTotals,
+    projects,
     pagination: buildPagination(page, limit, totalCount)
   };
   

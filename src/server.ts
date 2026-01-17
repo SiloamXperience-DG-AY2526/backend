@@ -24,6 +24,7 @@ class Server {
 
   private initializeMiddlewares(): void {
     // Body parser middleware
+    
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 

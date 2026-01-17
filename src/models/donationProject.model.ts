@@ -79,7 +79,7 @@ export const getDonationProjectsByManager = async (managerId: string) => {
     },
     orderBy: { createdAt: 'desc' },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect
       },
       objectivesList: {
@@ -101,7 +101,7 @@ export const getMyDonationProject = async (
         managedBy: managerId,
       },
       include: {
-        project_manager: {
+        projectManager: {
           select: PMPublicSelect,
         },
         objectivesList: {
@@ -138,13 +138,13 @@ export const getDonationProjectById = async (projectId: string) => {
           {
             AND: [
               { submissionStatus: SubmissionStatus.draft },
-              { project_manager: { role: { not: 'partner' } } },
+              { projectManager: { role: { not: 'partner' } } },
             ],
           },
         ],
       },
       include: {
-        project_manager: {
+        projectManager: {
           select: PMPublicSelect,
         },
         objectivesList: {
@@ -194,7 +194,7 @@ export const updateDonationProject = async (
       ...data,
     },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect,
       },
       objectivesList: {
@@ -228,7 +228,7 @@ export const createDonationProject = async (
         : undefined,
     },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect,
       },
       objectivesList: {
@@ -248,7 +248,7 @@ export const getProposedProjects = async () => {
     },
     orderBy: { createdAt: 'desc' },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect,
       },
     },
@@ -337,7 +337,7 @@ export const duplicateDonationProject = async (
           : undefined,
       },
       include: {
-        project_manager: {
+        projectManager: {
           select: PMPublicSelect,
         },
         objectivesList: {

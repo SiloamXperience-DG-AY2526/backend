@@ -55,7 +55,7 @@ export const getDonationDetail = async (
           image: true,
           type: true,
           brickSize: true,
-          project_manager: {
+          projectManager: {
             select: PMPublicSelect,
           },
         },
