@@ -5,6 +5,20 @@ enum ProjectApprovalStatus {
   rejected
 }
 
+enum ProjectOperationStatus {
+  ongoing
+  paused
+  cancelled
+  completed
+  notStarted
+}
+
+enum SubmissionStatus {
+  draft
+  submitted
+  withdrawn
+}
+
 enum UserRole {
   superAdmin
   generalManager

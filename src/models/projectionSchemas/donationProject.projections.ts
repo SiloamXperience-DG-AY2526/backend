@@ -17,6 +17,9 @@ export const DonationProjectPublicSelect = {
   attachments: true,
   initiatorName: true,
   organisingTeam: true,
-  project_manager: { select: PMPublicSelect },
+  projectManager: { select: PMPublicSelect },
   createdAt: true,
+  approvalStatus: true,
+  submissionStatus: true,
+  operationStatus: true,
 };

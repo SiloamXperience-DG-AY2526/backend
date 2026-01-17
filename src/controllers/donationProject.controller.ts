@@ -39,16 +39,46 @@ export const getMyDonationProjectDetails = async (
   res.json(project);
 };
 
+//finance manager view
+export const getDonationProjectDetails = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const project = await donationProjectService.getDonationProjectDetails(
+    projectId
+  );
+  res.json(project);
+};
+
 export const getProjectDonationTransactions = async (
   req: Request,
   res: Response
 ) => {
   const { projectId } = req.params;
-  const donations = await donationProjectService.getProjectDonationTransactions(
-    projectId
+  const { page, limit } = req.query;
+  
+  const result = await donationProjectService.getProjectDonationTransactions(
+    projectId,
+    { page: Number(page) || 1, limit: Number(limit) || 10 }
   );
 
-  res.json(donations);
+  res.json(result);
+};
+
+export const getProjectDonors = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const { page, limit } = req.query;
+  
+  const result = await donationProjectService.getProjectDonors(
+    projectId,
+    { page: Number(page) || 1, limit: Number(limit) || 10 }
+  );
+
+  res.json(result);
 };
 
 export const createDonationProject = async (req: Request, res: Response) => {

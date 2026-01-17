@@ -33,12 +33,13 @@ describe('donationProjectService', () => {
       endDate: new Date(),
       submissionStatus: 'draft' as const,
       approvalStatus: 'pending' as const,
+      operationStatus: 'notStarted' as const,
       approvalNotes: null,
       image: null,
       attachments: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-      project_manager: {
+      projectManager: {
         id: mockNewManagerId,
         title: 'Mr',
         firstName: 'John',

@@ -63,13 +63,121 @@ export const getDonationProjects = async (
   };
 };
 
-export const getProjectDonationTransactions = async (projectId: string) => {
-  const donations = await prisma.donationTransaction.findMany({
-    where: {
-      id: projectId,
+export const getProjectDonationTransactions = async (
+  projectId: string,
+  pagination: Pagination
+) => {
+  const [donations, totalCount] = await Promise.all([
+    prisma.donationTransaction.findMany({
+      where: {
+        projectId: projectId,
+      },
+      orderBy: {
+        date: 'desc',
+      },
+      skip: pagination.skip,
+      take: pagination.limit,
+    }),
+    prisma.donationTransaction.count({
+      where: {
+        projectId: projectId,
+      },
+    }),
+  ]);
+  
+  return {
+    donations,
+    totalCount,
+  };
+};
+
+export const getProjectDonors = async (
+  projectId: string,
+  pagination: Pagination
+) => {
+  // Query users who have made donations to this project
+  const whereClause: Prisma.UserWhereInput = {
+    donorTransactions: {
+      some: {
+        projectId: projectId,
+        submissionStatus: 'submitted',
+        receiptStatus: 'received',
+      },
     },
+  };
+
+  const [users, totalCount] = await Promise.all([
+    prisma.user.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        isActive: true,
+        partner: {
+          select: {
+            id: true,
+            dob: true,
+            contactNumber: true,
+            countryCode: true,
+            gender: true,
+          },
+        },
+        donorTransactions: {
+          where: {
+            projectId: projectId,
+            submissionStatus: 'submitted',
+            receiptStatus: 'received',
+          },
+          select: {
+            amount: true,
+          },
+        },
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: pagination.skip,
+      take: pagination.limit,
+    }),
+    prisma.user.count({
+      where: whereClause,
+    }),
+  ]);
+
+  // Calculate cumulative donation amount for each donor
+  const donors = users.map((user) => {
+    const totalDonated = user.donorTransactions.reduce(
+      (sum, transaction) => sum.add(transaction.amount),
+      new Prisma.Decimal(0)
+    );
+
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      isActive: user.isActive,
+      gender: user.partner?.gender || null,
+      contactNumber: user.partner?.contactNumber || null,
+      countryCode: user.partner?.countryCode || null,
+      totalDonated,
+      partner: user.partner
+        ? {
+          id: user.partner.id,
+          dob: user.partner.dob,
+        }
+        : null,
+      createdAt: user.createdAt,
+    };
   });
-  return donations;
+  
+  return {
+    donors,
+    totalCount,
+  };
 };
 
 export const getDonationProjectsByManager = async (managerId: string) => {
@@ -79,7 +187,7 @@ export const getDonationProjectsByManager = async (managerId: string) => {
     },
     orderBy: { createdAt: 'desc' },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect
       },
       objectivesList: {
@@ -101,7 +209,50 @@ export const getMyDonationProject = async (
         managedBy: managerId,
       },
       include: {
-        project_manager: {
+        projectManager: {
+          select: PMPublicSelect,
+        },
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    }),
+    prisma.donationTransaction.aggregate({
+      where: {
+        projectId,
+        ...receivedDonationFilter,
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+  ]);
+
+  return {
+    project,
+    totalRaised: totalRaised._sum.amount ?? 0,
+  };
+};
+
+export const getDonationProjectById = async (projectId: string) => {
+  const [project, totalRaised] = await Promise.all([
+    prisma.donationProject.findFirst({
+      where: {
+        id: projectId,
+        OR: [
+          // All non-draft projects
+          { submissionStatus: { not: SubmissionStatus.draft } },
+          // Draft projects created by non-partner roles
+          {
+            AND: [
+              { submissionStatus: SubmissionStatus.draft },
+              { projectManager: { role: { not: 'partner' } } },
+            ],
+          },
+        ],
+      },
+      include: {
+        projectManager: {
           select: PMPublicSelect,
         },
         objectivesList: {
@@ -151,7 +302,7 @@ export const updateDonationProject = async (
       ...data,
     },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect,
       },
       objectivesList: {
@@ -198,7 +349,7 @@ export const withdrawDonationProject = async (
       approvalNotes: reason || existingProject.approvalNotes,
     },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect,
       },
       objectivesList: {
@@ -232,8 +383,8 @@ export const createDonationProject = async (
         : undefined,
     },
     include: {
-      project_manager: {
-        select: PMPublicSelect
+      projectManager: {
+        select: PMPublicSelect,
       },
       objectivesList: {
         orderBy: { order: 'asc' },
@@ -252,7 +403,7 @@ export const getProposedProjects = async () => {
     },
     orderBy: { createdAt: 'desc' },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect,
       },
     },
@@ -341,7 +492,7 @@ export const duplicateDonationProject = async (
           : undefined,
       },
       include: {
-        project_manager: {
+        projectManager: {
           select: PMPublicSelect,
         },
         objectivesList: {

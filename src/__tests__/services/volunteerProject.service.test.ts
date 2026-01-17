@@ -34,7 +34,7 @@ describe('volunteerProjectService', () => {
       frequency: 'once' as const,
       interval: null,
       dayOfWeek: null,
-      submissionStatus: 'draft',
+      submissionStatus: 'draft' as const,
       approvalStatus: 'pending' as const,
       operationStatus: 'paused' as const,
       approvalNotes: null,

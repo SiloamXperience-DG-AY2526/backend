@@ -8,7 +8,7 @@ import {
   CreateDonationProjectInput,
 } from '../schemas/donation';
 import { buildPagination, calculateSkip } from './paginationHelper';
-import { Prisma, ProjectApprovalStatus } from '@prisma/client';
+import { Prisma, ProjectApprovalStatus, SubmissionStatus } from '@prisma/client';
 
 /**
  * Service: Get all donation projects for partners
@@ -20,26 +20,62 @@ export const getDonationProjects = async (filters: GetDonationProjectsInput) => 
 
   // Build where clause filter
   const where: Prisma.DonationProjectWhereInput = {
-    approvalStatus: 'approved',
-    submissionStatus: 'submitted',
+    type: type,
+    OR: [
+      // All non-draft projects
+      { submissionStatus: { not: SubmissionStatus.draft } },
+      // Draft projects created by non-partner roles
+      {
+        AND: [
+          { submissionStatus: SubmissionStatus.draft },
+          { projectManager: { role: { not: 'partner' } } },
+        ],
+      },
+    ],
   };
-
-  // Handle type filtering - filter by ProjectType if provided
-  if (type) {
-    where.type = type;
-  }
-  
-  const {projectsWithTotals, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
+  const {projectsWithTotals: projects, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
   
   return {
-    projectsWithTotals,
+    projects,
     pagination: buildPagination(page, limit, totalCount)
   };
   
 };
 
-export const getProjectDonationTransactions = async (projectId: string) => {
-  return await donationProjectModel.getProjectDonationTransactions(projectId);
+export const getProjectDonationTransactions = async (
+  projectId: string,
+  pagination: { page: number; limit: number }
+) => {
+  const { page, limit } = pagination;
+  const skip = calculateSkip(page, limit);
+  
+  const { donations, totalCount } = await donationProjectModel.getProjectDonationTransactions(
+    projectId,
+    { skip, limit }
+  );
+  
+  return {
+    donations,
+    pagination: buildPagination(page, limit, totalCount),
+  };
+};
+
+export const getProjectDonors = async (
+  projectId: string,
+  pagination: { page: number; limit: number }
+) => {
+  const { page, limit } = pagination;
+  const skip = calculateSkip(page, limit);
+  
+  const { donors, totalCount } = await donationProjectModel.getProjectDonors(
+    projectId,
+    { skip, limit }
+  );
+  
+  return {
+    donors,
+    pagination: buildPagination(page, limit, totalCount),
+  };
 };
 
 export const getMyDonationProjects = async (managerId: string) => {
@@ -57,6 +93,16 @@ export const getMyDonationProjectDetails = async (
   );
 
   if (!project) {
+    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
+  }
+  return project;
+};
+
+//finance manager
+export const getDonationProjectDetails = async (projectId: string) => {
+  const project = await donationProjectModel.getDonationProjectById(projectId);
+  console.log(project);
+  if (!project.project) {
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
   return project;

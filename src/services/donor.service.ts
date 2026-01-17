@@ -25,12 +25,12 @@ export const getDonors = async (
 
   const { donors, totalCount } = await donorModel.getDonors(select, where, {skip, limit});
   
-  const donorIds = donors.map(d => d.id).filter((id): id is string => id !== undefined && id !== null);
+  const userIds = donors.map(d => d.user.id).filter((id): id is string => id !== undefined && id !== null);
+  
 
-  const donations = await donationModel.getCumulativeDonations(donorIds);
-
+  const donations = await donationModel.getCumulativeDonations(userIds);
   const donorsWithTotals = donors.map(donor => {
-    const donation = donations.find(d => d.donorId === donor.id);
+    const donation = donations.find(d => d.donorId === donor.user.id);
     return {
       ...donor,
       totalDonations: donation?._sum.amount ?? 0,
@@ -38,7 +38,7 @@ export const getDonors = async (
   });  
 
   return {
-    donorsWithTotals,
+    donor: donorsWithTotals,
     pagination: buildPagination(page, limit, totalCount)
   };
 };

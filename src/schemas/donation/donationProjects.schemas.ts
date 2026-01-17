@@ -88,6 +88,19 @@ export const UpdateProposedProjectStatusSchema = z.object({
   status: z.enum(ProjectApprovalStatus),
 });
 
+export const GetProjectDonationsSchema = z.object({
+  page: PageType,
+  limit: LimitType,
+});
+
+export type GetProjectDonationsInput = z.infer<typeof GetProjectDonationsSchema>;
+
+export const GetProjectDonorsSchema = z.object({
+  page: PageType,
+  limit: LimitType,
+});
+
+export type GetProjectDonorsInput = z.infer<typeof GetProjectDonorsSchema>;
 // Schema for withdrawing a donation project proposal
 export const WithdrawDonationProjectSchema = z.object({
   reason: z.string().optional(),

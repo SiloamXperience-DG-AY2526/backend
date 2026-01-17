@@ -1,38 +1,27 @@
 model User {
-  id           String   @id @default(uuid())
-  firstName    String
-  lastName     String
-  title        String?
-  email        String   @unique
-  passwordHash String
-  role         UserRole @default(partner)
-  isActive     Boolean  @default(true)
-
-  // Mass email relation
-  emailCampaigns EmailCampaign[] @relation("email_campaign_creator")
-
-  // Volunteer-related relations
-  managedProjects           VolunteerProject[]         @relation("managed_projects")
+  id                        String                     @id @default(uuid())
+  firstName                 String
+  lastName                  String
+  title                     String?
+  email                     String                     @unique
+  passwordHash              String
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  role                      UserRole                   @default(partner)
+  isActive                  Boolean                    @default(true)
+  managedDonationProjects   DonationProject[]          @relation("ManagedProjects")
+  donorTransactions         DonationTransaction[]      @relation("donor_transactions")
+  emailCampaigns            EmailCampaign[]            @relation("email_campaign_creator")
+  partner                   Partner?
+  feedbackReceived          PeerFeedback[]             @relation("feedback_to")
+  feedbackGiven             PeerFeedback[]             @relation("feedback_from")
+  RecurringDonation         RecurringDonation[]
   approvedProjects          VolunteerProject[]         @relation("approved_projects")
-  volunteerSessions         VolunteerSession[]         @relation("volunteer_sessions")
-  approvedVolunteerSessions VolunteerSession[]         @relation("approved_volunteer_sessions")
-  volunteerProjectPositions VolunteerProjectPosition[]
+  managedProjects           VolunteerProject[]         @relation("managed_projects")
   approvedPositions         VolunteerProjectPosition[] @relation("approved_volunteer")
-
-  // Feedback relations
-  feedbackGiven    PeerFeedback[] @relation("feedback_from")
-  feedbackReceived PeerFeedback[] @relation("feedback_to")
-
-  // Donation-related relations
-  managedDonationProjects DonationProject[]     @relation("ManagedProjects")
-  donorTransactions       DonationTransaction[] @relation("donor_transactions")
-
-  // Other role relations
-  partner Partner?
-
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  RecurringDonation RecurringDonation[]
+  volunteerProjectPositions VolunteerProjectPosition[]
+  approvedVolunteerSessions VolunteerSession[]         @relation("approved_volunteer_sessions")
+  volunteerSessions         VolunteerSession[]         @relation("volunteer_sessions")
 
   @@map("users")
 }

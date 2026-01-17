@@ -1,3 +1,162 @@
+model Partner {
+  id                           String         @id @default(uuid())
+  userId                       String         @unique
+  tripFormId                   String?
+  dob                          DateTime?
+  countryCode                  String
+  contactNumber                String
+  emergencyCountryCode         String
+  emergencyContactNumber       String
+  identificationNumber         String
+  nationality                  String
+  occupation                   String
+  gender                       Gender
+  residentialAddress           String?
+  otherInterests               String?
+  otherReferrers               String?
+  otherContactModes            String?
+  hasVolunteerExperience       Boolean        @default(false)
+  volunteerAvailability        String
+  consentUpdatesCommunications Boolean
+  subscribeNewsletterEvents    Boolean        @default(false)
+  createdAt                    DateTime       @default(now())
+  updatedAt                    DateTime       @updatedAt
+  contactModes                 ContactMode[]
+  interests                    Interest[]
+  languages                    Language[]
+  skills                       PartnerSkill[]
+  user                         User           @relation(fields: [userId], references: [id])
+  referrers                    Referrer[]
+  tripForm                     TripForm?
+
+  @@map("partners")
+}
+
+model TripForm {
+  id                String   @id @default(uuid())
+  partnerId         String   @unique
+  fullName          String
+  passportNumber    String
+  passportExpiry    DateTime
+  healthDeclaration String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  partner           Partner  @relation(fields: [partnerId], references: [id])
+
+  @@map("trip_forms")
+}
+
+model PartnerSkill {
+  id        String  @id @default(uuid())
+  partnerId String
+  skill     String
+  partner   Partner @relation(fields: [partnerId], references: [id])
+
+  @@map("partner_skills")
+}
+
+model Language {
+  id        String  @id @default(uuid())
+  partnerId String
+  language  String
+  partner   Partner @relation(fields: [partnerId], references: [id])
+
+  @@map("languages")
+}
+
+model ContactMode {
+  id        String          @id @default(uuid())
+  partnerId String
+  mode      ContactModeType
+  createdAt DateTime        @default(now())
+  partner   Partner         @relation(fields: [partnerId], references: [id])
+
+  @@map("contact_modes")
+}
+
+model Interest {
+  id           String       @id @default(uuid())
+  partnerId    String
+  interestSlug InterestSlug
+  partner      Partner      @relation(fields: [partnerId], references: [id])
+
+  @@map("interests")
+}
+
+model Referrer {
+  id        String       @id @default(uuid())
+  partnerId String
+  referrer  ReferrerType
+  partner   Partner      @relation(fields: [partnerId], references: [id])
+
+  @@map("referrers")
+}
+
+model Email {
+  id            String           @id @default(uuid())
+  senderAddress String
+  subject       String
+  previewText   String?
+  body          String
+  status        EmailStatus
+  scheduledAt   DateTime?
+  campaignId    String?
+  isTest        Boolean          @default(false)
+  recipients    EmailRecipient[]
+  campaign      EmailCampaign?   @relation(fields: [campaignId], references: [id])
+
+  @@map("emails")
+}
+
+model EmailCampaign {
+  id             String               @id @default(uuid())
+  name           String
+  senderAddress  String
+  subject        String?
+  previewText    String?
+  body           String?
+  status         EmailCampaignStatus  @default(draft)
+  scheduledAt    DateTime?
+  createdBy      String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  audienceFilter EmailAudienceFilter? @relation("CampaignAudience")
+  creator        User                 @relation("email_campaign_creator", fields: [createdBy], references: [id])
+  emails         Email[]
+
+  @@map("email_campaigns")
+}
+
+model EmailAudienceFilter {
+  id                 String         @id @default(uuid())
+  campaignId         String         @unique
+  projectId          String?
+  isActivePartner    Boolean?
+  gender             Gender?
+  nationality        String?
+  minAge             Int?
+  maxAge             Int?
+  volunteerInterests InterestSlug[]
+  volunteerSkills    String[]
+  languages          String[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  campaign           EmailCampaign  @relation("CampaignAudience", fields: [campaignId], references: [id])
+
+  @@map("email_audience_filters")
+}
+
+model EmailRecipient {
+  id               String               @id @default(uuid())
+  emailId          String
+  recipientAddress String
+  type             EmailRecipientType
+  status           EmailRecipientStatus
+  email            Email                @relation(fields: [emailId], references: [id])
+
+  @@map("email_recipients")
+}
+
 enum Gender {
   male
   female
@@ -58,204 +217,4 @@ enum EmailRecipientType {
   to
   cc
   bcc
-}
-
-model Partner {
-  id String @id @default(uuid())
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-
-  tripForm   TripForm?
-  tripFormId String?
-
-  dob                    DateTime?
-  countryCode            String
-  contactNumber          String
-  emergencyCountryCode   String
-  emergencyContactNumber String
-  identificationNumber   String
-  nationality            String
-  occupation             String
-  gender                 Gender
-  residentialAddress     String?
-
-  otherInterests    String?
-  otherReferrers    String?
-  otherContactModes String?
-
-  hasVolunteerExperience       Boolean @default(false)
-  volunteerAvailability        String
-  consentUpdatesCommunications Boolean
-  subscribeNewsletterEvents    Boolean @default(false)
-
-  skills       PartnerSkill[]
-  languages    Language[]
-  contactModes ContactMode[]
-  interests    Interest[]
-  referrers    Referrer[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("partners")
-}
-
-model TripForm {
-  id String @id @default(uuid())
-
-  partner   Partner @relation(fields: [partnerId], references: [id])
-  partnerId String  @unique
-
-  fullName          String
-  passportNumber    String
-  passportExpiry    DateTime
-  healthDeclaration String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("trip_forms")
-}
-
-model PartnerSkill {
-  id String @id @default(uuid())
-
-  partner   Partner @relation(fields: [partnerId], references: [id])
-  partnerId String
-
-  skill String
-
-  @@map("partner_skills")
-}
-
-model Language {
-  id String @id @default(uuid())
-
-  partner   Partner @relation(fields: [partnerId], references: [id])
-  partnerId String
-
-  language String
-
-  @@map("languages")
-}
-
-model ContactMode {
-  id String @id @default(uuid())
-
-  partner   Partner @relation(fields: [partnerId], references: [id])
-  partnerId String
-
-  mode ContactModeType
-
-  createdAt DateTime @default(now())
-
-  @@map("contact_modes")
-}
-
-model Interest {
-  id String @id @default(uuid())
-
-  partner   Partner @relation(fields: [partnerId], references: [id])
-  partnerId String
-
-  interestSlug InterestSlug
-
-  @@map("interests")
-}
-
-model Referrer {
-  id String @id @default(uuid())
-
-  partner   Partner @relation(fields: [partnerId], references: [id])
-  partnerId String
-
-  referrer ReferrerType
-
-  @@map("referrers")
-}
-
-model Email {
-  id String @id @default(uuid())
-
-  campaignId String?
-  campaign   EmailCampaign? @relation(fields: [campaignId], references: [id])
-
-  senderAddress String
-  subject       String
-  previewText   String?
-  body          String
-
-  status      EmailStatus
-  scheduledAt DateTime?
-
-  isTest Boolean @default(false)
-
-  recipients EmailRecipient[]
-
-  @@map("emails")
-}
-
-model EmailCampaign {
-  id String @id @default(uuid())
-
-  name String               // Internal name
-  senderAddress String
-  subject String?
-  previewText String?
-  body String?
-
-  status EmailCampaignStatus @default(draft)
-  scheduledAt DateTime?
-
-  audienceFilter EmailAudienceFilter? @relation("CampaignAudience")
-
-  emails Email[]
-
-  createdBy String
-  creator User @relation("email_campaign_creator", fields: [createdBy], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("email_campaigns")
-}
-
-model EmailAudienceFilter {
-  id String @id @default(uuid())
-
-  campaignId String @unique
-  campaign EmailCampaign @relation("CampaignAudience", fields: [campaignId], references: [id])
-
-
-  projectId String?
-  isActivePartner Boolean?
-
-  gender Gender?
-  nationality String?
-
-  minAge Int?
-  maxAge Int?
-
-  volunteerInterests InterestSlug[]
-  volunteerSkills String[]
-  languages String[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("email_audience_filters")
-}
-
-model EmailRecipient {
-  id String @id @default(uuid())
-
-  email   Email  @relation(fields: [emailId], references: [id])
-  emailId String
-
-  recipientAddress String
-  type             EmailRecipientType
-  status           EmailRecipientStatus
-
-  @@map("email_recipients")
 }

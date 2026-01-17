@@ -1,3 +1,199 @@
+model VolunteerProject {
+  id                       String                      @id @default(uuid())
+  managedById              String
+  approvedById             String?
+  title                    String
+  location                 String
+  aboutDesc                String
+  objectives               String
+  beneficiaries            String
+  initiatorName            String?
+  organisingTeam           String?
+  proposedPlan             String?
+  startTime                DateTime
+  endTime                  DateTime
+  startDate                DateTime
+  endDate                  DateTime
+  frequency                ProjectFrequency
+  interval                 Int?
+  dayOfWeek                String?
+  approvalStatus           ProjectApprovalStatus       @default(pending)
+  operationStatus          ProjectOperationStatus      @default(notStarted)
+  approvalNotes            String?
+  approvalMessage          String?
+  image                    String?
+  attachments              String?
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+  submissionStatus         SubmissionStatus            @default(draft)
+  partnerFeedback          PeerFeedback[]
+  positions                ProjectPosition[]
+  sessions                 Session[]
+  VolunteerProjectFeedback VolunteerProjectFeedback[]
+  objectivesList           VolunteerProjectObjective[]
+  approvedBy               User?                       @relation("approved_projects", fields: [approvedById], references: [id])
+  managedBy                User                        @relation("managed_projects", fields: [managedById], references: [id])
+
+  @@map("vol_projects")
+}
+
+model Session {
+  id                String             @id @default(uuid())
+  projectId         String
+  sessionDate       DateTime
+  name              String
+  startTime         DateTime
+  endTime           DateTime
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  project           VolunteerProject   @relation(fields: [projectId], references: [id])
+  volunteerSessions VolunteerSession[]
+
+  @@map("sessions")
+}
+
+model VolunteerSession {
+  id           String    @id @default(uuid())
+  volunteerId  String
+  sessionId    String
+  approvedAt   DateTime?
+  approvedBy   String?
+  has_rsvp     Boolean?
+  has_attended Boolean?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  approver     User?     @relation("approved_volunteer_sessions", fields: [approvedBy], references: [id])
+  session      Session   @relation(fields: [sessionId], references: [id])
+  volunteer    User      @relation("volunteer_sessions", fields: [volunteerId], references: [id])
+
+  @@unique([volunteerId, sessionId])
+  @@map("volunteer_sessions")
+}
+
+model ProjectPosition {
+  id          String                     @id @default(uuid())
+  projectId   String
+  role        String
+  description String
+  totalSlots  Int
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+  project     VolunteerProject           @relation(fields: [projectId], references: [id])
+  skills      ProjectSkill[]
+  signups     VolunteerProjectPosition[]
+
+  @@map("project_positions")
+}
+
+model ProjectSkill {
+  id                String          @id @default(uuid())
+  projectPositionId String
+  skill             String
+  order             Int
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  projectPosition   ProjectPosition @relation(fields: [projectPositionId], references: [id])
+
+  @@unique([projectPositionId, order])
+  @@map("project_skills")
+}
+
+model VolunteerProjectPosition {
+  id                         String                         @id @default(uuid())
+  volunteerId                String
+  positionId                 String
+  availability               String?
+  status                     VolunteerProjectPositionStatus
+  approvedAt                 DateTime?
+  approvedBy                 String?
+  approvalNotes              String?
+  approvalMessage            String?
+  hasConsented               Boolean
+  createdAt                  DateTime                       @default(now())
+  updatedAt                  DateTime                       @updatedAt
+  volunteerProjectFeedbackId String?
+  approver                   User?                          @relation("approved_volunteer", fields: [approvedBy], references: [id])
+  position                   ProjectPosition                @relation(fields: [positionId], references: [id])
+  volunteer                  User                           @relation(fields: [volunteerId], references: [id])
+  projectFeedback            VolunteerProjectFeedback?      @relation(fields: [volunteerProjectFeedbackId], references: [id])
+
+  @@unique([volunteerId, positionId])
+  @@map("volunteer_project_positions")
+}
+
+model VolunteerProjectObjective {
+  id                 String           @id @default(uuid())
+  volunteerProjectId String
+  objective          String
+  order              Int
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  volunteerProject   VolunteerProject @relation(fields: [volunteerProjectId], references: [id])
+
+  @@unique([volunteerProjectId, order])
+  @@map("vol_project_objectives")
+}
+
+model VolunteerProjectFeedback {
+  id                       String                     @id @default(uuid())
+  projectId                String
+  overallRating            Int
+  managementRating         Int
+  planningRating           Int
+  resourcesRating          Int
+  enjoyMost                String
+  improvements             String
+  otherComments            String?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  project                  VolunteerProject           @relation(fields: [projectId], references: [id])
+  VolunteerProjectPosition VolunteerProjectPosition[]
+
+  @@map("vol_project_feedback")
+}
+
+model PeerFeedback {
+  id           String              @id @default(uuid())
+  reviewerId   String
+  revieweeId   String
+  projectId    String
+  score        Int
+  type         PartnerFeedbackType
+  strengths    String
+  improvements String
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  tags         FeedbackTag[]
+  project      VolunteerProject    @relation(fields: [projectId], references: [id])
+  reviewee     User                @relation("feedback_to", fields: [revieweeId], references: [id])
+  reviewer     User                @relation("feedback_from", fields: [reviewerId], references: [id])
+
+  @@unique([reviewerId, revieweeId, projectId, type])
+  @@map("peer_feedback")
+}
+
+model FeedbackTag {
+  id         String       @id @default(uuid())
+  feedbackId String
+  tagId      String
+  feedback   PeerFeedback @relation(fields: [feedbackId], references: [id])
+  tag        Tag          @relation(fields: [tagId], references: [id])
+
+  @@map("feedback_tags")
+}
+
+model Tag {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  slug        String        @unique
+  color       String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  FeedbackTag FeedbackTag[]
+
+  @@map("tags")
+}
+
 enum VolunteerProjectPositionStatus {
   reviewing
   approved
@@ -14,262 +210,8 @@ enum ProjectFrequency {
   yearly
 }
 
-enum ProjectOperationStatus {
-  ongoing
-  paused
-  cancelled
-  completed
-}
-
 enum PartnerFeedbackType {
   supervisor
   peer
   self
-}
-
-model VolunteerProject {
-  id String @id @default(uuid())
-
-  managedById String
-  managedBy   User   @relation("managed_projects", fields: [managedById], references: [id])
-
-  approvedById String?
-  approvedBy   User?   @relation("approved_projects", fields: [approvedById], references: [id])
-
-  title         String
-  location      String
-  aboutDesc     String
-  objectives    String
-  beneficiaries String
-
-  initiatorName  String?
-  organisingTeam String?
-  proposedPlan   String?
-
-  startTime DateTime
-  endTime   DateTime
-  startDate DateTime
-  endDate   DateTime
-
-  frequency ProjectFrequency
-  interval  Int?
-  dayOfWeek String?
-
-  submissionStatus String
-  approvalStatus   ProjectApprovalStatus
-  operationStatus  ProjectOperationStatus
-
-  approvalNotes   String?
-  approvalMessage String?
-
-  image       String?
-  attachments String?
-
-  sessions        Session[]
-  objectivesList  VolunteerProjectObjective[]
-  positions       ProjectPosition[]
-  partnerFeedback PeerFeedback[]
-
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime                   @updatedAt
-  VolunteerProjectFeedback VolunteerProjectFeedback[]
-
-  @@map("vol_projects")
-}
-
-model Session {
-  id String @id @default(uuid())
-
-  projectId String
-  project   VolunteerProject @relation(fields: [projectId], references: [id])
-
-  sessionDate DateTime
-  name        String
-  startTime   DateTime
-  endTime     DateTime
-
-  volunteerSessions VolunteerSession[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("sessions")
-}
-
-model VolunteerSession {
-  id String @id @default(uuid())
-
-  volunteerId String
-  sessionId   String
-
-  volunteer User    @relation("volunteer_sessions", fields: [volunteerId], references: [id])
-  session   Session @relation(fields: [sessionId], references: [id])
-
-  approvedAt DateTime?
-  approvedBy String?
-  approver   User?     @relation("approved_volunteer_sessions", fields: [approvedBy], references: [id])
-
-  has_rsvp     Boolean?
-  has_attended Boolean?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([volunteerId, sessionId])
-  @@map("volunteer_sessions")
-}
-
-model ProjectPosition {
-  id String @id @default(uuid())
-
-  projectId String
-  project   VolunteerProject @relation(fields: [projectId], references: [id])
-
-  role        String
-  description String
-  totalSlots  Int
-
-  skills  ProjectSkill[]
-  signups VolunteerProjectPosition[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("project_positions")
-}
-
-model ProjectSkill {
-  id String @id @default(uuid())
-
-  projectPositionId String
-  projectPosition   ProjectPosition @relation(fields: [projectPositionId], references: [id])
-
-  skill String
-  order Int
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([projectPositionId, order])
-  @@map("project_skills")
-}
-
-model VolunteerProjectPosition {
-  id String @id @default(uuid())
-
-  volunteerId String
-  positionId  String
-
-  volunteer User            @relation(fields: [volunteerId], references: [id])
-  position  ProjectPosition @relation(fields: [positionId], references: [id])
-
-  availability String?
-  status       VolunteerProjectPositionStatus
-
-  approvedAt DateTime?
-  approvedBy String?
-  approver   User?     @relation("approved_volunteer", fields: [approvedBy], references: [id])
-
-  approvalNotes   String?
-  approvalMessage String?
-
-  hasConsented Boolean
-
-  projectFeedback VolunteerProjectFeedback? @relation(fields: [volunteerProjectFeedbackId], references: [id])
-
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime @updatedAt
-  volunteerProjectFeedbackId String?
-
-  @@unique([volunteerId, positionId])
-  @@map("volunteer_project_positions")
-}
-
-model VolunteerProjectObjective {
-  id String @id @default(uuid())
-
-  volunteerProjectId String
-  volunteerProject   VolunteerProject @relation(fields: [volunteerProjectId], references: [id])
-
-  objective String
-  order     Int // unique per project
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([volunteerProjectId, order])
-  @@map("vol_project_objectives")
-}
-
-model VolunteerProjectFeedback {
-  id String @id @default(uuid())
-
-  projectId String
-  project   VolunteerProject @relation(fields: [projectId], references: [id])
-
-  overallRating    Int
-  managementRating Int
-  planningRating   Int
-  resourcesRating  Int
-
-  enjoyMost     String
-  improvements  String
-  otherComments String?
-
-  createdAt                DateTime                   @default(now())
-  updatedAt                DateTime                   @updatedAt
-  VolunteerProjectPosition VolunteerProjectPosition[]
-
-  @@map("vol_project_feedback")
-}
-
-model PeerFeedback {
-  id String @id @default(uuid())
-
-  reviewerId String
-  revieweeId String
-  projectId  String
-
-  reviewer User             @relation("feedback_from", fields: [reviewerId], references: [id])
-  reviewee User             @relation("feedback_to", fields: [revieweeId], references: [id])
-  project  VolunteerProject @relation(fields: [projectId], references: [id])
-
-  score        Int
-  type         PartnerFeedbackType
-  strengths    String
-  improvements String
-
-  tags FeedbackTag[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([reviewerId, revieweeId, projectId, type])
-  @@map("peer_feedback")
-}
-
-model FeedbackTag {
-  id String @id @default(uuid())
-
-  feedbackId String
-  tagId      String
-
-  feedback PeerFeedback @relation(fields: [feedbackId], references: [id])
-  tag      Tag          @relation(fields: [tagId], references: [id])
-
-  @@map("feedback_tags")
-}
-
-model Tag {
-  id String @id @default(uuid())
-
-  name  String  @unique
-  slug  String  @unique
-  color String?
-
-  isActive    Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  FeedbackTag FeedbackTag[]
-
-  @@map("tags")
 }
