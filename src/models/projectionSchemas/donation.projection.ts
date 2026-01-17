@@ -12,6 +12,7 @@ const DonationBaseProjection = {
   amount: true,
   receipt: true,
   submissionStatus: true,
+  receiptStatus: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.DonationTransactionSelect;
