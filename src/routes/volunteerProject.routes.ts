@@ -125,9 +125,11 @@ router.patch(
 router.post(
   '/:projectId/feedbacks',
   validateRequest({ params: VolunteerProjectIdSchema, body: SubmitVolunteerFeedbackSchema }),
+  validateRequest({ params: VolunteerProjectIdSchema, body: SubmitVolunteerFeedbackSchema }),
   requireAnyPermission(['volunteerProjFeedback:post:own', 'volunteerProjFeedback:post']),
   controller.submitVolunteerFeedback
 );
+
 
 
 // PATCH update approval status of a volunteering project
@@ -151,3 +153,14 @@ router.post(
 
 export default router;
 
+
+
+//Update project status
+router.patch(
+  '/proposal/me/:projectId/status',
+  validateRequest({
+    params: VolunteerProjectIdSchema,
+    body: UpdateMyProposedProjectStatusSchema,
+  }),
+  controller.updateMyProposedProjectStatus
+);

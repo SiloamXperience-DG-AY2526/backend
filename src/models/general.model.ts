@@ -117,6 +117,23 @@ export const getPeerFeedbackByManager = async (userId: string) => {
   });
 };
 
+
+export const getPeerFeedbackForProject = async (projectId: string) => {
+  return prisma.peerFeedback.findMany({
+    where: {
+      projectId,
+    },
+    include: {
+      reviewer: true,
+      project: true,
+      reviewee: true,
+      tags: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
 export const getStaffProfile = async (
   userId: string
 ): Promise<StaffProfile | null> => {
@@ -153,6 +170,13 @@ export async function updateStaffProfile(
   });
 
   const updatedProfile = await getStaffProfile(userId);
-  
+
   return updatedProfile;
 }
+
+
+export const findProjectById = async (projectId: string) => {
+  return prisma.volunteerProject.findUnique({
+    where: { id: projectId },
+  });
+};
