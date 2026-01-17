@@ -58,8 +58,10 @@ A comprehensive Express.js backend built with TypeScript, featuring modern tooli
 
    # Run Prisma migrations
    npx prisma migrate dev --name init
-   # Populate with required forms
+   # Populate demo seed data (safe to re-run)
    npm run seed
+   # Reset DB and re-seed demo data (destructive)
+   npm run seed:reset
    npx prisma generate
    
    ```## 🏃‍♂️ Development
@@ -86,6 +88,8 @@ The server will start on `http://localhost:3000` with hot reloading enabled.
 | `npm run lint`          | Run ESLint                               |
 | `npm run lint:fix`      | Run ESLint with auto-fix                 |
 | `npm run clean`         | Remove build and coverage directories    |
+| `npm run seed`          | Seed demo data                           |
+| `npm run seed:reset`    | Reset DB and re-seed demo data           |
 
 ## 🧪 Testing
 

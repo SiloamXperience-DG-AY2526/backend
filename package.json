@@ -13,13 +13,13 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "clean": "rm -rf dist coverage",
-    "seed": "ts-node prisma/seed.ts",
+    "seed": "ts-node prisma/demoSeed.ts",
     "seed:users": "ts-node prisma/seed.ts",
     "seed:volunteers": "ts-node prisma/volunteerSeedTest.ts",
     "seed:reset": "npx prisma migrate reset --force && npm run seed"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/demoSeed.ts"
   },
   "keywords": [
     "express",
