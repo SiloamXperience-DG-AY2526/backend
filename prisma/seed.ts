@@ -83,103 +83,6 @@ async function main() {
     }
   }
 
-  // ==================== PARTNER PROFILES ====================
-  console.log('\n👥 Creating partner profiles with complete onboarding data...\n');
-
-  // const partnerEmails = ['partner@siloam.com'];
-  const partnerProfiles = [
-    {
-      email: 'partner@siloam.com',
-      dob: new Date('1990-05-15'),
-      countryCode: '+65',
-      contactNumber: '91234567',
-      emergencyCountryCode: '+65',
-      emergencyContactNumber: '98765432',
-      identificationNumber: 'S9012345A',
-      nationality: 'Singaporean',
-      occupation: 'Software Engineer',
-      gender: Gender.female,
-      residentialAddress: '123 Orchard Road, #12-34, Singapore 238857',
-      volunteerAvailability: 'Weekends and evenings',
-      hasVolunteerExperience: true,
-      consentUpdatesCommunications: true,
-      subscribeNewsletterEvents: true,
-      skills: ['Teaching', 'Event Planning', 'Communication'],
-      languages: ['English', 'Mandarin'],
-      contactModes: [ContactModeType.email, ContactModeType.whatsapp],
-      interests: [InterestSlug.teaching, InterestSlug.admin, InterestSlug.publicity],
-      referrers: [ReferrerType.friend, ReferrerType.socialMedia],
-    },
-  ];
-
-  for (const profile of partnerProfiles) {
-    try {
-      const user = createdUsers[profile.email];
-      if (!user) {
-        console.log(`⚠️  User ${profile.email} not found, skipping partner profile...`);
-        continue;
-      }
-
-      const existingPartner = await prisma.partner.findUnique({
-        where: { userId: user.id },
-      });
-
-      if (existingPartner) {
-        console.log(`⚠️  Partner profile for ${profile.email} already exists, skipping...`);
-        continue;
-      }
-
-      await prisma.partner.create({
-        data: {
-          userId: user.id,
-          dob: profile.dob,
-          countryCode: profile.countryCode,
-          contactNumber: profile.contactNumber,
-          emergencyCountryCode: profile.emergencyCountryCode,
-          emergencyContactNumber: profile.emergencyContactNumber,
-          identificationNumber: profile.identificationNumber,
-          nationality: profile.nationality,
-          occupation: profile.occupation,
-          gender: profile.gender,
-          residentialAddress: profile.residentialAddress,
-          volunteerAvailability: profile.volunteerAvailability,
-          hasVolunteerExperience: profile.hasVolunteerExperience,
-          consentUpdatesCommunications: profile.consentUpdatesCommunications,
-          subscribeNewsletterEvents: profile.subscribeNewsletterEvents,
-          skills: {
-            create: profile.skills.map((skill) => ({
-              skill,
-            })),
-          },
-          languages: {
-            create: profile.languages.map((language) => ({
-              language,
-            })),
-          },
-          contactModes: {
-            create: profile.contactModes.map((mode) => ({
-              mode,
-            })),
-          },
-          interests: {
-            create: profile.interests.map((interest) => ({
-              interestSlug: interest,
-            })),
-          },
-          referrers: {
-            create: profile.referrers.map((referrer) => ({
-              referrer,
-            })),
-          },
-        },
-      });
-
-      console.log(`✅ Created partner profile for ${profile.email}`);
-    } catch (error) {
-      console.error(`❌ Error creating partner profile for ${profile.email}:`, error);
-    }
-  }
-
   // ==================== DONOR USERS ====================
   console.log('\n💰 Creating donor users...\n');
 
@@ -255,6 +158,213 @@ async function main() {
       console.log(`✅ Created donor: ${user.email}`);
     } catch (error) {
       console.error(`❌ Error creating donor user ${userData.email}:`, error);
+    }
+  }
+
+  // ==================== PARTNER PROFILES ====================
+  console.log('\n👥 Creating partner profiles with complete onboarding data...\n');
+
+  // const partnerEmails = ['partner@siloam.com'];
+  const partnerProfiles = [
+    {
+      email: 'partner@siloam.com',
+      dob: new Date('1990-05-15'),
+      countryCode: '+65',
+      contactNumber: '91234567',
+      emergencyCountryCode: '+65',
+      emergencyContactNumber: '98765432',
+      identificationNumber: 'S9012345A',
+      nationality: 'Singaporean',
+      occupation: 'Software Engineer',
+      gender: Gender.female,
+      residentialAddress: '123 Orchard Road, #12-34, Singapore 238857',
+      volunteerAvailability: 'Weekends and evenings',
+      hasVolunteerExperience: true,
+      consentUpdatesCommunications: true,
+      subscribeNewsletterEvents: true,
+      skills: ['Teaching', 'Event Planning', 'Communication'],
+      languages: ['English', 'Mandarin'],
+      contactModes: [ContactModeType.email, ContactModeType.whatsapp],
+      interests: [InterestSlug.teaching, InterestSlug.admin, InterestSlug.publicity],
+      referrers: [ReferrerType.friend, ReferrerType.socialMedia],
+    },
+    {
+      email: 'alice.johnson@email.com',
+      dob: new Date('1992-03-20'),
+      countryCode: '+65',
+      contactNumber: '98765431',
+      emergencyCountryCode: '+65',
+      emergencyContactNumber: '91234568',
+      identificationNumber: 'S9203201A',
+      nationality: 'Singaporean',
+      occupation: 'Community Member',
+      gender: Gender.female,
+      residentialAddress: '45 Serangoon Road, Singapore 217969',
+      volunteerAvailability: 'Weekends',
+      hasVolunteerExperience: false,
+      consentUpdatesCommunications: true,
+      subscribeNewsletterEvents: true,
+      skills: ['Communication'],
+      languages: ['English'],
+      contactModes: [ContactModeType.email],
+      interests: [InterestSlug.fundraise],
+      referrers: [ReferrerType.socialMedia],
+    },
+    {
+      email: 'bob.wilson@email.com',
+      dob: new Date('1985-07-12'),
+      countryCode: '+65',
+      contactNumber: '87654321',
+      emergencyCountryCode: '+65',
+      emergencyContactNumber: '91234569',
+      identificationNumber: 'S8507122B',
+      nationality: 'Singaporean',
+      occupation: 'Business Owner',
+      gender: Gender.male,
+      residentialAddress: '10 Raffles Place, Singapore 048622',
+      volunteerAvailability: 'Flexible',
+      hasVolunteerExperience: true,
+      consentUpdatesCommunications: true,
+      subscribeNewsletterEvents: true,
+      skills: ['Leadership', 'Finance'],
+      languages: ['English', 'Mandarin'],
+      contactModes: [ContactModeType.email, ContactModeType.phoneCall],
+      interests: [InterestSlug.fundraise, InterestSlug.admin],
+      referrers: [ReferrerType.friend],
+    },
+    {
+      email: 'carol.davis@email.com',
+      dob: new Date('1988-11-05'),
+      countryCode: '+65',
+      contactNumber: '96543210',
+      emergencyCountryCode: '+65',
+      emergencyContactNumber: '91234570',
+      identificationNumber: 'S8811053C',
+      nationality: 'Singaporean',
+      occupation: 'Teacher',
+      gender: Gender.female,
+      residentialAddress: '25 Bukit Timah Road, Singapore 229842',
+      volunteerAvailability: 'Weekday evenings',
+      hasVolunteerExperience: true,
+      consentUpdatesCommunications: true,
+      subscribeNewsletterEvents: false,
+      skills: ['Teaching', 'Communication'],
+      languages: ['English', 'Tamil'],
+      contactModes: [ContactModeType.email, ContactModeType.whatsapp],
+      interests: [InterestSlug.teaching, InterestSlug.training],
+      referrers: [ReferrerType.church],
+    },
+    {
+      email: 'david.brown@email.com',
+      dob: new Date('1990-09-18'),
+      countryCode: '+65',
+      contactNumber: '93210987',
+      emergencyCountryCode: '+65',
+      emergencyContactNumber: '91234571',
+      identificationNumber: 'S9009184D',
+      nationality: 'Singaporean',
+      occupation: 'Engineer',
+      gender: Gender.male,
+      residentialAddress: '78 Clementi Avenue, Singapore 129850',
+      volunteerAvailability: 'Weekends',
+      hasVolunteerExperience: false,
+      consentUpdatesCommunications: true,
+      subscribeNewsletterEvents: true,
+      skills: ['Building', 'Problem Solving'],
+      languages: ['English', 'Malay'],
+      contactModes: [ContactModeType.email],
+      interests: [InterestSlug.building],
+      referrers: [ReferrerType.website],
+    },
+    {
+      email: 'emma.garcia@email.com',
+      dob: new Date('1987-01-25'),
+      countryCode: '+65',
+      contactNumber: '92109876',
+      emergencyCountryCode: '+65',
+      emergencyContactNumber: '91234572',
+      identificationNumber: 'S8701255E',
+      nationality: 'Singaporean',
+      occupation: 'Healthcare Worker',
+      gender: Gender.female,
+      residentialAddress: '12 Woodlands Drive, Singapore 738623',
+      volunteerAvailability: 'Flexible',
+      hasVolunteerExperience: true,
+      consentUpdatesCommunications: true,
+      subscribeNewsletterEvents: true,
+      skills: ['Healthcare', 'Communication'],
+      languages: ['English', 'Spanish'],
+      contactModes: [ContactModeType.email, ContactModeType.telegram],
+      interests: [InterestSlug.training, InterestSlug.longTerm],
+      referrers: [ReferrerType.event],
+    },
+  ];
+
+  for (const profile of partnerProfiles) {
+    try {
+      const user = createdUsers[profile.email];
+      if (!user) {
+        console.log(`⚠️  User ${profile.email} not found, skipping partner profile...`);
+        continue;
+      }
+
+      const existingPartner = await prisma.partner.findUnique({
+        where: { userId: user.id },
+      });
+
+      if (existingPartner) {
+        console.log(`⚠️  Partner profile for ${profile.email} already exists, skipping...`);
+        continue;
+      }
+
+      await prisma.partner.create({
+        data: {
+          userId: user.id,
+          dob: profile.dob,
+          countryCode: profile.countryCode,
+          contactNumber: profile.contactNumber,
+          emergencyCountryCode: profile.emergencyCountryCode,
+          emergencyContactNumber: profile.emergencyContactNumber,
+          identificationNumber: profile.identificationNumber,
+          nationality: profile.nationality,
+          occupation: profile.occupation,
+          gender: profile.gender,
+          residentialAddress: profile.residentialAddress,
+          volunteerAvailability: profile.volunteerAvailability,
+          hasVolunteerExperience: profile.hasVolunteerExperience,
+          consentUpdatesCommunications: profile.consentUpdatesCommunications,
+          subscribeNewsletterEvents: profile.subscribeNewsletterEvents,
+          skills: {
+            create: profile.skills.map((skill) => ({
+              skill,
+            })),
+          },
+          languages: {
+            create: profile.languages.map((language) => ({
+              language,
+            })),
+          },
+          contactModes: {
+            create: profile.contactModes.map((mode) => ({
+              mode,
+            })),
+          },
+          interests: {
+            create: profile.interests.map((interest) => ({
+              interestSlug: interest,
+            })),
+          },
+          referrers: {
+            create: profile.referrers.map((referrer) => ({
+              referrer,
+            })),
+          },
+        },
+      });
+
+      console.log(`✅ Created partner profile for ${profile.email}`);
+    } catch (error) {
+      console.error(`❌ Error creating partner profile for ${profile.email}:`, error);
     }
   }
 

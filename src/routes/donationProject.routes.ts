@@ -5,8 +5,8 @@ import {
   DonationProjectIdSchema,
   UpdateDonationProjectSchema,
   CreateDonationProjectSchema,
-  getDonationProjectsSchema,
-} from '../schemas/donation';
+  getDonationProjectsSchema,  GetProjectDonationsSchema,
+  GetProjectDonorsSchema,} from '../schemas/donation';
 import * as donationProjectController from '../controllers/donationProject.controller';
 import { requirePermission } from '../middlewares/requirePermission';
 
@@ -21,6 +21,7 @@ router.use(
 
 // GET Donation Projects 
 // (column-level access control is checked at service/model layer)
+//currently used by finance manager
 router.get(
   '/',
   validateRequest({ query: getDonationProjectsSchema }),
@@ -38,8 +39,15 @@ router.get(
 
 router.get(
   '/:projectId/donations',
+  validateRequest({ query: GetProjectDonationsSchema }),
   donationProjectController.getProjectDonationTransactions
-); // TODO: filter by date, pagination
+);
+
+router.get(
+  '/:projectId/donors',
+  validateRequest({ query: GetProjectDonorsSchema }),
+  donationProjectController.getProjectDonors
+);
 
 // GET Donation Projects managed by the current user (i.e. donation-project manager/ partner)
 // no need permission check: anyone can view own projects

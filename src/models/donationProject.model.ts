@@ -63,13 +63,121 @@ export const getDonationProjects = async (
   };
 };
 
-export const getProjectDonationTransactions = async (projectId: string) => {
-  const donations = await prisma.donationTransaction.findMany({
-    where: {
-      id: projectId,
+export const getProjectDonationTransactions = async (
+  projectId: string,
+  pagination: Pagination
+) => {
+  const [donations, totalCount] = await Promise.all([
+    prisma.donationTransaction.findMany({
+      where: {
+        projectId: projectId,
+      },
+      orderBy: {
+        date: 'desc',
+      },
+      skip: pagination.skip,
+      take: pagination.limit,
+    }),
+    prisma.donationTransaction.count({
+      where: {
+        projectId: projectId,
+      },
+    }),
+  ]);
+  
+  return {
+    donations,
+    totalCount,
+  };
+};
+
+export const getProjectDonors = async (
+  projectId: string,
+  pagination: Pagination
+) => {
+  // Query users who have made donations to this project
+  const whereClause: Prisma.UserWhereInput = {
+    donorTransactions: {
+      some: {
+        projectId: projectId,
+        submissionStatus: 'submitted',
+        receiptStatus: 'received',
+      },
     },
+  };
+
+  const [users, totalCount] = await Promise.all([
+    prisma.user.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        isActive: true,
+        partner: {
+          select: {
+            id: true,
+            dob: true,
+            contactNumber: true,
+            countryCode: true,
+            gender: true,
+          },
+        },
+        donorTransactions: {
+          where: {
+            projectId: projectId,
+            submissionStatus: 'submitted',
+            receiptStatus: 'received',
+          },
+          select: {
+            amount: true,
+          },
+        },
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: pagination.skip,
+      take: pagination.limit,
+    }),
+    prisma.user.count({
+      where: whereClause,
+    }),
+  ]);
+
+  // Calculate cumulative donation amount for each donor
+  const donors = users.map((user) => {
+    const totalDonated = user.donorTransactions.reduce(
+      (sum, transaction) => sum.add(transaction.amount),
+      new Prisma.Decimal(0)
+    );
+
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      isActive: user.isActive,
+      gender: user.partner?.gender || null,
+      contactNumber: user.partner?.contactNumber || null,
+      countryCode: user.partner?.countryCode || null,
+      totalDonated,
+      partner: user.partner
+        ? {
+          id: user.partner.id,
+          dob: user.partner.dob,
+        }
+        : null,
+      createdAt: user.createdAt,
+    };
   });
-  return donations;
+  
+  return {
+    donors,
+    totalCount,
+  };
 };
 
 export const getDonationProjectsByManager = async (managerId: string) => {

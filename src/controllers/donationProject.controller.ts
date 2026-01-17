@@ -56,11 +56,29 @@ export const getProjectDonationTransactions = async (
   res: Response
 ) => {
   const { projectId } = req.params;
-  const donations = await donationProjectService.getProjectDonationTransactions(
-    projectId
+  const { page, limit } = req.query;
+  
+  const result = await donationProjectService.getProjectDonationTransactions(
+    projectId,
+    { page: Number(page) || 1, limit: Number(limit) || 10 }
   );
 
-  res.json(donations);
+  res.json(result);
+};
+
+export const getProjectDonors = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const { page, limit } = req.query;
+  
+  const result = await donationProjectService.getProjectDonors(
+    projectId,
+    { page: Number(page) || 1, limit: Number(limit) || 10 }
+  );
+
+  res.json(result);
 };
 
 export const createDonationProject = async (req: Request, res: Response) => {

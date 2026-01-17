@@ -12,6 +12,7 @@ export const DonorPublicSummarySelect = {
 } satisfies Prisma.PartnerSelect;
 
 export const DonorPrivateSummarySelect = {
+  id: true,
   user: {
     select: {
       ...DonorPublicSummarySelect.user.select,
