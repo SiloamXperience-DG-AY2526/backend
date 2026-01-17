@@ -38,7 +38,18 @@ function addDays(base: Date, days: number) {
 }
 
 function withTime(base: Date, time: string) {
+  // Validate time format (HH:MM)
+  if (!/^\d{1,2}:\d{2}$/.test(time)) {
+    throw new Error(`Invalid time format: ${time}. Expected format: HH:MM`);
+  }
+  
   const [hours, minutes] = time.split(':').map(Number);
+  
+  // Validate parsed values
+  if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    throw new Error(`Invalid time values: ${time}. Hours must be 0-23, minutes must be 0-59`);
+  }
+  
   const date = new Date(base);
   date.setHours(hours, minutes, 0, 0);
   return date;
@@ -49,10 +60,14 @@ async function main() {
 
   const today = new Date();
 
+  // NOTE: These passwords are for DEMO/TESTING purposes only.
+  // DO NOT use in production environments.
+  const DEMO_PASSWORD = process.env.DEMO_SEED_PASSWORD || 'DemoPass2024!Siloam';
+  
   const usersData = [
     {
       email: 'superadmin@siloam.org',
-      password: 'password',
+      password: DEMO_PASSWORD,
       firstName: 'Siloam',
       lastName: 'Admin',
       title: 'System Administrator',
@@ -60,7 +75,7 @@ async function main() {
     },
     {
       email: 'gm@siloam.org',
-      password: 'password',
+      password: DEMO_PASSWORD,
       firstName: 'Grace',
       lastName: 'Tan',
       title: 'General Manager',
@@ -68,7 +83,7 @@ async function main() {
     },
     {
       email: 'finance@siloam.org',
-      password: 'password',
+      password: DEMO_PASSWORD,
       firstName: 'Felix',
       lastName: 'Ng',
       title: 'Finance Manager',
@@ -76,7 +91,7 @@ async function main() {
     },
     {
       email: 'alicia.partner@siloam.org',
-      password: 'password',
+      password: DEMO_PASSWORD,
       firstName: 'Alicia',
       lastName: 'Lim',
       title: 'Community Partner',
@@ -84,7 +99,7 @@ async function main() {
     },
     {
       email: 'rahul.partner@siloam.org',
-      password: 'password',
+      password: DEMO_PASSWORD,
       firstName: 'Rahul',
       lastName: 'Singh',
       title: 'Volunteer Mentor',
@@ -92,7 +107,7 @@ async function main() {
     },
     {
       email: 'aisha.partner@siloam.org',
-      password: 'password',
+      password: DEMO_PASSWORD,
       firstName: 'Nur',
       lastName: 'Aisha',
       title: 'Program Assistant',
@@ -100,7 +115,7 @@ async function main() {
     },
     {
       email: 'daniel.donor@siloam.org',
-      password: 'password',
+      password: DEMO_PASSWORD,
       firstName: 'Daniel',
       lastName: 'Tan',
       title: 'Individual Donor',
@@ -108,7 +123,7 @@ async function main() {
     },
     {
       email: 'mei.donor@siloam.org',
-      password: 'password',
+      password: DEMO_PASSWORD,
       firstName: 'Mei',
       lastName: 'Chen',
       title: 'Corporate Donor',
@@ -116,39 +131,65 @@ async function main() {
     },
   ];
 
-  const usersByEmail: Record<string, { id: string; email: string }> = {};
-  for (const userData of usersData) {
-    const existing = await prisma.user.findUnique({
-      where: { email: userData.email },
-    });
-    if (existing) {
-      usersByEmail[userData.email] = existing;
-      continue;
-    }
+  // Batch load existing users
+  const userEmails = usersData.map((u) => u.email);
+  const existingUsers = await prisma.user.findMany({
+    where: {
+      email: { in: userEmails },
+    },
+  });
 
-    const passwordHash = await hashPassword(userData.password);
-    const user = await prisma.user.create({
-      data: {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        passwordHash,
-        role: userData.role,
-        title: userData.title,
-      },
-    });
-    usersByEmail[userData.email] = user;
+  const usersByEmail: Record<string, { id: string; email: string }> = {};
+  for (const existing of existingUsers) {
+    usersByEmail[existing.email] = existing;
   }
 
+  // Determine which users need to be created
+  const usersToCreate = usersData.filter((userData) => !usersByEmail[userData.email]);
+
+  if (usersToCreate.length > 0) {
+    // Hash passwords in parallel for users to be created
+    const passwordHashes = await Promise.all(
+      usersToCreate.map((userData) => hashPassword(userData.password)),
+    );
+
+    const createManyData: Prisma.UserCreateManyInput[] = usersToCreate.map((userData, index) => ({
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      passwordHash: passwordHashes[index],
+      role: userData.role,
+      title: userData.title,
+    }));
+
+    await prisma.user.createMany({
+      data: createManyData,
+      skipDuplicates: true,
+    });
+  }
+
+  // Reload all relevant users to ensure usersByEmail is fully populated
+  const allSeededUsers = await prisma.user.findMany({
+    where: {
+      email: { in: userEmails },
+    },
+  });
+
+  for (const user of allSeededUsers) {
+    usersByEmail[user.email] = user;
+  }
+
+  // NOTE: All contact numbers and identification numbers below are FAKE
+  // and for demo/testing purposes only.
   const partnerProfiles = [
     {
       email: 'alicia.partner@siloam.org',
       dob: new Date('1991-04-12'),
       countryCode: '+65',
-      contactNumber: '81234567',
+      contactNumber: '90000001', // Fake number
       emergencyCountryCode: '+65',
-      emergencyContactNumber: '91234567',
-      identificationNumber: 'S9123456A',
+      emergencyContactNumber: '90000002', // Fake number
+      identificationNumber: 'S0000001A', // Fake NRIC format
       nationality: 'Singaporean',
       occupation: 'Teacher',
       gender: Gender.female,
@@ -167,10 +208,10 @@ async function main() {
       email: 'rahul.partner@siloam.org',
       dob: new Date('1988-11-02'),
       countryCode: '+65',
-      contactNumber: '82345678',
+      contactNumber: '90000003', // Fake number
       emergencyCountryCode: '+65',
-      emergencyContactNumber: '92345678',
-      identificationNumber: 'S8812345B',
+      emergencyContactNumber: '90000004', // Fake number
+      identificationNumber: 'S0000002B', // Fake NRIC format
       nationality: 'Indian',
       occupation: 'Engineer',
       gender: Gender.male,
@@ -189,10 +230,10 @@ async function main() {
       email: 'aisha.partner@siloam.org',
       dob: new Date('1995-07-08'),
       countryCode: '+65',
-      contactNumber: '83456789',
+      contactNumber: '90000005', // Fake number
       emergencyCountryCode: '+65',
-      emergencyContactNumber: '93456789',
-      identificationNumber: 'S9512345C',
+      emergencyContactNumber: '90000006', // Fake number
+      identificationNumber: 'S0000003C', // Fake NRIC format
       nationality: 'Malaysian',
       occupation: 'Programme Executive',
       gender: Gender.female,
@@ -292,26 +333,48 @@ async function main() {
     { name: 'Communicator', slug: 'communicator', color: '#6A1B9A' },
   ];
 
-  const tagsBySlug: Record<string, { id: string }> = {};
-  for (const tag of tagsData) {
-    const existingTag = await prisma.tag.findUnique({
-      where: { slug: tag.slug },
-    });
-    if (existingTag) {
-      tagsBySlug[tag.slug] = existingTag;
-      continue;
-    }
-    const createdTag = await prisma.tag.create({
-      data: {
-        name: tag.name,
-        slug: tag.slug,
-        color: tag.color,
+  // Fetch all existing tags for these slugs in a single query
+  const existingTags = await prisma.tag.findMany({
+    where: {
+      slug: {
+        in: tagsData.map((tag) => tag.slug),
       },
-    });
-    tagsBySlug[tag.slug] = createdTag;
+    },
+  });
+
+  const tagsBySlug: Record<string, { id: string }> = {};
+  for (const existingTag of existingTags) {
+    tagsBySlug[existingTag.slug] = existingTag;
   }
 
+  // Create any missing tags in parallel
+  const tagsToCreate = tagsData.filter((tag) => !tagsBySlug[tag.slug]);
+  if (tagsToCreate.length > 0) {
+    const createdTags = await Promise.all(
+      tagsToCreate.map((tag) =>
+        prisma.tag.create({
+          data: {
+            name: tag.name,
+            slug: tag.slug,
+            color: tag.color,
+          },
+        })
+      )
+    );
+
+    for (const createdTag of createdTags) {
+      tagsBySlug[createdTag.slug] = createdTag;
+    }
+  }
+
+  // Validate that required users exist before creating projects
   const generalManager = usersByEmail['gm@siloam.org'];
+  if (!generalManager) {
+    throw new Error(
+      "Required user 'gm@siloam.org' (generalManager) not found. Ensure user seeding runs successfully before creating volunteer projects."
+    );
+  }
+  
   const volunteerProjectBaseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
   async function getOrCreateVolunteerProject(
@@ -758,7 +821,13 @@ async function main() {
     });
   }
 
+  // Validate that required users exist
   const financeManager = usersByEmail['finance@siloam.org'];
+  if (!financeManager) {
+    throw new Error(
+      "Required user 'finance@siloam.org' (financeManager) not found. Ensure user seeding runs successfully before creating donation projects."
+    );
+  }
 
   const clinicProject = await getOrCreateDonationProject({
     managedBy: financeManager.id,
@@ -816,8 +885,20 @@ async function main() {
     },
   });
 
+  // Validate that required donor users exist
   const donorDaniel = usersByEmail['daniel.donor@siloam.org'];
+  if (!donorDaniel) {
+    throw new Error(
+      "Required user 'daniel.donor@siloam.org' not found. Ensure user seeding runs successfully before creating donations."
+    );
+  }
+  
   const donorMei = usersByEmail['mei.donor@siloam.org'];
+  if (!donorMei) {
+    throw new Error(
+      "Required user 'mei.donor@siloam.org' not found. Ensure user seeding runs successfully before creating donations."
+    );
+  }
 
   const existingRecurring = await prisma.recurringDonation.findFirst({
     where: {

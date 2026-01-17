@@ -58,14 +58,15 @@ A comprehensive Express.js backend built with TypeScript, featuring modern tooli
 
    # Run Prisma migrations
    npx prisma migrate dev --name init
-   # Populate demo seed data (safe to re-run)
+   # Populate demo seed data (re-running may insert additional records for some entities)
    npm run seed
    # Reset DB and re-seed demo data (destructive)
    npm run seed:reset
    npx prisma generate
    
-   ```## 🏃‍♂️ Development
-   ````
+   ```
+
+## 🏃‍♂️ Development
 
 ### Start development server
 

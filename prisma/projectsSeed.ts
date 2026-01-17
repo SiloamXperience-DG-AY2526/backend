@@ -2,7 +2,10 @@ import { PrismaClient, ProjectFrequency, ProjectOperationStatus } from '@prisma/
 
 const prisma = new PrismaClient();
 
-const MANAGED_BY_ID = '62920d6b-0901-4692-83a0-ad4872eb8270'; // <-- replace if needed
+// NOTE: This seed file is for testing/demo purposes only.
+// The MANAGED_BY_ID should be updated to match a valid user in your database,
+// or use the demoSeed.ts file instead which creates users automatically.
+const MANAGED_BY_ID = process.env.SEED_MANAGED_BY_ID || '62920d6b-0901-4692-83a0-ad4872eb8270';
 
 function atDateWithTime(date: Date, hhmm: string) {
   const [hh, mm] = hhmm.split(':').map(Number);
@@ -18,6 +21,17 @@ function addDays(base: Date, days: number) {
 }
 
 async function main() {
+  // Validate that the MANAGED_BY_ID user exists
+  const managerUser = await prisma.user.findUnique({
+    where: { id: MANAGED_BY_ID },
+  });
+  
+  if (!managerUser) {
+    throw new Error(
+      `User with ID '${MANAGED_BY_ID}' not found. Please set SEED_MANAGED_BY_ID environment variable to a valid user ID, or use 'npm run seed' (demoSeed.ts) instead, which creates users automatically.`
+    );
+  }
+  
   // keep seed deterministic-ish
   const now = new Date();
   const yearStart = new Date(now.getFullYear(), 0, 15); // Jan 15 this year
