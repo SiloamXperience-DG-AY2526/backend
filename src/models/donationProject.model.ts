@@ -349,7 +349,7 @@ export const withdrawDonationProject = async (
       approvalNotes: reason || existingProject.approvalNotes,
     },
     include: {
-      project_manager: {
+      projectManager: {
         select: PMPublicSelect,
       },
       objectivesList: {
