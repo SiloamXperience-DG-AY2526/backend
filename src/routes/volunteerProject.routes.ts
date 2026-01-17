@@ -10,10 +10,35 @@ import {
   SubmitVolunteerFeedbackSchema,
   MyProjectApplicationsQuerySchema,
   UpdateVolunteerProjectStatusSchema,
+  ViewMyProposedProjectsQuerySchema,
+  UpdateMyProposedProjectStatusSchema,
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
 import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
 const router = Router();
+
+//GET volunteer applications to My own project
+// MUST be declared before any `/:projectId` routes,
+// otherwise "available" will be treated as a projectId and fail validation else Invalid route parameters
+
+router.get(
+  '/available',
+  controller.getAvailableVolunteerActivities
+);
+
+
+
+router.post(
+  '/proposal',
+  validateRequest({ body: ProposeVolunteerProjectSchema }),
+  controller.proposeVolunteerProject
+);
+
+router.get(
+  '/proposal/me',
+  validateRequest({ query: ViewMyProposedProjectsQuerySchema }),
+  controller.viewMyProposedProjects
+);
 
 // USE validation middleware for routes with projectId param
 router.use(
@@ -51,8 +76,6 @@ router.patch(
   controller.updateVolunteerProject
 );
 
-//GET volunteer applications to My own project
-//Filter by status
 //No need Permission check: all PMs can view applications to his own projects
 router.get(
   '/me/:projectId/applications',
@@ -62,23 +85,16 @@ router.get(
   controller.getVolProjectApplications
 );
 
-//GET any project public info
-// Filter: status == available
+
+//QUESTION: who should access this endpoint? volunteers
+//GET details of a specific project
 router.get(
-  '/available',
-  controller.getAvailableVolunteerActivities
+  '/:projectId/details',
+  controller.getVolunteerProjectDetail
 );
-
-//QUESTION: can this be combined with POST /volunteerProjects/ ? remove proposal ?
-//POST submit a new volunteering project for approval
-router.post(
-  '/proposal',
-  validateRequest({ body: ProposeVolunteerProjectSchema }),
-  controller.proposeVolunteerProject
-);
-
-//QUESTION: can this be converted to PATCH /volunteerProjects/:projectId ? remove proposal ?
+//QUESTION: can this be converted to PATCH /volunteerProjects/:projectId ? remove proposal ? edit function
 //PATCH update a submitted volunteering project
+
 router.patch(
   '/proposal/:projectId',
   validateRequest({
@@ -97,23 +113,16 @@ router.patch(
   controller.withdrawVolunteerProposal
 );
 
-//QUESTION: who should access this endpoint? 
-//GET details of a specific project
-router.get(
-  '/:projectId/details',
-  controller.getVolunteerProjectDetail
-);
 
 //POST feedback about a specific project you participated in
 //Permission check: only users who were volunteers OR GM and above
 router.post(
   '/:projectId/feedbacks',
-  validateRequest({
-    body: SubmitVolunteerFeedbackSchema,
-  }),
+  validateRequest({ params: VolunteerProjectIdSchema, body: SubmitVolunteerFeedbackSchema }),
   requireAnyPermission(['volunteerProjFeedback:post:own', 'volunteerProjFeedback:post']),
   controller.submitVolunteerFeedback
 );
+
 
 // PATCH update approval status of a volunteering project
 // Permission check: only users with 'volunteerProjApproval:update' permission
@@ -133,3 +142,13 @@ router.post(
 );
 
 export default router;
+
+//Update project status
+router.patch(
+  '/proposal/me/:projectId/status',
+  validateRequest({
+    params: VolunteerProjectIdSchema,
+    body: UpdateMyProposedProjectStatusSchema,
+  }),
+  controller.updateMyProposedProjectStatus
+);

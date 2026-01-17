@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteerProject.service';
 import { getUserIdFromRequest } from '../utils/user';
-import { GetAvailableVolunteerActivitiesSchema, MyVolApplicationsQueryType } from '../schemas/project';
+import { GetAvailableVolunteerActivitiesSchema, MyVolApplicationsQueryType, UpdateMyProposedProjectStatusSchema, ViewMyProposedProjectsQuerySchema } from '../schemas/project';
 import { ProjectApprovalStatus } from '@prisma/client';
 
 export const getVolunteerProjects = async (req: Request, res: Response) => {
@@ -81,19 +81,12 @@ export const getAvailableVolunteerActivities = async (
   });
 };
 
-export const proposeVolunteerProject = async (
-  req: Request,
-  res: Response
-) => {
-  const { userId, ...projectData } = req.body;
-
-  if (!userId) {
-    throw new Error('USER_ID_REQUIRED');
-  }
+export const proposeVolunteerProject = async (req: Request, res: Response) => {
+  const proposerId = getUserIdFromRequest(req);
 
   const project = await volunteerService.proposeVolunteerProject({
-    ...projectData,
-    proposerId: userId,
+    ...req.body,
+    proposerId,
   });
 
   return res.status(201).json({
@@ -209,3 +202,42 @@ export const updateVolProjectStatus = async (req: Request, res: Response) => {
   });
 };
 
+export const viewMyProposedProjects = async (req: Request, res: Response) => {
+  const userId = getUserIdFromRequest(req);
+  const query = ViewMyProposedProjectsQuerySchema.parse(req.query);
+
+  const data = await volunteerService.viewMyProposedProjects({
+    userId,
+    filters: {
+      approvalStatus: query.approvalStatus,
+    },
+  });
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'My proposed projects fetched',
+    data,
+  });
+};
+
+export const updateMyProposedProjectStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const userId = getUserIdFromRequest(req);
+  const { projectId } = req.params;
+
+  const body = UpdateMyProposedProjectStatusSchema.parse(req.body);
+
+  const updated = await volunteerService.updateMyProposedProjectStatus({
+    userId,
+    projectId,
+    approvalStatus: body.approvalStatus,
+  });
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'Proposed project status updated',
+    data: updated,
+  });
+};

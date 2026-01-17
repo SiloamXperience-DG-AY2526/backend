@@ -7,7 +7,7 @@ import {
 } from '../schemas/project';
 import { NotFoundError, NotImplementedError } from '../utils/errors';
 
-//TODO
+
 export const getVolProjectApplications = async (
   _input: MyProjectApplicationsInput
 ) => {
@@ -58,6 +58,7 @@ export const submitVolunteerFeedback = async (input: {
         improvement: string;
         comments?: string | null;
     };
+   
 }) => {
   return volunteerModel.submitVolunteerFeedbackModel(input);
 };
@@ -153,4 +154,19 @@ export const updateVolProjectStatus = async (
   }
 
   return volunteerModel.updateVolProjectStatus(projectId, data);
+};
+
+export const viewMyProposedProjects = async (input: {
+  userId: string;
+  filters?: { approvalStatus?: ProjectApprovalStatus };
+}) => {
+  return volunteerModel.viewMyProposedProjectsModel(input);
+};
+
+export const updateMyProposedProjectStatus = async (input: {
+  userId: string;
+  projectId: string;
+  approvalStatus: ProjectApprovalStatus;
+}) => {
+  return volunteerModel.updateMyProposedProjectStatusModel(input);
 };

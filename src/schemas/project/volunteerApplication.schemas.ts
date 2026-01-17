@@ -27,17 +27,17 @@ export type GetVolunteerApplicationsInput = {
 }
 
 export const SubmitVolunteerApplicationSchema = z.object({
-  hasConsented: z.boolean(),
+  projectId: z.uuid(),
   positionId: z.uuid(),
+  hasConsented: z.boolean(),
+  availability: z.string().trim().min(1).optional(),
+  sessionIds: z.array(z.uuid()).default([]),
 });
 
-//submit volunteer interest
 export type SubmitVolApplicationInput = {
-    userId: string, 
-    applicationDetails: z.infer<
-  typeof SubmitVolunteerApplicationSchema
->
-}
+  userId: string;
+  applicationDetails: z.infer<typeof SubmitVolunteerApplicationSchema>;
+};
 
 // Match volunteer to project
 export const MatchVolunteerToProjectSchema = z.object({

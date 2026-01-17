@@ -63,3 +63,4 @@ testpopulateDB.txt
 prisma/volunteerSeedTest.ts
 prisma/seed.project.community.ts
 prisma/populatePartner.ts
+prisma/projectsSeed.ts
