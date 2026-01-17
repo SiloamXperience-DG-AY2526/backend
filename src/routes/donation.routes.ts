@@ -10,12 +10,6 @@ import { requirePermission } from '../middlewares/requirePermission';
 
 const router = Router();
 
-// USE validation middleware for routes with projectId param
-router.use(
-  ['/:donationId', '/me/:donationId'],
-  validateRequest({ params: DonationIdSchema })
-);
-
 // GET Donation History of the current user
 // no need permission check: can view own donations
 router.get(
@@ -28,6 +22,7 @@ router.get(
 // no need permission check: can view own donation
 router.get(
   '/me/:donationId',
+  validateRequest({ params: DonationIdSchema }),
   donationController.getDonationDetail
 );
 
@@ -35,6 +30,7 @@ router.get(
 // no need permission check: can view own donation receipts
 router.get(
   '/me/:donationId/receipt',
+  validateRequest({ params: DonationIdSchema }),
   donationController.downloadDonationReceipt
 );
 
@@ -54,9 +50,11 @@ router.post(
 // permission check: only finance manager and above
 router.patch(
   '/:donationId/receiptStatus',
+  validateRequest({ params: DonationIdSchema }),
   requirePermission('donationReceiptStatus:update'),
   donationController.updateDonationReceiptStatus
 );
+
 
 export default router;
 

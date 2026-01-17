@@ -15,6 +15,7 @@ import {
 } from '../schemas/project';
 import * as controller from '../controllers/volunteerProject.controller';
 import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
+
 const router = Router();
 
 //GET volunteer applications to My own project
@@ -42,7 +43,7 @@ router.get(
 
 // USE validation middleware for routes with projectId param
 router.use(
-  ['/:projectId', '/me/:projectId'],
+  ['/:projectId','/proposal/me/:projectId', '/me/:projectId'],
   validateRequest({ params: VolunteerProjectIdSchema })
 );
 
@@ -113,15 +114,23 @@ router.patch(
   controller.withdrawVolunteerProposal
 );
 
+//Update project status
+router.patch(
+  '/:projectId/proposal/status',
+  validateRequest({ params: VolunteerProjectIdSchema, body: UpdateMyProposedProjectStatusSchema }),
+  controller.updateMyProposedProjectStatus
+);
 
 //POST feedback about a specific project you participated in
 //Permission check: only users who were volunteers OR GM and above
 router.post(
   '/:projectId/feedbacks',
   validateRequest({ params: VolunteerProjectIdSchema, body: SubmitVolunteerFeedbackSchema }),
+  validateRequest({ params: VolunteerProjectIdSchema, body: SubmitVolunteerFeedbackSchema }),
   requireAnyPermission(['volunteerProjFeedback:post:own', 'volunteerProjFeedback:post']),
   controller.submitVolunteerFeedback
 );
+
 
 
 // PATCH update approval status of a volunteering project
@@ -141,7 +150,11 @@ router.post(
   controller.duplicateVolunteerProject
 );
 
+
+
 export default router;
+
+
 
 //Update project status
 router.patch(

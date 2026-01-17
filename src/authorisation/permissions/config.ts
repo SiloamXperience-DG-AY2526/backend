@@ -49,7 +49,6 @@ export const directPermissions: Record<Role, Permission[]> = {
 
   [UserRole.partner]: [
     'example:update:own',
-    'volunteerProjFeedback:post:own',
   ],
 };
 //

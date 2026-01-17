@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { validateRequest } from '../middlewares/validateRequest';
 import {
-  UpdateProposedProjectStatusSchema,
   DonationProjectIdSchema,
   UpdateDonationProjectSchema,
   CreateDonationProjectSchema,
@@ -11,13 +10,6 @@ import * as donationProjectController from '../controllers/donationProject.contr
 import { requirePermission } from '../middlewares/requirePermission';
 
 const router = Router();
-
-// USE validation middleware for routes with projectId param
-router.use(
-  ['/:projectId', '/me/:projectId'],
-  validateRequest({ params: DonationProjectIdSchema })
-);
-
 
 // GET Donation Projects 
 // (column-level access control is checked at service/model layer)
@@ -39,7 +31,7 @@ router.get(
 
 router.get(
   '/:projectId/donations',
-  validateRequest({ query: GetProjectDonationsSchema }),
+  validateRequest({ params: DonationProjectIdSchema, query: GetProjectDonationsSchema }),
   donationProjectController.getProjectDonationTransactions
 );
 
@@ -60,6 +52,7 @@ router.get(
 // no need permission check: anyone can view own project
 router.get(
   '/me/:projectId',
+  validateRequest({ params: DonationProjectIdSchema }),
   donationProjectController.getMyDonationProjectDetails
 );
 
@@ -75,24 +68,33 @@ router.post(
 // no need permission check: anyone can update own project
 router.patch(
   '/me/:projectId',
-  validateRequest({ body: UpdateDonationProjectSchema }),
+  validateRequest({ params: DonationProjectIdSchema, body: UpdateDonationProjectSchema }),
   donationProjectController.updateDonationProject
 );
 
-// Get proposed projects
-router.get(
-  '/proposedProjects',
-  requirePermission('proposedProjects:view'),
-  donationProjectController.getProposedProjects
+// POST withdraw my own donation project (changed from DELETE to POST)
+// no need permission check: anyone can withdraw own project
+router.post(
+  '/me/:projectId/withdraw',
+  validateRequest({ params: DonationProjectIdSchema }),
+  donationProjectController.withdrawDonationProject
 );
 
+// ===== Finance Manager Routes (Outside Partner Scope) =====
+// Get proposed projects
+// router.get(
+//   '/proposedProjects',
+//   requirePermission('proposedProjects:view'),
+//   donationProjectController.getProposedProjects
+// );
+
 // Change status of proposed project
-router.patch(
-  '/proposedProjects/:projectId/approvalStatus',
-  requirePermission('proposedProjects:update:status'),
-  validateRequest({ params: DonationProjectIdSchema, body: UpdateProposedProjectStatusSchema }),
-  donationProjectController.updateProposedProjectStatus
-);
+// router.patch(
+//   '/proposedProjects/:projectId/approvalStatus',
+//   requirePermission('proposedProjects:update:status'),
+//   validateRequest({ params: DonationProjectIdSchema, body: UpdateProposedProjectStatusSchema }),
+//   donationProjectController.updateProposedProjectStatus
+// );
 
 // POST duplicate an existing donation project
 router.post(

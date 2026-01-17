@@ -23,7 +23,7 @@ export const getMyDonationHistory = async (
   // Build where clause based on status
   const where: Prisma.DonationTransactionWhereInput = {
     donorId: partnerId,
-    receiptStatus: status
+    ...(status && status !== 'all' && { receiptStatus: status }),
   };
   //Assign select clause
   const select: Prisma.DonationTransactionSelect = DonationHistoryProjection;
