@@ -1,20 +1,41 @@
 import { Prisma } from '@prisma/client';
-import type { Gender, ContactModeType, InterestSlug, ReferrerType, User } from '@prisma/client';
+import type { Gender, ContactModeType, InterestSlug, ReferrerType } from '@prisma/client';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 import { prisma } from '../prisma/client';
 import { PartnerProfile } from '../schemas/user';
 import { splitPartnerProfile } from '../utils/profile';
 
 export async function findUserByEmailWithRoles(email: string) {
-  // error here
   return prisma.user.findUnique({
     where: { email },
-  }) as Promise<User | null>;
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      passwordHash: true,
+      role: true,
+      title: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 }
 
-export async function findUserByIdWithRoles(id: string): Promise<User | null> {
+export async function findUserByIdWithRoles(id: string) {
   const user = await prisma.user.findUnique({
     where: { id },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      passwordHash: true,
+      role: true,
+      title: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
   if (!user) {
@@ -154,6 +175,17 @@ export async function createUserWithPartner(
         email,
         passwordHash,
         // role defaults to 'partner' via schema default
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        passwordHash: true,
+        role: true,
+        title: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 

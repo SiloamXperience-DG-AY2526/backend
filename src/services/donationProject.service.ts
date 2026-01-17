@@ -22,8 +22,13 @@ export const getDonationProjects = async (filters: GetDonationProjectsInput) => 
   const where: Prisma.DonationProjectWhereInput = {
     approvalStatus: 'approved',
     submissionStatus: 'submitted',
-    type: type
   };
+
+  // Handle type filtering - filter by ProjectType if provided
+  if (type) {
+    where.type = type;
+  }
+  
   const {projectsWithTotals, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
   
   return {
@@ -100,6 +105,27 @@ export const updateProposedProjectStatus = async (data: {
   return updatedProposedProjectStatus;
 };
 
+/**
+ * Service: Withdraw a donation project proposal
+ * Partners can withdraw their proposed projects before approval
+ */
+export const withdrawDonationProject = async (
+  projectId: string,
+  managerId: string,
+  reason?: string
+) => {
+  const withdrawnProject = await donationProjectModel.withdrawDonationProject(
+    projectId,
+    managerId,
+    reason
+  );
+
+  if (!withdrawnProject) {
+    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
+  }
+
+  return withdrawnProject;
+};
 export const duplicateDonationProject = async (
   projectId: string,
   newManagerId: string
