@@ -56,6 +56,14 @@ export const ApproveVolunteerMatchSchema = z.object({
 
 export type ApproveVolunteerMatchInput = z.infer<typeof ApproveVolunteerMatchSchema>;
 
+export const UpdateVolunteerApplicationStatusSchema = z.object({
+  status: z.enum(VolunteerProjectPositionStatus),
+});
+
+export type UpdateVolunteerApplicationStatusInput = z.infer<
+  typeof UpdateVolunteerApplicationStatusSchema
+>;
+
 // Schema for matchId param
 export const MatchIdSchema = z.object({
   matchId: z.uuid(),

@@ -1,12 +1,19 @@
 import * as volunteerModel from '../models/volunteerApplication.model';
-import { GetVolunteerApplicationsInput, SubmitVolApplicationInput, AnyVolApplicationsQueryInput, MatchVolunteerToProjectInput, ApproveVolunteerMatchInput } from '../schemas';
-import { NotImplementedError, ValidationError } from '../utils/errors';
+import {
+  GetVolunteerApplicationsInput,
+  SubmitVolApplicationInput,
+  AnyVolApplicationsQueryInput,
+  MatchVolunteerToProjectInput,
+  ApproveVolunteerMatchInput,
+  UpdateVolunteerApplicationStatusInput,
+} from '../schemas';
+import { ValidationError } from '../utils/errors';
 
 //TODO
 export const getVolunteerApplications = async (
-  _filters: AnyVolApplicationsQueryInput
+  filters: AnyVolApplicationsQueryInput
 ) => {
-  throw new NotImplementedError('501 Not Implemented');
+  return volunteerModel.getAllVolunteerApplicationsModel(filters);
 };
 
 export const getMyVolunteerApplications = async (
@@ -40,4 +47,16 @@ export const approveVolunteerMatch = async (
   data: ApproveVolunteerMatchInput
 ) => {
   return volunteerModel.approveVolunteerMatch(matchId, approverId, data);
+};
+
+export const updateVolunteerApplicationStatus = async (
+  matchId: string,
+  approverId: string,
+  data: UpdateVolunteerApplicationStatusInput
+) => {
+  return volunteerModel.updateVolunteerApplicationStatus(
+    matchId,
+    approverId,
+    data
+  );
 };

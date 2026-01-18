@@ -4,7 +4,9 @@ import {
   GetVolunteerApplicationsInput,
   SubmitVolApplicationInput,
   MatchVolunteerToProjectInput,
-  ApproveVolunteerMatchInput
+  ApproveVolunteerMatchInput,
+  AnyVolApplicationsQueryInput,
+  UpdateVolunteerApplicationStatusInput,
 } from '../schemas';
 import { ConflictError, NotFoundError } from '../utils/errors';
 
@@ -75,6 +77,59 @@ export const getVolunteerApplicationsModel = async ({
       id: r.position.id,
       role: r.position.role,
     },
+  }));
+};
+
+export const getAllVolunteerApplicationsModel = async (
+  filters: AnyVolApplicationsQueryInput
+) => {
+  const { userId, projectId, status } = filters;
+
+  const records = await prisma.volunteerProjectPosition.findMany({
+    where: {
+      ...(userId ? { volunteerId: userId } : {}),
+      ...(status ? { status } : {}),
+      ...(projectId
+        ? {
+            position: {
+              projectId,
+            },
+          }
+        : {}),
+    },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      availability: true,
+      position: {
+        select: {
+          id: true,
+          role: true,
+          projectId: true,
+        },
+      },
+      volunteer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return records.map((r) => ({
+    id: r.id,
+    status: r.status,
+    createdAt: r.createdAt,
+    availability: r.availability ?? null,
+    position: r.position,
+    volunteer: r.volunteer,
   }));
 };
 
@@ -430,3 +485,60 @@ export const approveVolunteerMatch = async (
   return approvedMatch;
 };
 
+export const updateVolunteerApplicationStatus = async (
+  matchId: string,
+  approverId: string,
+  data: UpdateVolunteerApplicationStatusInput
+) => {
+  const existingMatch = await prisma.volunteerProjectPosition.findUnique({
+    where: { id: matchId },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!existingMatch) {
+    throw new NotFoundError('Match not found');
+  }
+
+  const isApproved = data.status === 'approved';
+
+  const updatedMatch = await prisma.volunteerProjectPosition.update({
+    where: { id: matchId },
+    data: {
+      status: data.status,
+      approvedAt: isApproved ? new Date() : null,
+      approvedBy: isApproved ? approverId : null,
+    },
+    select: {
+      id: true,
+      status: true,
+      approvedAt: true,
+      approvedBy: true,
+      createdAt: true,
+      updatedAt: true,
+      position: {
+        select: {
+          id: true,
+          role: true,
+          project: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      },
+      volunteer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return updatedMatch;
+};
