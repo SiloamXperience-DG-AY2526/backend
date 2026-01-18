@@ -70,6 +70,15 @@ export const updateVolunteerProjectById = async (
   res.json(updatedProject);
 };
 
+export const getPartnerProposedProjects = async (
+  req: Request,
+  res: Response
+) => {
+  const { partnerId } = req.params;
+  const projects = await volunteerService.getPartnerProposedProjects(partnerId);
+  res.json({ data: projects });
+};
+
 export const getVolProjectApplications = async (
   req: Request,
   res: Response

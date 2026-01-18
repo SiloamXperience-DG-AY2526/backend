@@ -41,6 +41,10 @@ export const updateVolunteerProposal = async (input: {
   return volunteerModel.updateVolunteerProposalModel(input);
 };
 
+export const getPartnerProposedProjects = async (partnerId: string) => {
+  return volunteerModel.getPartnerProposedProjectsModel(partnerId);
+};
+
 export const withdrawVolunteerProposal = async (input: {
     projectId: string;
     userId: string;

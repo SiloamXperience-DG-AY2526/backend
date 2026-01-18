@@ -1147,6 +1147,63 @@ export const viewMyProposedProjectsModel = async (input: {
   });
 };
 
+export const getPartnerProposedProjectsModel = async (partnerId: string) => {
+  const projects = await prisma.volunteerProject.findMany({
+    where: {
+      managedById: partnerId,
+      submissionStatus: { notIn: ['draft', 'withdrawn'] },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      startDate: true,
+      endDate: true,
+      location: true,
+      initiatorName: true,
+      approvalStatus: true,
+      submissionStatus: true,
+      positions: {
+        select: {
+          totalSlots: true,
+          signups: {
+            where: {
+              status: { in: [...FILLED_STATUSES] },
+              hasConsented: true,
+            },
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
+
+  return projects.map((p) => {
+    const totalCapacity = p.positions.reduce(
+      (sum, pos) => sum + (pos.totalSlots ?? 0),
+      0
+    );
+
+    const acceptedCount = p.positions.reduce(
+      (sum, pos) => sum + pos.signups.length,
+      0
+    );
+
+    return {
+      id: p.id,
+      name: p.title,
+      startDate: p.startDate,
+      endDate: p.endDate,
+      location: p.location,
+      initiatorName: p.initiatorName ?? null,
+      approvalStatus: p.approvalStatus,
+      submissionStatus: p.submissionStatus,
+      totalCapacity,
+      acceptedCount,
+    };
+  });
+};
+
 
 export const updateMyProposedProjectStatusModel = async (input: {
   userId: string;

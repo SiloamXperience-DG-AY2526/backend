@@ -14,6 +14,7 @@ import {
   UpdateMyProposedProjectStatusSchema,
   GetAllVolunteerProjectsSchema,
 } from '../schemas/project';
+import { PartnerIdSchema } from '../schemas/user';
 import * as controller from '../controllers/volunteerProject.controller';
 import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
 
@@ -46,6 +47,13 @@ router.get(
   '/proposal/me',
   validateRequest({ query: ViewMyProposedProjectsQuerySchema }),
   controller.viewMyProposedProjects
+);
+
+router.get(
+  '/partner/:partnerId/proposals',
+  requirePermission('volunteerProjects:manage'),
+  validateRequest({ params: PartnerIdSchema }),
+  controller.getPartnerProposedProjects
 );
 
 // POST create new volunteer project

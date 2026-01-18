@@ -107,6 +107,11 @@ export const getAllVolunteerApplicationsModel = async (
           id: true,
           role: true,
           projectId: true,
+          project: {
+            select: {
+              title: true,
+            },
+          },
         },
       },
       volunteer: {
@@ -128,7 +133,12 @@ export const getAllVolunteerApplicationsModel = async (
     status: r.status,
     createdAt: r.createdAt,
     availability: r.availability ?? null,
-    position: r.position,
+    position: {
+      id: r.position.id,
+      role: r.position.role,
+      projectId: r.position.projectId,
+      projectTitle: r.position.project?.title ?? null,
+    },
     volunteer: r.volunteer,
   }));
 };

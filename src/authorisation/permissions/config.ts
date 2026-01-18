@@ -23,6 +23,7 @@ export const directPermissions: Record<Role, Permission[]> = {
     'staff:create',
     'staff:activate',
     'staff:deactivate',
+    'partners:view',
   ],
 
   [UserRole.generalManager]: [
@@ -31,6 +32,7 @@ export const directPermissions: Record<Role, Permission[]> = {
     'volunteerProjects:duplicate',
     'volunteerProjApproval:update',
     'volunteerProjects:manage',
+    'partners:view',
     'emailCampaign:create',
     'emailCampaign:update',
     'emailCampaign:read',
