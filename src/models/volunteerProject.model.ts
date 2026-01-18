@@ -76,12 +76,20 @@ export const updateVolunteerProject = async (
     return null;
   }
 
+  const updateData: UpdateVolunteerProjectInput = {
+    ...data,
+  };
+
+  if (updateData.submissionStatus === 'submitted') {
+    updateData.approvalStatus = 'pending';
+  }
+
   const updatedProject = await prisma.volunteerProject.update({
     where: {
       id: projectId,
     },
     data: {
-      ...data,
+      ...updateData,
     },
     include: {
       managedBy: pmPublicInfo,
@@ -108,12 +116,20 @@ export const updateVolunteerProjectById = async (
     return null;
   }
 
+  const updateData: UpdateVolunteerProjectInput = {
+    ...data,
+  };
+
+  if (updateData.submissionStatus === 'submitted') {
+    updateData.approvalStatus = 'pending';
+  }
+
   const updatedProject = await prisma.volunteerProject.update({
     where: {
       id: projectId,
     },
     data: {
-      ...data,
+      ...updateData,
     },
     include: {
       managedBy: pmPublicInfo,
@@ -130,13 +146,14 @@ export const createVolunteerProject = async (
   managerId: string,
   data: CreateVolunteerProjectInput
 ) => {
-  const { objectivesList, ...projectData } = data;
+  const { objectivesList, submissionStatus, ...projectData } = data;
+  const resolvedSubmissionStatus = submissionStatus ?? 'draft';
 
   const project = await prisma.volunteerProject.create({
     data: {
       ...projectData,
       managedById: managerId,
-      submissionStatus: 'draft', // New projects start as draft
+      submissionStatus: resolvedSubmissionStatus,
       approvalStatus: 'pending', // Awaiting approval
       objectivesList: objectivesList
         ? {
@@ -369,21 +386,36 @@ export const getAllVolunteerProjectsModel = async ({
   page = 1,
   limit = 10,
   search,
+  viewerRole,
 }: {
   page?: number;
   limit?: number;
   search?: string;
+  viewerRole?: string;
 }): Promise<PaginatedVolunteerProjects> => {
   if (page < 1 || limit < 1) throw new Error('INVALID_PAGINATION');
 
-  const whereClause = search
-    ? {
-        title: {
-          contains: search,
-          mode: 'insensitive' as const,
-        },
-      }
-    : {};
+  const whereClause: {
+    title?: { contains: string; mode: 'insensitive' };
+    NOT?: {
+      submissionStatus: 'draft';
+      managedBy: { role: 'partner' };
+    };
+  } = {};
+
+  if (search) {
+    whereClause.title = {
+      contains: search,
+      mode: 'insensitive',
+    };
+  }
+
+  if (viewerRole === 'generalManager') {
+    whereClause.NOT = {
+      submissionStatus: 'draft',
+      managedBy: { role: 'partner' },
+    };
+  }
 
   const skip = (page - 1) * limit;
 
@@ -533,6 +565,10 @@ export const updateVolunteerProposalModel = async ({
 
     const { positions, ...projectData } = payload;
 
+    if (projectData.submissionStatus === 'submitted') {
+      projectData.approvalStatus = 'pending';
+    }
+
     const updatedProject = await tx.volunteerProject.update({
       where: { id: projectId },
       data: {
@@ -546,11 +582,21 @@ export const updateVolunteerProposalModel = async ({
         let positionId: string;
 
         if (pos.id) {
+          const updateData: {
+            role: string;
+            description: string;
+            totalSlots?: number;
+          } = {
+            role: pos.role,
+            description: pos.description,
+          };
+          if (typeof pos.totalSlots === 'number') {
+            updateData.totalSlots = pos.totalSlots;
+          }
           const updatedPos = await tx.projectPosition.update({
             where: { id: pos.id },
             data: {
-              role: pos.role,
-              description: pos.description,
+              ...updateData,
             },
           });
           positionId = updatedPos.id;
@@ -560,7 +606,7 @@ export const updateVolunteerProposalModel = async ({
               projectId,
               role: pos.role,
               description: pos.description,
-              totalSlots: 0,
+              totalSlots: pos.totalSlots ?? 1,
             },
           });
           positionId = createdPos.id;
@@ -1059,6 +1105,7 @@ export const viewMyProposedProjectsModel = async (input: {
       location: true,
       initiatorName: true,
       approvalStatus: true,
+      submissionStatus: true,
       positions: {
         select: {
           totalSlots: true,
@@ -1093,6 +1140,7 @@ export const viewMyProposedProjectsModel = async (input: {
       location: p.location,
       initiatorName: p.initiatorName ?? null,
       approvalStatus: p.approvalStatus,
+      submissionStatus: p.submissionStatus,
       totalCapacity,
       acceptedCount,
     };

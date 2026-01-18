@@ -22,7 +22,7 @@ export const getAvailableVolunteerActivities = async (
 };
 
 export const getAllVolunteerProjects = async (
-  input: GetAllVolunteerProjectsInput
+  input: GetAllVolunteerProjectsInput & { viewerRole?: string }
 ) => {
   return volunteerModel.getAllVolunteerProjectsModel(input);
 };

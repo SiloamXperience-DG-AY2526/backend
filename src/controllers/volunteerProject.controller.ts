@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteerProject.service';
-import { getUserIdFromRequest } from '../utils/user';
+import { getUserIdFromRequest, getUserPayloadFromRequest } from '../utils/user';
 import { GetAvailableVolunteerActivitiesSchema, MyVolApplicationsQueryType, UpdateMyProposedProjectStatusSchema, ViewMyProposedProjectsQuerySchema } from '../schemas/project';
 import { ProjectApprovalStatus } from '@prisma/client';
 
@@ -12,10 +12,12 @@ export const getVolunteerProjects = async (req: Request, res: Response) => {
 
 export const getAllVolunteerProjects = async (req: Request, res: Response) => {
   const { page, limit, search } = req.query;
+  const { role } = getUserPayloadFromRequest(req);
   const result = await volunteerService.getAllVolunteerProjects({
     page: Number(page) || 1,
     limit: Number(limit) || 10,
     search: typeof search === 'string' ? search : undefined,
+    viewerRole: role,
   });
   res.json(result);
 };
@@ -124,14 +126,11 @@ export const updateVolunteerProposal = async (
 ) => {
   const { projectId } = req.params;
   const { userId, ...updateData } = req.body;
-
-  if (!userId) {
-    throw new Error('USER_ID_REQUIRED');
-  }
+  const proposerId = userId || getUserIdFromRequest(req);
 
   const project = await volunteerService.updateVolunteerProposal({
     projectId,
-    userId,
+    userId: proposerId,
     payload: updateData,
   });
 

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   ProjectApprovalStatus,
   ProjectFrequency,
+  SubmissionStatus,
 } from '@prisma/client';
 import { preprocessDate, PageType, LimitType } from '../helper';
 
@@ -107,12 +108,15 @@ export const UpdateVolunteerProposalSchema = z.object({
 
   image: z.string().url().optional().nullable(),
   attachments: z.string().optional().nullable(),
+  submissionStatus: z.nativeEnum(SubmissionStatus).optional(),
 
   positions: z
     .array(
       z.object({
+        id: z.uuid().optional(),
         role: z.string().min(1),
         description: z.string().min(1),
+        totalSlots: z.number().int().min(1).optional(),
         skills: z.array(z.string()).optional(),
       })
     )
