@@ -1,6 +1,8 @@
 import * as model from '../models/emailCampaign.model';
 import { sendEmail } from '../utils/email';
 import { BadRequestError } from '../utils/errors';
+import { buildPagination, calculateSkip } from './paginationHelper';
+import { EmailCampaignListQueryType } from '../schemas/emailCampaign';
 
 export async function createCampaign(userId: string, data: any) {
   return model.createCampaignDB(userId, data);
@@ -30,6 +32,26 @@ export async function previewAudience(campaignId: string) {
     count: partners.length,
     emails: partners.map(p => p.user.email),
   };
+}
+
+export async function getCampaigns(filters: EmailCampaignListQueryType) {
+  const { page, limit, status } = filters;
+  const skip = calculateSkip(page, limit);
+  const where = status ? { status } : {};
+
+  const [campaigns, totalCount] = await Promise.all([
+    model.listCampaigns(where, { skip, limit }),
+    model.countCampaigns(where),
+  ]);
+
+  return {
+    campaigns,
+    pagination: buildPagination(page, limit, totalCount),
+  };
+}
+
+export async function getCampaignDetails(campaignId: string) {
+  return model.getCampaignDetails(campaignId);
 }
 
 export async function sendTestEmail(campaignId: string, email: string) {

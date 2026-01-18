@@ -8,15 +8,11 @@ import {
   updateDeliverySchema,
   updateContentSchema,
   sendTestEmailSchema,
-  EmailCampaignIdSchema
+  EmailCampaignIdSchema,
+  EmailCampaignListQuerySchema,
 } from '../schemas/emailCampaign';
 
 const router = Router();
-
-router.use(
-  '/:campaignId',
-  validateRequest({ params: EmailCampaignIdSchema })
-);
 
 // Create draft campaign
 router.post(
@@ -24,6 +20,26 @@ router.post(
   requirePermission('emailCampaign:create'),
   validateRequest({ body: createEmailCampaignSchema }),
   controller.createCampaign
+);
+
+// View all campaigns (including drafts)
+router.get(
+  '/all',
+  requirePermission('emailCampaign:read'),
+  validateRequest({ query: EmailCampaignListQuerySchema }),
+  controller.getCampaigns
+);
+
+// View scheduled campaigns only
+router.get(
+  '/',
+  requirePermission('emailCampaign:read'),
+  controller.getScheduledCampaigns
+);
+
+router.use(
+  '/:campaignId',
+  validateRequest({ params: EmailCampaignIdSchema })
 );
 
 // Update audience
@@ -50,6 +66,13 @@ router.put(
   controller.updateContent
 );
 
+// Get campaign details
+router.get(
+  '/:campaignId',
+  requirePermission('emailCampaign:read'),
+  controller.getCampaignDetails
+);
+
 // Preview audience size
 router.get(
   '/:campaignId/preview',
@@ -73,12 +96,6 @@ router.post(
 );
 
 // View scheduled campaigns only
-router.get(
-  '/',
-  requirePermission('emailCampaign:read'),
-  controller.getScheduledCampaigns
-);
-
 // Delete campaign
 router.delete(
   '/:campaignId',

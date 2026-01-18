@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { preprocessDate } from '../helper';
+import { preprocessDate, PageType, LimitType } from '../helper';
 
 export const createEmailCampaignSchema = z.object({
   name: z.string().min(1, 'Campaign name is required'),
@@ -11,13 +11,13 @@ export type CreateEmailCampaignInput = z.infer<
 >;
 
 export const updateAudienceSchema = z.object({
-  projectId: z.uuid().optional(),
-  isActivePartner: z.boolean().optional(),
-  gender: z.enum(['male', 'female', 'others']),
-  nationality: z.string().optional(),
+  projectId: z.uuid().optional().nullable(),
+  isActivePartner: z.boolean().optional().nullable(),
+  gender: z.enum(['male', 'female', 'others']).optional().nullable(),
+  nationality: z.string().optional().nullable(),
 
-  minAge: z.number().int().positive().optional(),
-  maxAge: z.number().int().positive().optional(),
+  minAge: z.number().int().positive().optional().nullable(),
+  maxAge: z.number().int().positive().optional().nullable(),
 
   volunteerInterests: z
     .array(
@@ -35,9 +35,10 @@ export const updateAudienceSchema = z.object({
         'others',
       ])
     )
-    .optional(),
-  volunteerSkills: z.array(z.string()).optional(),
-  languages: z.array(z.string()).optional(),
+    .optional()
+    .nullable(),
+  volunteerSkills: z.array(z.string()).optional().nullable(),
+  languages: z.array(z.string()).optional().nullable(),
 });
 
 export type UpdateAudienceInput = z.infer<
@@ -62,4 +63,12 @@ export const EmailCampaignIdSchema = z.object({
   campaignId: z.uuid(),
 });
 
+export const EmailCampaignListQuerySchema = z.object({
+  page: PageType,
+  limit: LimitType,
+  status: z.enum(['draft', 'scheduled', 'cancelled']).optional(),
+});
 
+export type EmailCampaignListQueryType = z.infer<
+  typeof EmailCampaignListQuerySchema
+>;
