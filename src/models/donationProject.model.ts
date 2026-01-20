@@ -314,6 +314,36 @@ export const updateDonationProject = async (
   return updatedProject;
 };
 
+export const updateDonationProjectById = async (
+  projectId: string,
+  data: UpdateDonationProjectInput
+) => {
+  const existingProject = await prisma.donationProject.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  const updatedProject = await prisma.donationProject.update({
+    where: { id: projectId },
+    data: {
+      ...data,
+    },
+    include: {
+      projectManager: {
+        select: PMPublicSelect,
+      },
+      objectivesList: {
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+
+  return updatedProject;
+};
+
 /**
  * Withdraw a donation project proposal
  * Only allows withdrawal if project is owned by the manager and not yet approved

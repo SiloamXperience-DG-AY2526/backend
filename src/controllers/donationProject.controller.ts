@@ -101,6 +101,18 @@ export const updateDonationProject = async (req: Request, res: Response) => {
   res.json(updatedProject);
 };
 
+export const updateDonationProjectById = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const updatedProject = await donationProjectService.updateDonationProjectById(
+    projectId,
+    req.body
+  );
+  res.json(updatedProject);
+};
+
 export const getProposedProjects = async (req: Request, res: Response) => {
   const proposedProjects = await donationProjectService.getProposedProjects();
 

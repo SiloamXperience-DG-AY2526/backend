@@ -4,8 +4,10 @@ import {
   DonationProjectIdSchema,
   UpdateDonationProjectSchema,
   CreateDonationProjectSchema,
-  getDonationProjectsSchema,  GetProjectDonationsSchema,
-  GetProjectDonorsSchema,} from '../schemas/donation';
+  getDonationProjectsSchema,
+  GetProjectDonationsSchema,
+  GetProjectDonorsSchema,
+} from '../schemas/donation';
 import * as donationProjectController from '../controllers/donationProject.controller';
 import { requirePermission } from '../middlewares/requirePermission';
 
@@ -54,6 +56,17 @@ router.get(
   '/:projectId',
   requirePermission('donationProjectDetails:view'),
   donationProjectController.getDonationProjectDetails
+);
+
+// PATCH update any donation project (finance manager and above)
+router.patch(
+  '/:projectId',
+  requirePermission('donationProjects:manage'),
+  validateRequest({
+    params: DonationProjectIdSchema,
+    body: UpdateDonationProjectSchema,
+  }),
+  donationProjectController.updateDonationProjectById
 );
 
 // POST create new donation project

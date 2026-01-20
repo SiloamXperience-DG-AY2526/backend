@@ -126,6 +126,22 @@ export const updateDonationProject = async (
   return updatedProject;
 };
 
+export const updateDonationProjectById = async (
+  projectId: string,
+  data: UpdateDonationProjectInput
+) => {
+  const updatedProject = await donationProjectModel.updateDonationProjectById(
+    projectId,
+    data
+  );
+
+  if (!updatedProject) {
+    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
+  }
+
+  return updatedProject;
+};
+
 export const createDonationProject = async (
   managerId: string,
   data: CreateDonationProjectInput

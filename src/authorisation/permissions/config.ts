@@ -24,6 +24,7 @@ export const directPermissions: Record<Role, Permission[]> = {
     'staff:activate',
     'staff:deactivate',
     'partners:view',
+    'donationProjects:manage',
   ],
 
   [UserRole.generalManager]: [
@@ -43,6 +44,7 @@ export const directPermissions: Record<Role, Permission[]> = {
 
   [UserRole.financeManager]: [
     'donationReceiptStatus:update',
+    'donationProjects:manage',
     'donationProjects:duplicate',
     'donationProjectDetails:view',
     'proposedProjects:view',
