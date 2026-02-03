@@ -91,10 +91,10 @@ export const getAllVolunteerApplicationsModel = async (
       ...(status ? { status } : {}),
       ...(projectId
         ? {
-            position: {
-              projectId,
-            },
-          }
+          position: {
+            projectId,
+          },
+        }
         : {}),
     },
     select: {
