@@ -1,10 +1,12 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, VolunteerProjectPositionStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import {
   GetVolunteerApplicationsInput,
   SubmitVolApplicationInput,
   MatchVolunteerToProjectInput,
-  ApproveVolunteerMatchInput
+  ApproveVolunteerMatchInput,
+  AnyVolApplicationsQueryInput,
+  UpdateVolunteerApplicationStatusInput,
 } from '../schemas';
 import { ConflictError, NotFoundError } from '../utils/errors';
 
@@ -75,6 +77,69 @@ export const getVolunteerApplicationsModel = async ({
       id: r.position.id,
       role: r.position.role,
     },
+  }));
+};
+
+export const getAllVolunteerApplicationsModel = async (
+  filters: AnyVolApplicationsQueryInput
+) => {
+  const { userId, projectId, status } = filters;
+
+  const records = await prisma.volunteerProjectPosition.findMany({
+    where: {
+      ...(userId ? { volunteerId: userId } : {}),
+      ...(status ? { status } : {}),
+      ...(projectId
+        ? {
+          position: {
+            projectId,
+          },
+        }
+        : {}),
+    },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      availability: true,
+      position: {
+        select: {
+          id: true,
+          role: true,
+          projectId: true,
+          project: {
+            select: {
+              title: true,
+            },
+          },
+        },
+      },
+      volunteer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return records.map((r) => ({
+    id: r.id,
+    status: r.status,
+    createdAt: r.createdAt,
+    availability: r.availability ?? null,
+    position: {
+      id: r.position.id,
+      role: r.position.role,
+      projectId: r.position.projectId,
+      projectTitle: r.position.project?.title ?? null,
+    },
+    volunteer: r.volunteer,
   }));
 };
 
@@ -430,3 +495,135 @@ export const approveVolunteerMatch = async (
   return approvedMatch;
 };
 
+export const updateVolunteerApplicationStatus = async (
+  matchId: string,
+  approverId: string,
+  data: UpdateVolunteerApplicationStatusInput
+) => {
+  const existingMatch = await prisma.volunteerProjectPosition.findUnique({
+    where: { id: matchId },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!existingMatch) {
+    throw new NotFoundError('Match not found');
+  }
+
+  const isApproved = data.status === 'approved';
+
+  const updatedMatch = await prisma.volunteerProjectPosition.update({
+    where: { id: matchId },
+    data: {
+      status: data.status,
+      approvedAt: isApproved ? new Date() : null,
+      approvedBy: isApproved ? approverId : null,
+    },
+    select: {
+      id: true,
+      status: true,
+      approvedAt: true,
+      approvedBy: true,
+      createdAt: true,
+      updatedAt: true,
+      position: {
+        select: {
+          id: true,
+          role: true,
+          project: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      },
+      volunteer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return updatedMatch;
+};
+
+// Update application status by project owner (partner)
+export const updateApplicationStatusByOwner = async (
+  applicationId: string,
+  ownerId: string,
+  status: VolunteerProjectPositionStatus
+) => {
+  // Verify the application exists and get project ownership info
+  const application = await prisma.volunteerProjectPosition.findUnique({
+    where: { id: applicationId },
+    select: {
+      id: true,
+      position: {
+        select: {
+          project: {
+            select: {
+              id: true,
+              managedById: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!application) {
+    throw new NotFoundError('Application not found');
+  }
+
+  // Verify the user is the project owner (manager)
+  if (application.position.project.managedById !== ownerId) {
+    throw new ConflictError('You are not authorized to update this application');
+  }
+
+  const isApproved = status === 'approved';
+
+  const updatedApplication = await prisma.volunteerProjectPosition.update({
+    where: { id: applicationId },
+    data: {
+      status,
+      approvedAt: isApproved ? new Date() : null,
+      approvedBy: isApproved ? ownerId : null,
+    },
+    select: {
+      id: true,
+      status: true,
+      approvedAt: true,
+      approvedBy: true,
+      createdAt: true,
+      updatedAt: true,
+      position: {
+        select: {
+          id: true,
+          role: true,
+          project: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      },
+      volunteer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return updatedApplication;
+};

@@ -29,6 +29,7 @@ export const CreateVolunteerProjectSchema = z.object({
   interval: z.number().int().positive().optional().nullable(),
   dayOfWeek: z.string().optional().nullable(),
   operationStatus: z.nativeEnum(ProjectOperationStatus).default('ongoing'),
+  submissionStatus: z.nativeEnum(SubmissionStatus).optional(),
   image: z.string().url().optional().nullable(),
   attachments: z.string().optional().nullable(),
   // Objectives list - optional, can be added later
@@ -91,4 +92,3 @@ export type MyProjectApplicationsInput = {
     projectId: string,
     filters: MyProjectApplicationsQueryType,
 }
-

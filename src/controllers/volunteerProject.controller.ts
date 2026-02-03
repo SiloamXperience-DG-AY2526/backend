@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteerProject.service';
-import { getUserIdFromRequest } from '../utils/user';
+import * as volunteerAppService from '../services/volunteerApplication.service';
+import { getUserIdFromRequest, getUserPayloadFromRequest } from '../utils/user';
 import { GetAvailableVolunteerActivitiesSchema, MyVolApplicationsQueryType, UpdateMyProposedProjectStatusSchema, ViewMyProposedProjectsQuerySchema } from '../schemas/project';
 import { ProjectApprovalStatus } from '@prisma/client';
 
@@ -8,6 +9,18 @@ export const getVolunteerProjects = async (req: Request, res: Response) => {
   const managerId = getUserIdFromRequest(req);
   const projects = await volunteerService.getVolunteerProjects(managerId);
   res.json(projects);
+};
+
+export const getAllVolunteerProjects = async (req: Request, res: Response) => {
+  const { page, limit, search } = req.query;
+  const { role } = getUserPayloadFromRequest(req);
+  const result = await volunteerService.getAllVolunteerProjects({
+    page: Number(page) || 1,
+    limit: Number(limit) || 10,
+    search: typeof search === 'string' ? search : undefined,
+    viewerRole: role,
+  });
+  res.json(result);
 };
 
 export const getVolunteerProjectDetails = async (
@@ -44,6 +57,27 @@ export const updateVolunteerProject = async (
     req.body
   );
   res.json(updatedProject);
+};
+
+export const updateVolunteerProjectById = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const updatedProject = await volunteerService.updateVolunteerProjectById(
+    projectId,
+    req.body
+  );
+  res.json(updatedProject);
+};
+
+export const getPartnerProposedProjects = async (
+  req: Request,
+  res: Response
+) => {
+  const { partnerId } = req.params;
+  const projects = await volunteerService.getPartnerProposedProjects(partnerId);
+  res.json({ data: projects });
 };
 
 export const getVolProjectApplications = async (
@@ -102,14 +136,11 @@ export const updateVolunteerProposal = async (
 ) => {
   const { projectId } = req.params;
   const { userId, ...updateData } = req.body;
-
-  if (!userId) {
-    throw new Error('USER_ID_REQUIRED');
-  }
+  const proposerId = userId || getUserIdFromRequest(req);
 
   const project = await volunteerService.updateVolunteerProposal({
     projectId,
-    userId,
+    userId: proposerId,
     payload: updateData,
   });
 
@@ -238,6 +269,28 @@ export const updateMyProposedProjectStatus = async (
   return res.status(200).json({
     status: 'success',
     message: 'Proposed project status updated',
+    data: updated,
+  });
+};
+
+// Update application status by project owner (partner)
+export const updateMyProjectApplicationStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const userId = getUserIdFromRequest(req);
+  const { applicationId } = req.params;
+  const { status } = req.body;
+
+  const updated = await volunteerAppService.updateApplicationStatusByOwner(
+    applicationId,
+    userId,
+    status
+  );
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'Application status updated',
     data: updated,
   });
 };

@@ -1,13 +1,17 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteerApplication.service';
 import { getUserIdFromRequest } from '../utils/user';
-import { MyVolApplicationsQuerySchema, MyVolApplicationsQueryType } from '../schemas';
+import {
+  MyVolApplicationsQuerySchema,
+  AnyVolApplicationsQueryType,
+  UpdateVolunteerApplicationStatusInput,
+} from '../schemas';
 
 export const getVolunteerApplications = async (
   req: Request,
   res: Response
 ) => {
-  const filters = req.query as MyVolApplicationsQueryType;
+  const filters = req.query as AnyVolApplicationsQueryType;
   const applications = await volunteerService.getVolunteerApplications(filters);
   return res.status(200).json(applications);
 };
@@ -83,3 +87,23 @@ export const approveVolunteerMatch = async (
   });
 };
 
+export const updateVolunteerApplicationStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { matchId } = req.params;
+  const approverId = getUserIdFromRequest(req);
+  const statusData = req.body as UpdateVolunteerApplicationStatusInput;
+
+  const updated = await volunteerService.updateVolunteerApplicationStatus(
+    matchId,
+    approverId,
+    statusData
+  );
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'Volunteer application status updated successfully',
+    data: updated,
+  });
+};

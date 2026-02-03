@@ -11,35 +11,49 @@ import { buildPagination, calculateSkip } from './paginationHelper';
 import { Prisma, ProjectApprovalStatus, SubmissionStatus } from '@prisma/client';
 
 /**
- * Service: Get all donation projects for partners
- * Handles business logic for filtering and pagination
+ * Service: Get all donation projects
+ * For partners: only approved projects
+ * For admins/managers: all non-partner-draft projects
  */
-export const getDonationProjects = async (filters: GetDonationProjectsInput) => {
-  const { type, page = 1, limit = 20 } = filters;
+export const getDonationProjects = async (filters: GetDonationProjectsInput & { viewerRole?: string }) => {
+  const { type, page = 1, limit = 20, viewerRole } = filters;
   const skip = calculateSkip(page, limit);
 
-  // Build where clause filter
-  const where: Prisma.DonationProjectWhereInput = {
-    type: type,
-    OR: [
-      // All non-draft projects
-      { submissionStatus: { not: SubmissionStatus.draft } },
-      // Draft projects created by non-partner roles
-      {
-        AND: [
-          { submissionStatus: SubmissionStatus.draft },
-          { projectManager: { role: { not: 'partner' } } },
-        ],
-      },
-    ],
-  };
+  // Build where clause filter based on viewer role
+  let where: Prisma.DonationProjectWhereInput;
+
+  if (viewerRole === 'partner') {
+    // Partners only see approved, non-draft projects
+    where = {
+      type: type,
+      submissionStatus: { not: SubmissionStatus.draft },
+      approvalStatus: ProjectApprovalStatus.approved,
+    };
+  } else {
+    // Admins/managers see all except partner drafts
+    where = {
+      type: type,
+      OR: [
+        // All non-draft projects
+        { submissionStatus: { not: SubmissionStatus.draft } },
+        // Draft projects created by non-partner roles
+        {
+          AND: [
+            { submissionStatus: SubmissionStatus.draft },
+            { projectManager: { role: { not: 'partner' } } },
+          ],
+        },
+      ],
+    };
+  }
+
   const {projectsWithTotals: projects, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
-  
+
   return {
     projects,
     pagination: buildPagination(page, limit, totalCount)
   };
-  
+
 };
 
 export const getProjectDonationTransactions = async (
@@ -66,16 +80,24 @@ export const getProjectDonors = async (
 ) => {
   const { page, limit } = pagination;
   const skip = calculateSkip(page, limit);
-  
+
   const { donors, totalCount } = await donationProjectModel.getProjectDonors(
     projectId,
     { skip, limit }
   );
-  
+
   return {
     donors,
     pagination: buildPagination(page, limit, totalCount),
   };
+};
+
+// Get donor summary for project owners (without amounts)
+export const getProjectDonorsSummary = async (
+  projectId: string,
+  userId: string
+) => {
+  return donationProjectModel.getProjectDonorsSummary(projectId, userId);
 };
 
 export const getMyDonationProjects = async (managerId: string) => {
@@ -116,6 +138,22 @@ export const updateDonationProject = async (
   const updatedProject = await donationProjectModel.updateDonationProject(
     projectId,
     managerId,
+    data
+  );
+
+  if (!updatedProject) {
+    throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
+  }
+
+  return updatedProject;
+};
+
+export const updateDonationProjectById = async (
+  projectId: string,
+  data: UpdateDonationProjectInput
+) => {
+  const updatedProject = await donationProjectModel.updateDonationProjectById(
+    projectId,
     data
   );
 

@@ -8,6 +8,7 @@ import { SubmissionStatus, ProjectApprovalStatus, ProjectType } from '@prisma/cl
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 import { DonationProjectPublicSelect } from './projectionSchemas/donationProject.projections';
+import { NotFoundError } from '../utils/errors';
 
 const receivedDonationFilter = {
   submissionStatus: 'submitted',
@@ -95,8 +96,9 @@ export const getProjectDonors = async (
   projectId: string,
   pagination: Pagination
 ) => {
-  // Query users who have made donations to this project
+  // Query users who have made donations to this project (only those with partner profiles)
   const whereClause: Prisma.UserWhereInput = {
+    partner: { isNot: null },
     donorTransactions: {
       some: {
         projectId: projectId,
@@ -154,22 +156,21 @@ export const getProjectDonors = async (
       new Prisma.Decimal(0)
     );
 
+    // Partner is guaranteed to exist due to whereClause filter
     return {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
       isActive: user.isActive,
-      gender: user.partner?.gender || null,
-      contactNumber: user.partner?.contactNumber || null,
-      countryCode: user.partner?.countryCode || null,
+      gender: user.partner!.gender,
+      contactNumber: user.partner!.contactNumber,
+      countryCode: user.partner!.countryCode,
       totalDonated,
-      partner: user.partner
-        ? {
-          id: user.partner.id,
-          dob: user.partner.dob,
-        }
-        : null,
+      partner: {
+        id: user.partner!.id,
+        dob: user.partner!.dob,
+      },
       createdAt: user.createdAt,
     };
   });
@@ -178,6 +179,66 @@ export const getProjectDonors = async (
     donors,
     totalCount,
   };
+};
+
+// Get donor summary for project owners (without amounts)
+export const getProjectDonorsSummary = async (
+  projectId: string,
+  userId: string
+) => {
+  // First verify the project belongs to this user
+  const project = await prisma.donationProject.findFirst({
+    where: {
+      id: projectId,
+      managedBy: userId,
+    },
+    select: { id: true },
+  });
+
+  if (!project) {
+    throw new NotFoundError('Project not found or you are not the owner');
+  }
+
+  // Get donors with count of donations (without amounts)
+  const users = await prisma.user.findMany({
+    where: {
+      partner: { isNot: null },
+      donorTransactions: {
+        some: {
+          projectId: projectId,
+          submissionStatus: 'submitted',
+          receiptStatus: 'received',
+        },
+      },
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      donorTransactions: {
+        where: {
+          projectId: projectId,
+          submissionStatus: 'submitted',
+          receiptStatus: 'received',
+        },
+        select: {
+          id: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  const donors = users.map((user) => ({
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    donationCount: user.donorTransactions.length,
+  }));
+
+  return { donors };
 };
 
 export const getDonationProjectsByManager = async (managerId: string) => {
@@ -294,12 +355,54 @@ export const updateDonationProject = async (
     return null;
   }
 
+  const updateData = { ...data };
+  if (updateData.submissionStatus === 'submitted') {
+    updateData.approvalStatus = 'pending';
+    updateData.operationStatus = 'notStarted';
+  }
+
   const updatedProject = await prisma.donationProject.update({
     where: {
       id: projectId,
     },
     data: {
-      ...data,
+      ...updateData,
+    },
+    include: {
+      projectManager: {
+        select: PMPublicSelect,
+      },
+      objectivesList: {
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+
+  return updatedProject;
+};
+
+export const updateDonationProjectById = async (
+  projectId: string,
+  data: UpdateDonationProjectInput
+) => {
+  const existingProject = await prisma.donationProject.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  const updateData = { ...data };
+  if (updateData.submissionStatus === 'submitted') {
+    updateData.approvalStatus = 'pending';
+    updateData.operationStatus = 'notStarted';
+  }
+
+  const updatedProject = await prisma.donationProject.update({
+    where: { id: projectId },
+    data: {
+      ...updateData,
     },
     include: {
       projectManager: {

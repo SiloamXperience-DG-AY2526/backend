@@ -22,10 +22,9 @@ export const getDonationHomepage = async (req: Request, res: Response) => {
 export const submitDonationApplication = async (req: Request, res: Response) => {
   const userId = getUserIdFromRequest(req);
 
-  const {donationApplicationData} = req.body;
   const donation = await donationService.submitDonationApplication(
     userId,
-    donationApplicationData
+    req.body
   );
 
   res.status(201).json({

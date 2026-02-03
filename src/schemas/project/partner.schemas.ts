@@ -2,8 +2,9 @@ import { z } from 'zod';
 import {
   ProjectApprovalStatus,
   ProjectFrequency,
+  SubmissionStatus,
 } from '@prisma/client';
-import { preprocessDate } from '../helper';
+import { preprocessDate, PageType, LimitType } from '../helper';
 
 // Query params schema for available activities
 export const GetAvailableVolunteerActivitiesSchema = z.object({
@@ -30,6 +31,16 @@ export const GetAvailableVolunteerActivitiesSchema = z.object({
 
 export type GetAvailableVolunteerActivitiesInput = z.infer<
   typeof GetAvailableVolunteerActivitiesSchema
+>;
+
+export const GetAllVolunteerProjectsSchema = z.object({
+  page: PageType,
+  limit: LimitType,
+  search: z.string().trim().min(1).optional(),
+});
+
+export type GetAllVolunteerProjectsInput = z.infer<
+  typeof GetAllVolunteerProjectsSchema
 >;
 
 //volunteer propose project
@@ -97,12 +108,15 @@ export const UpdateVolunteerProposalSchema = z.object({
 
   image: z.string().url().optional().nullable(),
   attachments: z.string().optional().nullable(),
+  submissionStatus: z.nativeEnum(SubmissionStatus).optional(),
 
   positions: z
     .array(
       z.object({
+        id: z.uuid().optional(),
         role: z.string().min(1),
         description: z.string().min(1),
+        totalSlots: z.number().int().min(1).optional(),
         skills: z.array(z.string()).optional(),
       })
     )

@@ -59,6 +59,59 @@ export const getVolunteerProjectById = async (
   return project;
 };
 
+// Get project applications for project owner
+export const getProjectApplicationsModel = async (
+  projectId: string,
+  ownerId: string
+) => {
+  // First verify the project belongs to this owner
+  const project = await prisma.volunteerProject.findFirst({
+    where: {
+      id: projectId,
+      managedById: ownerId,
+    },
+    select: { id: true },
+  });
+
+  if (!project) {
+    throw new NotFoundError('Project not found or you are not the owner');
+  }
+
+  const applications = await prisma.volunteerProjectPosition.findMany({
+    where: {
+      position: {
+        projectId: projectId,
+      },
+    },
+    select: {
+      id: true,
+      volunteerId: true,
+      status: true,
+      hasConsented: true,
+      createdAt: true,
+      volunteer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+      position: {
+        select: {
+          id: true,
+          role: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return { applications };
+};
+
 export const updateVolunteerProject = async (
   projectId: string,
   managerId: string,
@@ -76,12 +129,62 @@ export const updateVolunteerProject = async (
     return null;
   }
 
+  const updateData: UpdateVolunteerProjectInput = {
+    ...data,
+  };
+
+  if (updateData.submissionStatus === 'submitted') {
+    updateData.approvalStatus = 'pending';
+    updateData.operationStatus = 'notStarted';
+  }
+
   const updatedProject = await prisma.volunteerProject.update({
     where: {
       id: projectId,
     },
     data: {
-      ...data,
+      ...updateData,
+    },
+    include: {
+      managedBy: pmPublicInfo,
+      objectivesList: {
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+
+  return updatedProject;
+};
+
+export const updateVolunteerProjectById = async (
+  projectId: string,
+  data: UpdateVolunteerProjectInput
+) => {
+  const existingProject = await prisma.volunteerProject.findFirst({
+    where: {
+      id: projectId,
+    },
+  });
+
+  if (!existingProject) {
+    return null;
+  }
+
+  const updateData: UpdateVolunteerProjectInput = {
+    ...data,
+  };
+
+  if (updateData.submissionStatus === 'submitted') {
+    updateData.approvalStatus = 'pending';
+    updateData.operationStatus = 'notStarted';
+  }
+
+  const updatedProject = await prisma.volunteerProject.update({
+    where: {
+      id: projectId,
+    },
+    data: {
+      ...updateData,
     },
     include: {
       managedBy: pmPublicInfo,
@@ -98,13 +201,14 @@ export const createVolunteerProject = async (
   managerId: string,
   data: CreateVolunteerProjectInput
 ) => {
-  const { objectivesList, ...projectData } = data;
+  const { objectivesList, submissionStatus, ...projectData } = data;
+  const resolvedSubmissionStatus = submissionStatus ?? 'draft';
 
   const project = await prisma.volunteerProject.create({
     data: {
       ...projectData,
       managedById: managerId,
-      submissionStatus: 'draft', // New projects start as draft
+      submissionStatus: resolvedSubmissionStatus,
       approvalStatus: 'pending', // Awaiting approval
       objectivesList: objectivesList
         ? {
@@ -163,6 +267,30 @@ type PaginatedVolunteerActivities = {
             slotsAvailable: number;
         }>;
     }>;
+};
+
+type PaginatedVolunteerProjects = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  data: Array<{
+    id: string;
+    title: string;
+    startDate: Date | null;
+    endDate: Date | null;
+    startTime: Date | null;
+    endTime: Date | null;
+    aboutDesc: string | null;
+    submissionStatus: string;
+    approvalStatus: string;
+    operationStatus: string;
+    managedBy: string;
+    capacity: {
+      filled: number;
+      total: number;
+    };
+  }>;
 };
 
 export const getAvailableVolunteerActivitiesModel = async ({
@@ -309,6 +437,106 @@ export const getAvailableVolunteerActivitiesModel = async ({
   };
 };
 
+export const getAllVolunteerProjectsModel = async ({
+  page = 1,
+  limit = 10,
+  search,
+  viewerRole,
+}: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  viewerRole?: string;
+}): Promise<PaginatedVolunteerProjects> => {
+  if (page < 1 || limit < 1) throw new Error('INVALID_PAGINATION');
+
+  const whereClause: {
+    title?: { contains: string; mode: 'insensitive' };
+    NOT?: {
+      submissionStatus: 'draft';
+      managedBy: { role: 'partner' };
+    };
+  } = {};
+
+  if (search) {
+    whereClause.title = {
+      contains: search,
+      mode: 'insensitive',
+    };
+  }
+
+  if (viewerRole === 'generalManager') {
+    whereClause.NOT = {
+      submissionStatus: 'draft',
+      managedBy: { role: 'partner' },
+    };
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [total, projects] = await Promise.all([
+    prisma.volunteerProject.count({ where: whereClause }),
+    prisma.volunteerProject.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      include: {
+        positions: {
+          include: {
+            signups: {
+              where: {
+                hasConsented: true,
+                status: { in: ['approved', 'active', 'inactive'] },
+              },
+              select: { id: true },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  const data = projects.map((p) => {
+    const totalSlots = p.positions.reduce(
+      (sum, pos) => sum + pos.totalSlots,
+      0
+    );
+    const filledSlots = p.positions.reduce(
+      (sum, pos) => sum + pos.signups.length,
+      0
+    );
+
+    return {
+      id: p.id,
+      title: p.title,
+      startDate: p.startDate,
+      endDate: p.endDate,
+      startTime: p.startTime,
+      endTime: p.endTime,
+      aboutDesc: p.aboutDesc,
+      submissionStatus: p.submissionStatus,
+      approvalStatus: p.approvalStatus,
+      operationStatus: p.operationStatus,
+      managedBy: p.managedById,
+      capacity: {
+        filled: filledSlots,
+        total: totalSlots,
+      },
+    };
+  });
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages,
+    data,
+  };
+};
+
 //volunteer suggest project
 export const proposeVolunteerProjectModel = async ({
   proposerId,
@@ -392,6 +620,11 @@ export const updateVolunteerProposalModel = async ({
 
     const { positions, ...projectData } = payload;
 
+    if (projectData.submissionStatus === 'submitted') {
+      projectData.approvalStatus = 'pending';
+      projectData.operationStatus = 'notStarted';
+    }
+
     const updatedProject = await tx.volunteerProject.update({
       where: { id: projectId },
       data: {
@@ -405,11 +638,21 @@ export const updateVolunteerProposalModel = async ({
         let positionId: string;
 
         if (pos.id) {
+          const updateData: {
+            role: string;
+            description: string;
+            totalSlots?: number;
+          } = {
+            role: pos.role,
+            description: pos.description,
+          };
+          if (typeof pos.totalSlots === 'number') {
+            updateData.totalSlots = pos.totalSlots;
+          }
           const updatedPos = await tx.projectPosition.update({
             where: { id: pos.id },
             data: {
-              role: pos.role,
-              description: pos.description,
+              ...updateData,
             },
           });
           positionId = updatedPos.id;
@@ -419,7 +662,7 @@ export const updateVolunteerProposalModel = async ({
               projectId,
               role: pos.role,
               description: pos.description,
-              totalSlots: 0,
+              totalSlots: pos.totalSlots ?? 1,
             },
           });
           positionId = createdPos.id;
@@ -730,9 +973,20 @@ export const updateVolProjectStatus = async (
         approvedById?: string | null;
     }
 ) => {
+  // When approved, automatically set operationStatus to 'ongoing'
+  const updateData: {
+    approvalStatus: ProjectApprovalStatus;
+    approvedById?: string | null;
+    operationStatus?: ProjectOperationStatus;
+  } = { ...data };
+
+  if (data.approvalStatus === ProjectApprovalStatus.approved) {
+    updateData.operationStatus = ProjectOperationStatus.ongoing;
+  }
+
   return prisma.volunteerProject.update({
     where: { id: projectId },
-    data,
+    data: updateData,
     include: {
       managedBy: true,
       approvedBy: true
@@ -918,6 +1172,8 @@ export const viewMyProposedProjectsModel = async (input: {
       location: true,
       initiatorName: true,
       approvalStatus: true,
+      submissionStatus: true,
+      operationStatus: true,
       positions: {
         select: {
           totalSlots: true,
@@ -946,12 +1202,73 @@ export const viewMyProposedProjectsModel = async (input: {
 
     return {
       id: p.id,
-      name: p.title, 
+      name: p.title,
       startDate: p.startDate,
       endDate: p.endDate,
       location: p.location,
       initiatorName: p.initiatorName ?? null,
       approvalStatus: p.approvalStatus,
+      submissionStatus: p.submissionStatus,
+      operationStatus: p.operationStatus,
+      totalCapacity,
+      acceptedCount,
+    };
+  });
+};
+
+export const getPartnerProposedProjectsModel = async (partnerId: string) => {
+  const projects = await prisma.volunteerProject.findMany({
+    where: {
+      managedById: partnerId,
+      submissionStatus: { notIn: ['draft', 'withdrawn'] },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      startDate: true,
+      endDate: true,
+      location: true,
+      initiatorName: true,
+      approvalStatus: true,
+      submissionStatus: true,
+      operationStatus: true,
+      positions: {
+        select: {
+          totalSlots: true,
+          signups: {
+            where: {
+              status: { in: [...FILLED_STATUSES] },
+              hasConsented: true,
+            },
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
+
+  return projects.map((p) => {
+    const totalCapacity = p.positions.reduce(
+      (sum, pos) => sum + (pos.totalSlots ?? 0),
+      0
+    );
+
+    const acceptedCount = p.positions.reduce(
+      (sum, pos) => sum + pos.signups.length,
+      0
+    );
+
+    return {
+      id: p.id,
+      name: p.title,
+      startDate: p.startDate,
+      endDate: p.endDate,
+      location: p.location,
+      initiatorName: p.initiatorName ?? null,
+      approvalStatus: p.approvalStatus,
+      submissionStatus: p.submissionStatus,
+      operationStatus: p.operationStatus,
       totalCapacity,
       acceptedCount,
     };

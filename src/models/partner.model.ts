@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import type { Gender, ContactModeType, InterestSlug, ReferrerType } from '@prisma/client';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 import { prisma } from '../prisma/client';
+import { Pagination } from './types';
 import { PartnerProfile } from '../schemas/user';
 import { splitPartnerProfile } from '../utils/profile';
 
@@ -562,4 +563,23 @@ export const getComprehensivePartnerInfo = async (userId: string) => {
     performance,
     profile: partnerProfile,
   };
+};
+
+export const getPartners = async (
+  select: Prisma.PartnerSelect,
+  where: Prisma.PartnerWhereInput,
+  pagination: Pagination
+) => {
+  const [partners, totalCount] = await Promise.all([
+    prisma.partner.findMany({
+      where,
+      select,
+      orderBy: { createdAt: 'desc' },
+      skip: pagination.skip,
+      take: pagination.limit,
+    }),
+    prisma.partner.count({ where }),
+  ]);
+
+  return { partners, totalCount };
 };

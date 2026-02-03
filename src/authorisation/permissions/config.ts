@@ -7,6 +7,31 @@ export const VALID_ROLES = Object.values(UserRole);
 // Role type derived from Prisma enum
 export type Role = UserRole;
 
+const generalManagerPermissions: Permission[] = [
+  'volunteerApplications:view:all',
+  'volunteerProjFeedback:post',
+  'volunteerProjects:duplicate',
+  'volunteerProjApproval:update',
+  'volunteerProjects:manage',
+  'partners:view',
+  'emailCampaign:create',
+  'emailCampaign:update',
+  'emailCampaign:read',
+  'emailCampaign:test',
+  'emailCampaign:publish',
+  'emailCampaign:delete',
+];
+
+const financeManagerPermissions: Permission[] = [
+  'donationReceiptStatus:update',
+  'donationProjects:manage',
+  'donationProjects:duplicate',
+  'donationProjectDetails:view',
+  'proposedProjects:view',
+  'proposedProjects:update:status',
+  'donorDetails:view',
+];
+
 /**
  * For developers creating new permissions, you should map it to the role of least privilege.
  *
@@ -25,30 +50,13 @@ export const directPermissions: Record<Role, Permission[]> = {
     'staff:deactivate',
   ],
 
-  [UserRole.generalManager]: [
-    'volunteerApplications:view:all',
-    'volunteerProjFeedback:post',
-    'volunteerProjects:duplicate',
-    'volunteerProjApproval:update',
-    'emailCampaign:create',
-    'emailCampaign:update',
-    'emailCampaign:read',
-    'emailCampaign:test',
-    'emailCampaign:publish',
-    'emailCampaign:delete',
-  ],
+  [UserRole.generalManager]: generalManagerPermissions,
 
-  [UserRole.financeManager]: [
-    'donationReceiptStatus:update',
-    'donationProjects:duplicate',
-    'donationProjectDetails:view',
-    'proposedProjects:view',
-    'proposedProjects:update:status',
-    'donorDetails:view'
-  ],
+  [UserRole.financeManager]: financeManagerPermissions,
 
   [UserRole.partner]: [
     'example:update:own',
+    'volunteerProjFeedback:post:own',
   ],
 };
 //

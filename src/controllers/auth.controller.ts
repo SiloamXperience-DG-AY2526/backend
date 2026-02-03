@@ -1,7 +1,40 @@
 import { Request, Response, NextFunction } from 'express';
-import { partnerSignupSchema } from '../schemas/auth';
-import { signupPartnerWithOnboarding, login, requestPasswordResetService, resetPasswordService } from '../services/auth.service';
+import { partnerSignupSchema, basicSignupSchema, onboardingSchema } from '../schemas/auth';
+import { signupPartnerWithOnboarding, signupBasic, completeOnboarding, login, requestPasswordResetService, resetPasswordService } from '../services/auth.service';
 
+// Basic signup - creates User only
+export async function signup(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = basicSignupSchema.parse(req.body);
+
+    const token = await signupBasic(
+      data.firstName,
+      data.lastName,
+      data.email,
+      data.password
+    );
+
+    res.status(201).json({ token });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Complete onboarding - creates Partner profile
+export async function onboard(req: Request, res: Response, next: NextFunction) {
+  try {
+    const partnerData = onboardingSchema.parse(req.body);
+    const userId = req.user!.userId;
+
+    const token = await completeOnboarding(userId, partnerData);
+
+    res.status(201).json({ token });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Legacy: Full signup with partner data
 export async function signupPartner(req: Request, res: Response, next: NextFunction) {
   try {
     const data = partnerSignupSchema.parse(req.body);

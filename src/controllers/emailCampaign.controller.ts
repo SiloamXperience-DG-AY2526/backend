@@ -7,6 +7,7 @@ import {
   updateContentSchema,
   sendTestEmailSchema,
   EmailCampaignIdSchema,
+  EmailCampaignListQuerySchema,
 } from '../schemas/emailCampaign';
 
 export async function createCampaign(req: Request, res: Response, next: NextFunction) {
@@ -64,8 +65,8 @@ export async function previewAudience(req: Request, res: Response, next: NextFun
   try {
     const { campaignId } = EmailCampaignIdSchema.parse(req.params);
 
-    const count = await service.previewAudience(campaignId);
-    res.json({ audienceCount: count });
+    const result = await service.previewAudience(campaignId);
+    res.json({ audienceCount: result.count, emails: result.emails });
   } catch (err) {
     next(err);
   }
@@ -88,7 +89,7 @@ export async function publishCampaign(req: Request, res: Response, next: NextFun
     const { campaignId } = EmailCampaignIdSchema.parse(req.params);
 
     await service.publishCampaign(campaignId);
-    res.status(204);
+    res.sendStatus(204);
   } catch (err) {
     next(err);
   }
@@ -98,6 +99,30 @@ export async function getScheduledCampaigns(req: Request, res: Response, next: N
   try {
     const campaigns = await service.getScheduledCampaigns();
     res.json(campaigns);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getCampaigns(req: Request, res: Response, next: NextFunction) {
+  try {
+    const filters = EmailCampaignListQuerySchema.parse(req.query);
+    const result = await service.getCampaigns(filters);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getCampaignDetails(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { campaignId } = EmailCampaignIdSchema.parse(req.params);
+    const campaign = await service.getCampaignDetails(campaignId);
+    if (!campaign) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(campaign);
   } catch (err) {
     next(err);
   }

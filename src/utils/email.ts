@@ -1,11 +1,20 @@
 import 'dotenv/config';
 import nodemailer from 'nodemailer';
 
+// Check for required email config
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+
+if (!SMTP_USER || !SMTP_PASS) {
+  console.warn('WARNING: SMTP_USER or SMTP_PASS not configured. Email sending will fail.');
+  console.warn('For Gmail, you need an App Password. See: https://myaccount.google.com/apppasswords');
+}
+
 export const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: SMTP_USER,
+    pass: SMTP_PASS,
   },
 });
 

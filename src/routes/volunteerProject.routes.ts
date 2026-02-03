@@ -12,7 +12,11 @@ import {
   UpdateVolunteerProjectStatusSchema,
   ViewMyProposedProjectsQuerySchema,
   UpdateMyProposedProjectStatusSchema,
+  GetAllVolunteerProjectsSchema,
+  ApplicationIdSchema,
+  UpdateVolunteerApplicationStatusSchema,
 } from '../schemas/project';
+import { PartnerIdSchema } from '../schemas/user';
 import * as controller from '../controllers/volunteerProject.controller';
 import { requireAnyPermission, requirePermission } from '../middlewares/requirePermission';
 
@@ -25,6 +29,12 @@ const router = Router();
 router.get(
   '/available',
   controller.getAvailableVolunteerActivities
+);
+
+router.get(
+  '/all',
+  validateRequest({ query: GetAllVolunteerProjectsSchema }),
+  controller.getAllVolunteerProjects
 );
 
 
@@ -41,10 +51,11 @@ router.get(
   controller.viewMyProposedProjects
 );
 
-// USE validation middleware for routes with projectId param
-router.use(
-  ['/:projectId','/proposal/me/:projectId', '/me/:projectId'],
-  validateRequest({ params: VolunteerProjectIdSchema })
+router.get(
+  '/partner/:partnerId/proposals',
+  requirePermission('volunteerProjects:manage'),
+  validateRequest({ params: PartnerIdSchema }),
+  controller.getPartnerProposedProjects
 );
 
 // POST create new volunteer project
@@ -66,6 +77,7 @@ router.get(
 // no need permission check: anyone can view own volunteer project
 router.get(
   '/me/:projectId',
+  validateRequest({ params: VolunteerProjectIdSchema }),
   controller.getVolunteerProjectDetails
 );
 
@@ -73,7 +85,7 @@ router.get(
 // no need permission check: anyone can update own volunteer project
 router.patch(
   '/me/:projectId',
-  validateRequest({ body: UpdateVolunteerProjectSchema }),
+  validateRequest({ params: VolunteerProjectIdSchema, body: UpdateVolunteerProjectSchema }),
   controller.updateVolunteerProject
 );
 
@@ -81,17 +93,36 @@ router.patch(
 router.get(
   '/me/:projectId/applications',
   validateRequest({
+    params: VolunteerProjectIdSchema,
     query: MyProjectApplicationsQuerySchema,
   }),
   controller.getVolProjectApplications
 );
 
+// Update application status by project owner (partner)
+// No permission check: only allows owner to update their own project's applications
+router.patch(
+  '/me/applications/:applicationId/status',
+  validateRequest({
+    params: ApplicationIdSchema,
+    body: UpdateVolunteerApplicationStatusSchema,
+  }),
+  controller.updateMyProjectApplicationStatus
+);
 
 //QUESTION: who should access this endpoint? volunteers
 //GET details of a specific project
 router.get(
   '/:projectId/details',
+  validateRequest({ params: VolunteerProjectIdSchema }),
   controller.getVolunteerProjectDetail
+);
+// PATCH update volunteer project by id (admin/general manager)
+router.patch(
+  '/:projectId',
+  validateRequest({ params: VolunteerProjectIdSchema, body: UpdateVolunteerProjectSchema }),
+  requirePermission('volunteerProjects:manage'),
+  controller.updateVolunteerProjectById
 );
 //QUESTION: can this be converted to PATCH /volunteerProjects/:projectId ? remove proposal ? edit function
 //PATCH update a submitted volunteering project
@@ -99,6 +130,7 @@ router.get(
 router.patch(
   '/proposal/:projectId',
   validateRequest({
+    params: VolunteerProjectIdSchema,
     body: UpdateVolunteerProposalSchema,
   }),
   controller.updateVolunteerProposal
@@ -109,6 +141,7 @@ router.patch(
 router.patch(
   '/:projectId/withdraw',
   validateRequest({
+    params: VolunteerProjectIdSchema,
     body: WithdrawVolunteerProposalSchema,
   }),
   controller.withdrawVolunteerProposal
@@ -126,7 +159,6 @@ router.patch(
 router.post(
   '/:projectId/feedbacks',
   validateRequest({ params: VolunteerProjectIdSchema, body: SubmitVolunteerFeedbackSchema }),
-  validateRequest({ params: VolunteerProjectIdSchema, body: SubmitVolunteerFeedbackSchema }),
   requireAnyPermission(['volunteerProjFeedback:post:own', 'volunteerProjFeedback:post']),
   controller.submitVolunteerFeedback
 );
@@ -137,6 +169,7 @@ router.post(
 // Permission check: only users with 'volunteerProjApproval:update' permission
 router.patch('/:projectId/ApprovalStatus',
   validateRequest({
+    params: VolunteerProjectIdSchema,
     body: UpdateVolunteerProjectStatusSchema,
   }),
   requirePermission('volunteerProjApproval:update'),
@@ -146,6 +179,7 @@ router.patch('/:projectId/ApprovalStatus',
 // POST duplicate an existing volunteer project
 router.post(
   '/:projectId/duplicate',
+  validateRequest({ params: VolunteerProjectIdSchema }),
   requirePermission('volunteerProjects:duplicate'),
   controller.duplicateVolunteerProject
 );

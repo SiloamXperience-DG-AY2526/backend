@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { preprocessDate } from '../helper';
+import { preprocessDate, PageType, LimitType } from '../helper';
 import { ContactModeType, Gender, InterestSlug } from '@prisma/client';
 
 // separate out fields based on User/ Partner model
@@ -63,3 +63,11 @@ export type PartnerOnlyProfile = z.infer<typeof PartnerOnlyProfileSchema>;
 export const PartnerIdSchema = z.object({
   partnerId: z.uuid(),
 });
+
+export const PartnerQuerySchema = z.object({
+  page: PageType,
+  limit: LimitType,
+  search: z.string().trim().min(1).optional(),
+});
+
+export type PartnerQueryType = z.infer<typeof PartnerQuerySchema>;

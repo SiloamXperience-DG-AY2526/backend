@@ -3,21 +3,29 @@ import * as volunteerModel from '../models/volunteerProject.model';
 import {
   GetAvailableVolunteerActivitiesInput, UpdateVolunteerProjectInput,
   CreateVolunteerProjectInput, ProposeVolunteerProjectInput, UpdateVolunteerProposalInput,
-  MyProjectApplicationsInput
+  MyProjectApplicationsInput,
+  GetAllVolunteerProjectsInput,
 } from '../schemas/project';
-import { NotFoundError, NotImplementedError } from '../utils/errors';
+import { NotFoundError } from '../utils/errors';
 
 
 export const getVolProjectApplications = async (
-  _input: MyProjectApplicationsInput
+  input: MyProjectApplicationsInput
 ) => {
-  throw new NotImplementedError('501 Not Implemented');
+  const { userId, projectId } = input;
+  return volunteerModel.getProjectApplicationsModel(projectId, userId);
 };
 
 export const getAvailableVolunteerActivities = async (
   input: GetAvailableVolunteerActivitiesInput
 ) => {
   return volunteerModel.getAvailableVolunteerActivitiesModel(input);
+};
+
+export const getAllVolunteerProjects = async (
+  input: GetAllVolunteerProjectsInput & { viewerRole?: string }
+) => {
+  return volunteerModel.getAllVolunteerProjectsModel(input);
 };
 
 export const proposeVolunteerProject = async (
@@ -32,6 +40,10 @@ export const updateVolunteerProposal = async (input: {
     payload: Omit<UpdateVolunteerProposalInput, 'userId'>;
 }) => {
   return volunteerModel.updateVolunteerProposalModel(input);
+};
+
+export const getPartnerProposedProjects = async (partnerId: string) => {
+  return volunteerModel.getPartnerProposedProjectsModel(partnerId);
 };
 
 export const withdrawVolunteerProposal = async (input: {
@@ -93,6 +105,22 @@ export const updateVolunteerProject = async (
   const updatedProject = await volunteerModel.updateVolunteerProject(
     projectId,
     managerId,
+    data
+  );
+
+  if (!updatedProject) {
+    throw new NotFoundError(`Volunteer Project ${projectId} Not Found!`);
+  }
+
+  return updatedProject;
+};
+
+export const updateVolunteerProjectById = async (
+  projectId: string,
+  data: UpdateVolunteerProjectInput
+) => {
+  const updatedProject = await volunteerModel.updateVolunteerProjectById(
+    projectId,
     data
   );
 

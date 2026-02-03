@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/volunteerApplication.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { AnyVolApplicationsQuerySchema, SubmitVolunteerApplicationSchema, MatchVolunteerToProjectSchema, ApproveVolunteerMatchSchema, MatchIdSchema, MyVolApplicationsQuerySchema } from '../schemas/project';
+import { AnyVolApplicationsQuerySchema, SubmitVolunteerApplicationSchema, MatchVolunteerToProjectSchema, ApproveVolunteerMatchSchema, MatchIdSchema, MyVolApplicationsQuerySchema, UpdateVolunteerApplicationStatusSchema } from '../schemas/project';
 import { requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
@@ -57,6 +57,16 @@ router.patch(
     body: ApproveVolunteerMatchSchema 
   }),
   controller.approveVolunteerMatch
+);
+
+router.patch(
+  '/:matchId/status',
+  validateRequest({
+    params: MatchIdSchema,
+    body: UpdateVolunteerApplicationStatusSchema,
+  }),
+  requirePermission('volunteerProjects:manage'),
+  controller.updateVolunteerApplicationStatus
 );
 
 export default router;

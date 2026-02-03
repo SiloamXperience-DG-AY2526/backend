@@ -4,8 +4,10 @@ import {
   DonationProjectIdSchema,
   UpdateDonationProjectSchema,
   CreateDonationProjectSchema,
-  getDonationProjectsSchema,  GetProjectDonationsSchema,
-  GetProjectDonorsSchema,} from '../schemas/donation';
+  getDonationProjectsSchema,
+  GetProjectDonationsSchema,
+  GetProjectDonorsSchema,
+} from '../schemas/donation';
 import * as donationProjectController from '../controllers/donationProject.controller';
 import { requirePermission } from '../middlewares/requirePermission';
 
@@ -20,15 +22,6 @@ router.get(
   donationProjectController.getDonationProjects
 );
 
-// GET details for any donation project 
-// schema validated above
-// permission check: financeManager and above
-router.get(
-  '/:projectId',
-  requirePermission('donationProjectDetails:view'),
-  donationProjectController.getDonationProjectDetails
-);
-
 router.get(
   '/:projectId/donations',
   validateRequest({ params: DonationProjectIdSchema, query: GetProjectDonationsSchema }),
@@ -39,6 +32,13 @@ router.get(
   '/:projectId/donors',
   validateRequest({ query: GetProjectDonorsSchema }),
   donationProjectController.getProjectDonors
+);
+
+// GET donor summary for a project (for project owners/partners) - without amounts
+router.get(
+  '/:projectId/donors/summary',
+  validateRequest({ params: DonationProjectIdSchema }),
+  donationProjectController.getProjectDonorsSummary
 );
 
 // GET Donation Projects managed by the current user (i.e. donation-project manager/ partner)
@@ -54,6 +54,26 @@ router.get(
   '/me/:projectId',
   validateRequest({ params: DonationProjectIdSchema }),
   donationProjectController.getMyDonationProjectDetails
+);
+
+// GET details for any donation project 
+// schema validated above
+// permission check: financeManager and above
+router.get(
+  '/:projectId',
+  requirePermission('donationProjectDetails:view'),
+  donationProjectController.getDonationProjectDetails
+);
+
+// PATCH update any donation project (finance manager and above)
+router.patch(
+  '/:projectId',
+  requirePermission('donationProjects:manage'),
+  validateRequest({
+    params: DonationProjectIdSchema,
+    body: UpdateDonationProjectSchema,
+  }),
+  donationProjectController.updateDonationProjectById
 );
 
 // POST create new donation project
