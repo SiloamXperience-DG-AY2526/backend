@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as volunteerService from '../services/volunteerProject.service';
+import * as volunteerAppService from '../services/volunteerApplication.service';
 import { getUserIdFromRequest, getUserPayloadFromRequest } from '../utils/user';
 import { GetAvailableVolunteerActivitiesSchema, MyVolApplicationsQueryType, UpdateMyProposedProjectStatusSchema, ViewMyProposedProjectsQuerySchema } from '../schemas/project';
 import { ProjectApprovalStatus } from '@prisma/client';
@@ -268,6 +269,28 @@ export const updateMyProposedProjectStatus = async (
   return res.status(200).json({
     status: 'success',
     message: 'Proposed project status updated',
+    data: updated,
+  });
+};
+
+// Update application status by project owner (partner)
+export const updateMyProjectApplicationStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const userId = getUserIdFromRequest(req);
+  const { applicationId } = req.params;
+  const { status } = req.body;
+
+  const updated = await volunteerAppService.updateApplicationStatusByOwner(
+    applicationId,
+    userId,
+    status
+  );
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'Application status updated',
     data: updated,
   });
 };

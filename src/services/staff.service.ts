@@ -16,9 +16,11 @@ export async function createStaffAccount(
   const user = await createStaffUser(firstName, lastName, title, email, passwordHash, role);
 
   // Create token for the new user
+  // Staff users are considered onboarded by default (they don't need partner profile)
   const token = signToken({
     userId: user.id,
     role: user.role,
+    hasOnboarded: true,
   });
 
   return token;

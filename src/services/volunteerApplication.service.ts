@@ -1,3 +1,4 @@
+import { VolunteerProjectPositionStatus } from '@prisma/client';
 import * as volunteerModel from '../models/volunteerApplication.model';
 import {
   GetVolunteerApplicationsInput,
@@ -58,5 +59,17 @@ export const updateVolunteerApplicationStatus = async (
     matchId,
     approverId,
     data
+  );
+};
+
+export const updateApplicationStatusByOwner = async (
+  applicationId: string,
+  ownerId: string,
+  status: VolunteerProjectPositionStatus
+) => {
+  return volunteerModel.updateApplicationStatusByOwner(
+    applicationId,
+    ownerId,
+    status
   );
 };

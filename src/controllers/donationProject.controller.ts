@@ -16,7 +16,9 @@ export const getDonationProjects = async (req: Request, res: Response) => {
     limit: req.query.limit,
   });
 
-  const result = await donationProjectService.getDonationProjects(filters);
+  // Pass viewer role to filter appropriately
+  const viewerRole = req.user?.role;
+  const result = await donationProjectService.getDonationProjects({ ...filters, viewerRole });
   res.json(result);
 };
 
@@ -72,10 +74,26 @@ export const getProjectDonors = async (
 ) => {
   const { projectId } = req.params;
   const { page, limit } = req.query;
-  
+
   const result = await donationProjectService.getProjectDonors(
     projectId,
     { page: Number(page) || 1, limit: Number(limit) || 10 }
+  );
+
+  res.json(result);
+};
+
+// Get donor summary for project owners (without amounts)
+export const getProjectDonorsSummary = async (
+  req: Request,
+  res: Response
+) => {
+  const { projectId } = req.params;
+  const userId = getUserIdFromRequest(req);
+
+  const result = await donationProjectService.getProjectDonorsSummary(
+    projectId,
+    userId
   );
 
   res.json(result);

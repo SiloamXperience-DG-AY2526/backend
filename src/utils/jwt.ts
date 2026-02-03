@@ -8,6 +8,7 @@ const JWT_EXPIRES_IN = '1d';
 export interface JwtPayload {
   userId: string;
   role: string;
+  hasOnboarded: boolean;
 }
 
 export function signToken(payload: JwtPayload) {
@@ -17,10 +18,11 @@ export function signToken(payload: JwtPayload) {
 }
 
 export async function getPasswordResetToken(userId: string, role: string) {
-  // token by role
+  // token by role (hasOnboarded not relevant for password reset)
   const token = signToken({
     userId,
     role,
+    hasOnboarded: false,
   });
 
   return token;
@@ -39,7 +41,7 @@ export function verifyToken(token: string): JwtPayload {
       throw new Error();
     }
     // handle missing fields
-    const { userId, role } = payload as Partial<JwtPayload>;
+    const { userId, role, hasOnboarded } = payload as Partial<JwtPayload>;
     //ensure correct shape of userId
     if (!userId || typeof userId !== 'string') {
       throw new Error();
@@ -49,7 +51,7 @@ export function verifyToken(token: string): JwtPayload {
     if (!role || typeof role !== 'string') {
       throw new Error();
     }
-    return Object.freeze({ userId, role }) as JwtPayload;
+    return Object.freeze({ userId, role, hasOnboarded: hasOnboarded ?? false }) as JwtPayload;
   } catch {
     throw new UnauthorizedError('Invalid or expired token');
   }

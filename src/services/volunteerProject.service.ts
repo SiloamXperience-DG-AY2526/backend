@@ -6,13 +6,14 @@ import {
   MyProjectApplicationsInput,
   GetAllVolunteerProjectsInput,
 } from '../schemas/project';
-import { NotFoundError, NotImplementedError } from '../utils/errors';
+import { NotFoundError } from '../utils/errors';
 
 
 export const getVolProjectApplications = async (
-  _input: MyProjectApplicationsInput
+  input: MyProjectApplicationsInput
 ) => {
-  throw new NotImplementedError('501 Not Implemented');
+  const { userId, projectId } = input;
+  return volunteerModel.getProjectApplicationsModel(projectId, userId);
 };
 
 export const getAvailableVolunteerActivities = async (

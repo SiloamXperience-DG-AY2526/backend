@@ -34,6 +34,13 @@ router.get(
   donationProjectController.getProjectDonors
 );
 
+// GET donor summary for a project (for project owners/partners) - without amounts
+router.get(
+  '/:projectId/donors/summary',
+  validateRequest({ params: DonationProjectIdSchema }),
+  donationProjectController.getProjectDonorsSummary
+);
+
 // GET Donation Projects managed by the current user (i.e. donation-project manager/ partner)
 // no need permission check: anyone can view own projects
 router.get(

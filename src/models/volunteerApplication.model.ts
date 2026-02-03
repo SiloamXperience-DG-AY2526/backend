@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, VolunteerProjectPositionStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import {
   GetVolunteerApplicationsInput,
@@ -551,4 +551,79 @@ export const updateVolunteerApplicationStatus = async (
   });
 
   return updatedMatch;
+};
+
+// Update application status by project owner (partner)
+export const updateApplicationStatusByOwner = async (
+  applicationId: string,
+  ownerId: string,
+  status: VolunteerProjectPositionStatus
+) => {
+  // Verify the application exists and get project ownership info
+  const application = await prisma.volunteerProjectPosition.findUnique({
+    where: { id: applicationId },
+    select: {
+      id: true,
+      position: {
+        select: {
+          project: {
+            select: {
+              id: true,
+              managedById: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!application) {
+    throw new NotFoundError('Application not found');
+  }
+
+  // Verify the user is the project owner (manager)
+  if (application.position.project.managedById !== ownerId) {
+    throw new ConflictError('You are not authorized to update this application');
+  }
+
+  const isApproved = status === 'approved';
+
+  const updatedApplication = await prisma.volunteerProjectPosition.update({
+    where: { id: applicationId },
+    data: {
+      status,
+      approvedAt: isApproved ? new Date() : null,
+      approvedBy: isApproved ? ownerId : null,
+    },
+    select: {
+      id: true,
+      status: true,
+      approvedAt: true,
+      approvedBy: true,
+      createdAt: true,
+      updatedAt: true,
+      position: {
+        select: {
+          id: true,
+          role: true,
+          project: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      },
+      volunteer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return updatedApplication;
 };

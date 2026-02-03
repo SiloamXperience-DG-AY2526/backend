@@ -67,4 +67,9 @@ export type UpdateVolunteerApplicationStatusInput = z.infer<
 // Schema for matchId param
 export const MatchIdSchema = z.object({
   matchId: z.uuid(),
+});
+
+// Schema for applicationId param
+export const ApplicationIdSchema = z.object({
+  applicationId: z.uuid(),
 }); 

@@ -13,6 +13,8 @@ import {
   ViewMyProposedProjectsQuerySchema,
   UpdateMyProposedProjectStatusSchema,
   GetAllVolunteerProjectsSchema,
+  ApplicationIdSchema,
+  UpdateVolunteerApplicationStatusSchema,
 } from '../schemas/project';
 import { PartnerIdSchema } from '../schemas/user';
 import * as controller from '../controllers/volunteerProject.controller';
@@ -97,6 +99,16 @@ router.get(
   controller.getVolProjectApplications
 );
 
+// Update application status by project owner (partner)
+// No permission check: only allows owner to update their own project's applications
+router.patch(
+  '/me/applications/:applicationId/status',
+  validateRequest({
+    params: ApplicationIdSchema,
+    body: UpdateVolunteerApplicationStatusSchema,
+  }),
+  controller.updateMyProjectApplicationStatus
+);
 
 //QUESTION: who should access this endpoint? volunteers
 //GET details of a specific project
