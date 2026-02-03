@@ -294,12 +294,18 @@ export const updateDonationProject = async (
     return null;
   }
 
+  const updateData = { ...data };
+  if (updateData.submissionStatus === 'submitted') {
+    updateData.approvalStatus = 'pending';
+    updateData.operationStatus = 'notStarted';
+  }
+
   const updatedProject = await prisma.donationProject.update({
     where: {
       id: projectId,
     },
     data: {
-      ...data,
+      ...updateData,
     },
     include: {
       projectManager: {
@@ -326,10 +332,16 @@ export const updateDonationProjectById = async (
     return null;
   }
 
+  const updateData = { ...data };
+  if (updateData.submissionStatus === 'submitted') {
+    updateData.approvalStatus = 'pending';
+    updateData.operationStatus = 'notStarted';
+  }
+
   const updatedProject = await prisma.donationProject.update({
     where: { id: projectId },
     data: {
-      ...data,
+      ...updateData,
     },
     include: {
       projectManager: {

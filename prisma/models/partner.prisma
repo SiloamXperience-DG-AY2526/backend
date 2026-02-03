@@ -203,6 +203,7 @@ enum EmailStatus {
 enum EmailCampaignStatus {
   draft
   scheduled
+  sent
   cancelled
 }
 

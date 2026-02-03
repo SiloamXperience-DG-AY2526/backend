@@ -66,7 +66,7 @@ export const EmailCampaignIdSchema = z.object({
 export const EmailCampaignListQuerySchema = z.object({
   page: PageType,
   limit: LimitType,
-  status: z.enum(['draft', 'scheduled', 'cancelled']).optional(),
+  status: z.enum(['draft', 'scheduled', 'sent', 'cancelled']).optional(),
 });
 
 export type EmailCampaignListQueryType = z.infer<

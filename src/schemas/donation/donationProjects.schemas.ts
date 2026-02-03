@@ -3,6 +3,7 @@ import {
   ProjectType,
   SubmissionStatus,
   ProjectApprovalStatus,
+  ProjectOperationStatus,
 } from '@prisma/client';
 import { LimitType, PageType, preprocessDate } from '../helper';
 
@@ -65,6 +66,7 @@ export const UpdateDonationProjectSchema = z.object({
   submissionStatus: z.nativeEnum(SubmissionStatus).optional(),
   approvalStatus: z.nativeEnum(ProjectApprovalStatus).optional(),
   approvalNotes: z.string().optional().nullable(),
+  operationStatus: z.nativeEnum(ProjectOperationStatus).optional(),
   image: z.string().url().optional().nullable(),
   attachments: z.string().optional().nullable(),
 });

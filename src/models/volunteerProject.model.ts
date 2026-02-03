@@ -82,6 +82,7 @@ export const updateVolunteerProject = async (
 
   if (updateData.submissionStatus === 'submitted') {
     updateData.approvalStatus = 'pending';
+    updateData.operationStatus = 'notStarted';
   }
 
   const updatedProject = await prisma.volunteerProject.update({
@@ -122,6 +123,7 @@ export const updateVolunteerProjectById = async (
 
   if (updateData.submissionStatus === 'submitted') {
     updateData.approvalStatus = 'pending';
+    updateData.operationStatus = 'notStarted';
   }
 
   const updatedProject = await prisma.volunteerProject.update({
@@ -567,6 +569,7 @@ export const updateVolunteerProposalModel = async ({
 
     if (projectData.submissionStatus === 'submitted') {
       projectData.approvalStatus = 'pending';
+      projectData.operationStatus = 'notStarted';
     }
 
     const updatedProject = await tx.volunteerProject.update({

@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 import 'dotenv/config';
 import type { createEmailCampaignData } from '../types/emailCampaign';
+import { BadRequestError } from '../utils/errors';
 
 export function createCampaignDB(userId: string, data: any) {
   return prisma.emailCampaign.create({
@@ -14,7 +15,19 @@ export function createCampaignDB(userId: string, data: any) {
   });
 }
 
-export function updateAudienceDB(campaignId: string, data: any) {
+async function ensureEditable(campaignId: string) {
+  const campaign = await prisma.emailCampaign.findUnique({
+    where: { id: campaignId },
+    select: { status: true },
+  });
+  if (!campaign) throw new BadRequestError('Campaign not found');
+  if (campaign.status === 'sent' || campaign.status === 'cancelled') {
+    throw new BadRequestError('Sent or cancelled campaigns cannot be edited');
+  }
+}
+
+export async function updateAudienceDB(campaignId: string, data: any) {
+  await ensureEditable(campaignId);
   return prisma.emailAudienceFilter.upsert({
     where: { campaignId },
     update: data,
@@ -22,14 +35,16 @@ export function updateAudienceDB(campaignId: string, data: any) {
   });
 }
 
-export function updateContentDB(campaignId: string, data: any) {
+export async function updateContentDB(campaignId: string, data: any) {
+  await ensureEditable(campaignId);
   return prisma.emailCampaign.update({
     where: { id: campaignId },
     data,
   });
 }
 
-export function updateCampaignSchedule(campaignId: string, scheduledAt: Date | undefined) {
+export async function updateCampaignSchedule(campaignId: string, scheduledAt: Date | undefined) {
+  await ensureEditable(campaignId);
   return prisma.emailCampaign.update({
     where: { id: campaignId },
     data: { scheduledAt },
@@ -40,6 +55,13 @@ export function markCampaignScheduled(campaignId: string) {
   return prisma.emailCampaign.update({
     where: { id: campaignId },
     data: { status: 'scheduled' },
+  });
+}
+
+export function markCampaignSent(campaignId: string) {
+  return prisma.emailCampaign.update({
+    where: { id: campaignId },
+    data: { status: 'sent' },
   });
 }
 

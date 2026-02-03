@@ -124,7 +124,9 @@ export async function publishCampaign(campaignId: string) {
     )
   );
 
-  return { campaign, emai: emailRecord, partners };
+  const sentCampaign = await model.markCampaignSent(campaignId);
+
+  return { campaign: sentCampaign, emai: emailRecord, partners };
 }
 
 export async function getScheduledCampaigns() {
