@@ -25,11 +25,13 @@ const generalManagerPermissions: Permission[] = [
 const financeManagerPermissions: Permission[] = [
   'donationReceiptStatus:update',
   'donationProjects:manage',
+  'partners:view',
   'donationProjects:duplicate',
   'donationProjectDetails:view',
   'proposedProjects:view',
   'proposedProjects:update:status',
   'donorDetails:view',
+  'donorDetails:manage',
 ];
 
 /**
@@ -54,10 +56,7 @@ export const directPermissions: Record<Role, Permission[]> = {
 
   [UserRole.financeManager]: financeManagerPermissions,
 
-  [UserRole.partner]: [
-    'example:update:own',
-    'volunteerProjFeedback:post:own',
-  ],
+  [UserRole.partner]: ['example:update:own', 'volunteerProjFeedback:post:own'],
 };
 //
 /**
@@ -66,7 +65,11 @@ export const directPermissions: Record<Role, Permission[]> = {
  * Should not have to change frequently.
  */
 export const roleHierarchy: Record<Role, Role[]> = {
-  [UserRole.superAdmin]: [UserRole.generalManager, UserRole.financeManager, UserRole.partner],
+  [UserRole.superAdmin]: [
+    UserRole.generalManager,
+    UserRole.financeManager,
+    UserRole.partner,
+  ],
   [UserRole.generalManager]: [UserRole.partner],
   [UserRole.financeManager]: [UserRole.partner],
   [UserRole.partner]: [], // base role, no inheritance
