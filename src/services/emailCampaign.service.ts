@@ -136,3 +136,146 @@ export async function getScheduledCampaigns() {
 export async function deleteCampaign(campaignId: string) {
   return model.deleteCampaignDB(campaignId);
 }
+
+//financial manager email review
+function renderTemplate(template: string, vars: Record<string, string>) {
+  return template.replace(/{{(.*?)}}/g, (_, key) => {
+    return vars[key.trim()] ?? '';
+  });
+}
+
+export async function donationReviewEmailSaveTemplate(
+  userId: string,
+  projectId: string,
+  data: any
+) {
+  return model.saveEmailTemplate(projectId, data.type, userId, data);
+}
+
+export async function donationReviewEmailGetTemplate(
+  projectId: string,
+  type: 'thankyou' | 'receipt'
+) {
+  const tpl = await model.getTemplate(projectId, type);
+
+  // Pre-configured default if not exists
+  if (!tpl) {
+    return {
+      subject: `Thank you {{name}}`,
+      body: `Hi {{name}},<br/><br/>
+Thank you for your interest in {{project}}.<br/>
+Amount: {{amount}}<br/><br/>
+Regards,<br/>Finance Team`,
+      senderAddress: '',
+      previewText: '',
+    };
+  }
+
+  return tpl;
+}
+
+/**
+ * Send Thank You (auto after donation)
+ */
+export async function donationReviewEmailSendThankYou(
+  transactionId: string
+) {
+  const tx = await model.getDonationTransaction(transactionId);
+  if (!tx) throw new BadRequestError('Transaction not found');
+
+  if (tx.isThankYouSent) return;
+
+  const tpl = await model.getTemplate(tx.projectId, 'thankyou');
+  if (!tpl) return;
+
+  const vars = {
+    name: `${tx.donor.firstName} ${tx.donor.lastName}`,
+    project: tx.project.title,
+    amount: tx.amount.toString(),
+  };
+
+  const subject = renderTemplate(tpl.subject!, vars);
+  const body = renderTemplate(tpl.body!, vars);
+
+  await sendEmail({
+    to: tx.donor.email,
+    subject,
+    html: body,
+    from: tpl.senderAddress,
+  });
+
+  await model.markThankYouSent(transactionId);
+}
+
+
+ // Follow up for payment
+ 
+export async function donationReviewEmailFollowUp(
+  transactionId: string
+) {
+  const tx = await model.getDonationTransaction(transactionId);
+  if (!tx) throw new BadRequestError('Transaction not found');
+
+  if (tx.receiptStatus !== 'pending') return;
+
+  const tpl = await model.getTemplate(tx.projectId, 'thankyou');
+  if (!tpl) return;
+
+  const vars = {
+    name: `${tx.donor.firstName} ${tx.donor.lastName}`,
+    project: tx.project.title,
+    amount: tx.amount.toString(),
+  };
+
+  const subject = `[Reminder] ${renderTemplate(tpl.subject!, vars)}`;
+  const body = renderTemplate(tpl.body!, vars);
+
+  await sendEmail({
+    to: tx.donor.email,
+    subject,
+    html: body,
+    from: tpl.senderAddress,
+  });
+}
+
+
+// Process receipt + email receipt
+
+export async function donationReviewEmailProcessReceipt(
+  userId: string,
+  transactionId: string,
+  data: any
+) {
+  const tx = await model.getDonationTransaction(transactionId);
+  if (!tx) throw new BadRequestError('Transaction not found');
+
+  const tpl = await model.getTemplate(tx.projectId, 'receipt');
+  if (!tpl) throw new BadRequestError('Receipt template not configured');
+
+  const receiptData = {
+    receiptNumber: data.receiptNumber,
+    remarks: data.remarks ?? null,
+    processedBy: userId,
+    processedAt: new Date(),
+  };
+
+  await model.updateReceipt(transactionId, receiptData);
+
+  const vars = {
+    name: `${tx.donor.firstName} ${tx.donor.lastName}`,
+    project: tx.project.title,
+    amount: tx.amount.toString(),
+    receiptNumber: data.receiptNumber,
+    remarks: data.remarks ?? '',
+  };
+
+  const subject = renderTemplate(tpl.subject!, vars);
+  const body = renderTemplate(tpl.body!, vars);
+
+  await sendEmail({
+    to: tx.donor.email,
+    subject,
+    html: body,
+    from: tpl.senderAddress,
+  });
+}

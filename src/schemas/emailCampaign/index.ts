@@ -72,3 +72,20 @@ export const EmailCampaignListQuerySchema = z.object({
 export type EmailCampaignListQueryType = z.infer<
   typeof EmailCampaignListQuerySchema
 >;
+
+//financial manager email review
+export const SaveTemplateSchema = z.object({
+  type: z.enum(['thankyou', 'receipt']),
+  senderAddress: z.string().email(),
+  subject: z.string().min(1),
+  body: z.string().min(1),
+  customNote: z.string().optional().nullable(),
+});
+
+export const ProcessReceiptSchema = z.object({
+  receiptNumber: z.string().min(1),
+  remarks: z.string().optional().nullable(),
+});
+export const GetTemplateQuerySchema = z.object({
+  type: z.enum(['thankyou', 'receipt']).default('thankyou'),
+});
