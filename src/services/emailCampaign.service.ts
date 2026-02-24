@@ -151,27 +151,51 @@ export async function donationReviewEmailSaveTemplate(
 ) {
   return model.saveEmailTemplate(projectId, data.type, userId, data);
 }
-
-export async function donationReviewEmailGetTemplate(
-  projectId: string,
-  type: 'thankyou' | 'receipt'
-) {
-  const tpl = await model.getTemplate(projectId, type);
-
-  // Pre-configured default if not exists
-  if (!tpl) {
+function getDefaultTemplate(type: "thankyou" | "receipt") {
+  if (type === "receipt") {
     return {
-      subject: `Thank you {{name}}`,
-      body: `Hi {{name}},<br/><br/>
-Thank you for your interest in {{project}}.<br/>
-Amount: {{amount}}<br/><br/>
-Regards,<br/>Finance Team`,
-      senderAddress: '',
-      previewText: '',
+      subject: "Your receipt {{receiptNumber}} — {{project}}",
+      body: `Hi {{name}},<br/>
+Thank you for your donation to {{project}}.
+Your donation was successful.<br/>
+Receipt No: {{receiptNumber}}
+Receipt Date: {{receiptDate}}
+Amount: {{amount}}
+Remarks: {{remarks}}<br/>
+With gratitude,<br/>Finance Team`,
+      senderAddress: "",
+      previewText: "",
     };
   }
 
-  return tpl;
+  return {
+    subject: "Thank you {{name}} — we’ve received your donation for {{project}}",
+    body: `Hi {{name}},<br/>
+Thank you for your donation to {{project}}.<br/>
+Donation amount: {{amount}}<br/>
+We’re currently processing your payment and will update you shortly.
+Once confirmed, we’ll send your official receipt.<br/>
+Warm regards,<br/>Finance Team`,
+    senderAddress: "",
+    previewText: "",
+  };
+}
+export async function donationReviewEmailGetTemplate(
+  projectId: string,
+  type: "thankyou" | "receipt"
+) {
+  const tpl = await model.getTemplate(projectId, type);
+
+  // if no saved template in DB -> return default
+  if (!tpl) return getDefaultTemplate(type);
+
+  
+  return {
+    subject: tpl.subject ?? getDefaultTemplate(type).subject,
+    body: tpl.body ?? getDefaultTemplate(type).body,
+    senderAddress: tpl.senderAddress ?? "",
+    previewText: tpl.previewText ?? "",
+  };
 }
 
 /**
@@ -254,9 +278,10 @@ export async function donationReviewEmailProcessReceipt(
 
   const receiptData = {
     receiptNumber: data.receiptNumber,
+    // scheduledAt: data.scheduledAt,
     remarks: data.remarks ?? null,
     processedBy: userId,
-    processedAt: new Date(),
+    processedAt: data.receiptDate ? new Date(data.receiptDate) : new Date(),
   };
 
   await model.updateReceipt(transactionId, receiptData);
