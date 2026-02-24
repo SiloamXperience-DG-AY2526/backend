@@ -151,10 +151,10 @@ export async function donationReviewEmailSaveTemplate(
 ) {
   return model.saveEmailTemplate(projectId, data.type, userId, data);
 }
-function getDefaultTemplate(type: "thankyou" | "receipt") {
-  if (type === "receipt") {
+function getDefaultTemplate(type: 'thankyou' | 'receipt') {
+  if (type === 'receipt') {
     return {
-      subject: "Your receipt {{receiptNumber}} — {{project}}",
+      subject: 'Your receipt {{receiptNumber}} — {{project}}',
       body: `Hi {{name}},<br/>
 Thank you for your donation to {{project}}.
 Your donation was successful.<br/>
@@ -163,26 +163,26 @@ Receipt Date: {{receiptDate}}
 Amount: {{amount}}
 Remarks: {{remarks}}<br/>
 With gratitude,<br/>Finance Team`,
-      senderAddress: "",
-      previewText: "",
+      senderAddress: '',
+      previewText: '',
     };
   }
 
   return {
-    subject: "Thank you {{name}} — we’ve received your donation for {{project}}",
+    subject: 'Thank you {{name}} — we’ve received your donation for {{project}}',
     body: `Hi {{name}},<br/>
 Thank you for your donation to {{project}}.<br/>
 Donation amount: {{amount}}<br/>
 We’re currently processing your payment and will update you shortly.
 Once confirmed, we’ll send your official receipt.<br/>
 Warm regards,<br/>Finance Team`,
-    senderAddress: "",
-    previewText: "",
+    senderAddress: '',
+    previewText: '',
   };
 }
 export async function donationReviewEmailGetTemplate(
   projectId: string,
-  type: "thankyou" | "receipt"
+  type: 'thankyou' | 'receipt'
 ) {
   const tpl = await model.getTemplate(projectId, type);
 
@@ -193,8 +193,8 @@ export async function donationReviewEmailGetTemplate(
   return {
     subject: tpl.subject ?? getDefaultTemplate(type).subject,
     body: tpl.body ?? getDefaultTemplate(type).body,
-    senderAddress: tpl.senderAddress ?? "",
-    previewText: tpl.previewText ?? "",
+    senderAddress: tpl.senderAddress ?? '',
+    previewText: tpl.previewText ?? '',
   };
 }
 
@@ -232,7 +232,7 @@ export async function donationReviewEmailSendThankYou(
 }
 
 
- // Follow up for payment
+// Follow up for payment
  
 export async function donationReviewEmailFollowUp(
   transactionId: string
