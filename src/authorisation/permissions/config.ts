@@ -33,6 +33,18 @@ const financeManagerPermissions: Permission[] = [
 ];
 
 /**
+ * Sub-admin has the staff management permissions and example:view.
+ * Super-admin inherits these from sub-admin — do not duplicate them.
+ */
+const subAdminPermissions: Permission[] = [
+  'example:view',
+  'staff:read',
+  'staff:create',
+  'staff:activate',
+  'staff:deactivate',
+];
+
+/**
  * For developers creating new permissions, you should map it to the role of least privilege.
  *
  * For example, if only superAdmin and financeManager can delete donationProjects, then the
@@ -42,31 +54,39 @@ const financeManagerPermissions: Permission[] = [
  */
 export const directPermissions: Record<Role, Permission[]> = {
   //add more permissions here
-  [UserRole.superAdmin]: [
-    'example:view',
-    'staff:read',
-    'staff:create',
-    'staff:activate',
-    'staff:deactivate',
-  ],
+
+  // superAdmin has no direct permissions — it inherits everything via roleHierarchy.
+  [UserRole.superAdmin]: [],
+
+  // subAdmin owns staff management permissions; superAdmin inherits them.
+  [UserRole.subAdmin]: subAdminPermissions,
 
   [UserRole.generalManager]: generalManagerPermissions,
 
   [UserRole.financeManager]: financeManagerPermissions,
 
-  [UserRole.partner]: [
-    'example:update:own',
-    'volunteerProjFeedback:post:own',
-  ],
+  [UserRole.partner]: ['example:update:own', 'volunteerProjFeedback:post:own'],
 };
 //
 /**
  * Single layer role hierarchy for convenience.
  *
  * Should not have to change frequently.
+ *
+ * Note: the resolver is single-level
  */
 export const roleHierarchy: Record<Role, Role[]> = {
-  [UserRole.superAdmin]: [UserRole.generalManager, UserRole.financeManager, UserRole.partner],
+  [UserRole.superAdmin]: [
+    UserRole.subAdmin,
+    UserRole.generalManager,
+    UserRole.financeManager,
+    UserRole.partner,
+  ],
+  [UserRole.subAdmin]: [
+    UserRole.generalManager,
+    UserRole.financeManager,
+    UserRole.partner,
+  ],
   [UserRole.generalManager]: [UserRole.partner],
   [UserRole.financeManager]: [UserRole.partner],
   [UserRole.partner]: [], // base role, no inheritance
