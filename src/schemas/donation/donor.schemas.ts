@@ -8,6 +8,7 @@ export const DonorIdSchema = z.object({
 // Schema for getting donation history with filters
 export const DonorQuerySchema = z.object({
   ...PageLimitType,
+  search: z.string().optional(),
 });
 
 export type DonorQueryType = z.infer<typeof DonorQuerySchema>;

@@ -15,6 +15,7 @@ export const getDonors = async (req: Request, res: Response) => {
   const filters = DonorQuerySchema.parse({
     page: req.query.page,
     limit: req.query.limit,
+    search: req.query.search,
   });
 
   const donors = await donorService.getDonors(userPayload, filters);

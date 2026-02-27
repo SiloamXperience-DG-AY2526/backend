@@ -21,11 +21,20 @@ export const getDonors = async (
   _userPayload: JwtPayload,
   filters: DonorQueryType,
 ) => {
-  const { page, limit } = filters;
+  const { page, limit, search } = filters;
   const skip = calculateSkip(page, limit);
 
   const select: Prisma.PartnerSelect = DonorPrivateSummarySelect;
   const where: Prisma.PartnerWhereInput = {};
+
+  if (search && search.trim()) {
+    where.user = {
+      OR: [
+        { firstName: { contains: search.trim(), mode: 'insensitive' } },
+        { lastName: { contains: search.trim(), mode: 'insensitive' } },
+      ],
+    };
+  }
 
   const { donors, totalCount } = await donorModel.getDonors(select, where, {
     skip,
