@@ -25,11 +25,13 @@ const generalManagerPermissions: Permission[] = [
 const financeManagerPermissions: Permission[] = [
   'donationReceiptStatus:update',
   'donationProjects:manage',
+  'partners:view',
   'donationProjects:duplicate',
   'donationProjectDetails:view',
   'proposedProjects:view',
   'proposedProjects:update:status',
   'donorDetails:view',
+  'donorDetails:manage',
 ];
 
 /**

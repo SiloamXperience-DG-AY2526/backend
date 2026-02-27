@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/donor.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { DonorIdSchema, DonorQuerySchema } from '../schemas';
+import { DonorIdSchema, DonorQuerySchema, UpdateDonorSchema } from '../schemas';
 import { requirePermission } from '../middlewares/requirePermission';
 
 const router = Router();
@@ -12,16 +12,21 @@ router.get(
   '/',
   requirePermission('donorDetails:view'),
   validateRequest({ query: DonorQuerySchema }),
-  controller.getDonors
+  controller.getDonors,
 );
 
 router.get(
   '/:donorId',
   requirePermission('donorDetails:view'),
   validateRequest({ params: DonorIdSchema }),
-  controller.getDonorDetails
+  controller.getDonorDetails,
 );
 
+router.patch(
+  '/:donorId',
+  requirePermission('donorDetails:manage'),
+  validateRequest({ params: DonorIdSchema, body: UpdateDonorSchema }),
+  controller.updateDonor,
+);
 
 export default router;
-

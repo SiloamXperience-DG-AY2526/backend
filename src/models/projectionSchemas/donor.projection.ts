@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
- 
+
 export const DonorPublicSummarySelect = {
   user: {
     select: {
@@ -17,25 +17,25 @@ export const DonorPrivateSummarySelect = {
     select: {
       ...DonorPublicSummarySelect.user.select,
       email: true,
+      isActive: true,
       managedDonationProjects: {
         select: {
           id: true,
           title: true,
-        }
-      }
+        },
+      },
     },
-    
   },
   gender: true,
   contactNumber: true,
   nationality: true,
-  identificationNumber: true,  
+  identificationNumber: true,
   dob: true,
   occupation: true,
   otherContactModes: true,
   contactModes: {
     select: {
       mode: true,
-    }
+    },
   },
 } satisfies Prisma.PartnerSelect;
