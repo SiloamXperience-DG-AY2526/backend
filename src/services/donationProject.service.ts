@@ -11,6 +11,40 @@ import { buildPagination, calculateSkip } from './paginationHelper';
 import { Prisma, ProjectApprovalStatus, SubmissionStatus } from '@prisma/client';
 
 /**
+ * Helper: Map API field names to database field names
+ * brickCost (API) -> brickSize (DB)
+ */
+const mapApiToDb = (data: any) => {
+  const { brickCost, ...rest } = data;
+  return {
+    ...rest,
+    ...(brickCost !== undefined && { brickSize: brickCost }),
+  };
+};
+
+/**
+ * Helper: Map database field names to API field names
+ * brickSize (DB) -> brickCost (API)
+ */
+const mapDbToApi = (data: any) => {
+  if (!data) return data;
+  if (Array.isArray(data)) {
+    return data.map(item => {
+      const { brickSize, ...rest } = item;
+      return {
+        ...rest,
+        ...(brickSize !== undefined && { brickCost: brickSize }),
+      };
+    });
+  }
+  const { brickSize, ...rest } = data;
+  return {
+    ...rest,
+    ...(brickSize !== undefined && { brickCost: brickSize }),
+  };
+};
+
+/**
  * Service: Get all donation projects
  * For partners: only approved projects
  * For admins/managers: all non-partner-draft projects
@@ -47,10 +81,10 @@ export const getDonationProjects = async (filters: GetDonationProjectsInput & { 
     };
   }
 
-  const {projectsWithTotals: projects, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
+  const {projectsWithTotals, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
 
   return {
-    projects,
+    projects: mapDbToApi(projectsWithTotals),
     pagination: buildPagination(page, limit, totalCount)
   };
 
@@ -102,7 +136,7 @@ export const getProjectDonorsSummary = async (
 
 export const getMyDonationProjects = async (managerId: string) => {
   const projects = await donationProjectModel.getDonationProjectsByManager(managerId);
-  return projects;
+  return mapDbToApi(projects);
 };
 
 export const getMyDonationProjectDetails = async (
@@ -117,7 +151,7 @@ export const getMyDonationProjectDetails = async (
   if (!project) {
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
-  return project;
+  return mapDbToApi(project);
 };
 
 //finance manager
@@ -127,7 +161,10 @@ export const getDonationProjectDetails = async (projectId: string) => {
   if (!project.project) {
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
-  return project;
+  return {
+    ...project,
+    project: mapDbToApi(project.project)
+  };
 };
 
 export const updateDonationProject = async (
@@ -138,14 +175,14 @@ export const updateDonationProject = async (
   const updatedProject = await donationProjectModel.updateDonationProject(
     projectId,
     managerId,
-    data
+    mapApiToDb(data)
   );
 
   if (!updatedProject) {
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
 
-  return updatedProject;
+  return mapDbToApi(updatedProject);
 };
 
 export const updateDonationProjectById = async (
@@ -154,26 +191,26 @@ export const updateDonationProjectById = async (
 ) => {
   const updatedProject = await donationProjectModel.updateDonationProjectById(
     projectId,
-    data
+    mapApiToDb(data)
   );
 
   if (!updatedProject) {
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
 
-  return updatedProject;
+  return mapDbToApi(updatedProject);
 };
 
 export const createDonationProject = async (
   managerId: string,
   data: CreateDonationProjectInput
 ) => {
-  const project = await donationProjectModel.createDonationProject(managerId, data);
-  return project;
+  const project = await donationProjectModel.createDonationProject(managerId, mapApiToDb(data));
+  return mapDbToApi(project);
 };
 
 export const getProposedProjects = async () => {
-  return await donationProjectModel.getProposedProjects();
+  return mapDbToApi(await donationProjectModel.getProposedProjects());
 };
 
 export const updateProposedProjectStatus = async (data: {
@@ -186,7 +223,7 @@ export const updateProposedProjectStatus = async (data: {
     throw new NotFoundError(`Proposed Donation Project ${data.projectId} Not Found!`);
   }
 
-  return updatedProposedProjectStatus;
+  return mapDbToApi(updatedProposedProjectStatus);
 };
 
 /**
@@ -208,7 +245,7 @@ export const withdrawDonationProject = async (
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
 
-  return withdrawnProject;
+  return mapDbToApi(withdrawnProject);
 };
 export const duplicateDonationProject = async (
   projectId: string,
@@ -223,5 +260,5 @@ export const duplicateDonationProject = async (
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
 
-  return duplicated;
+  return mapDbToApi(duplicated);
 };

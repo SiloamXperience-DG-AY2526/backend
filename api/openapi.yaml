@@ -1482,12 +1482,12 @@ components:
           minimum: 0.01
           nullable: true
           description: Target fund amount
-        brickSize:
+        brickCost:
           type: number
           format: double
           minimum: 0.01
           nullable: true
-          description: Brick size for brick-by-brick donations
+          description: Brick cost for brick-by-brick donations
         deadline:
           type: string
           format: date-time
@@ -1556,7 +1556,7 @@ components:
           format: double
           minimum: 0.01
           nullable: true
-        brickSize:
+        brickCost:
           type: number
           format: double
           minimum: 0.01
@@ -1620,7 +1620,7 @@ components:
         currentFund:
           type: number
           format: double
-        brickSize:
+        brickCost:
           type: number
           format: double
           nullable: true

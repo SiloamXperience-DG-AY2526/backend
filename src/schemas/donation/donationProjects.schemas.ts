@@ -58,7 +58,7 @@ export const UpdateDonationProjectSchema = z.object({
     .union([z.number().positive(), z.string()])
     .optional()
     .nullable(),
-  brickSize: z.union([z.number().positive(), z.string()]).optional().nullable(),
+  brickCost: z.union([z.number().positive(), z.string()]).optional().nullable(),
   deadline: preprocessDate,
   type: z.nativeEnum(ProjectType).optional(),
   startDate: preprocessDate,

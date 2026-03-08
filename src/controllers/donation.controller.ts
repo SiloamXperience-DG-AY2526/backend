@@ -28,7 +28,7 @@ export const submitDonationApplication = async (req: Request, res: Response) => 
   );
 
   res.status(201).json({
-    message: 'Donation application submitted successfully',
+    message: 'Thank you for your donation. We will get in touch with you soon.',
     donation,
   });
 };
