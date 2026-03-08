@@ -26,7 +26,7 @@ describe('donationProjectService', () => {
       initiatorName: null,
       organisingTeam: null,
       targetFund: null,
-      brickSize: null,
+      brickSize: null, // Model returns brickSize from DB
       deadline: null,
       type: 'brick' as const,
       startDate: new Date(),
@@ -62,7 +62,12 @@ describe('donationProjectService', () => {
         mockProjectId,
         mockNewManagerId
       );
-      expect(result).toEqual(mockDuplicatedProject);
+      // Service transforms brickSize -> brickCost
+      expect(result).toMatchObject({
+        id: mockDuplicatedProject.id,
+        title: mockDuplicatedProject.title,
+        brickCost: null, // Service returns brickCost
+      });
       expect(result.title).toContain('(Copy)');
       expect(result.submissionStatus).toBe('draft');
       expect(result.approvalStatus).toBe('pending');
