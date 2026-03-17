@@ -27,7 +27,8 @@ export async function createStaffUser(
         title,
         email,
         passwordHash,
-        role
+        role,
+        mustChangePassword: true // force password reset
       },
     });
 

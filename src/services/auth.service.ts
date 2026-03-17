@@ -157,13 +157,28 @@ export async function login(email: string, password: string) {
   // Non-partner roles (admin, manager) are considered onboarded by default
   const hasOnboarded = user.role !== 'partner' || await checkHasOnboarded(user.id);
 
+  if (user.mustChangePassword) {
+
+    const token = signToken({
+      userId: user.id,
+      role: user.role,
+      hasOnboarded: false,
+      firstLogin: true
+    });
+
+    return {
+      mustChangePassword: true,
+      token
+    };
+  }
+
   const token = signToken({
     userId: user.id,
     role: user.role,
     hasOnboarded,
   });
 
-  return token;
+  return { token };
 }
 
 export async function requestPasswordResetService(email: string) {
@@ -194,10 +209,17 @@ export async function resetPasswordService(
     throw new UnauthorizedError('Invalid credentials');
   }
 
-  const verify = await verifyToken(token);
+  if (token) {
+    const verify = await verifyToken(token);
 
-  if (!verify) {
-    throw new UnauthorizedError('Invalid or expired token');
+    if (!verify || verify.userId !== userId) {
+      throw new UnauthorizedError('Invalid or expired token');
+    }
+  }
+
+  // First login flow
+  else if (!user.mustChangePassword) {
+    throw new UnauthorizedError('Token required');
   }
 
   const passwordHash = await hashPassword(newPassword);

@@ -57,9 +57,9 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
   try {
     const { email, password } = req.body;
 
-    const token = await login(email, password);
+    const result = await login(email, password);
+    res.json(result);
 
-    res.json({ token });
   } catch (err) {
     next(err);
   }
@@ -86,9 +86,9 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
 
     await resetPasswordService(userId, token, newPassword);
 
-    res.status(201).json({ 
+    res.status(201).json({
       status: 'success',
-      message: 'Password has been reset successfully' 
+      message: 'Password has been reset successfully'
     });
   } catch (err) {
     next(err);
