@@ -84,12 +84,10 @@ export const updateDonorById = async (
       }),
       user: {
         update: {
-          data: {
-            ...(title !== undefined && { title }),
-            ...(firstName !== undefined && { firstName }),
-            ...(lastName !== undefined && { lastName }),
-            ...(isActive !== undefined && { isActive }),
-          },
+          ...(title !== undefined && { title }),
+          ...(firstName !== undefined && { firstName }),
+          ...(lastName !== undefined && { lastName }),
+          ...(isActive !== undefined && { isActive }),
         },
       },
     },

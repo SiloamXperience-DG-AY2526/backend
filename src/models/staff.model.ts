@@ -1,5 +1,4 @@
 import { Prisma, UserRole } from '@prisma/client';
-import type {} from '@prisma/client';
 import { BadRequestError, ForbiddenError } from '../utils/errors';
 import { prisma } from '../prisma/client';
 import { mapStaffToResponse } from '../schemas/staff';

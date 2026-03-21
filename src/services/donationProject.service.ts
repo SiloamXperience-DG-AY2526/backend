@@ -21,6 +21,7 @@ export const getDonationProjects = async (
   filters: GetDonationProjectsInput & { viewerRole?: string },
 ) => {
   const { type, search, page = 1, limit = 20, viewerRole } = filters;
+  const trimmedSearch = search?.trim();
   const skip = calculateSkip(page, limit);
 
   // Build where clause filter based on viewer role
@@ -52,15 +53,15 @@ export const getDonationProjects = async (
   }
 
   // Apply search filter across title, location, and about fields
-  if (search && search.trim()) {
+  if (trimmedSearch) {
     where = {
       AND: [
         where,
         {
           OR: [
-            { title: { contains: search, mode: 'insensitive' } },
-            { location: { contains: search, mode: 'insensitive' } },
-            { about: { contains: search, mode: 'insensitive' } },
+            { title: { contains: trimmedSearch, mode: 'insensitive' } },
+            { location: { contains: trimmedSearch, mode: 'insensitive' } },
+            { about: { contains: trimmedSearch, mode: 'insensitive' } },
           ],
         },
       ],
