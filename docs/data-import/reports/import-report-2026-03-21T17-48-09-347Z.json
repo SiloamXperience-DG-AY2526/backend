@@ -1,0 +1,105 @@
+{
+  "startedAt": "2026-03-21T17:48:09.322Z",
+  "dryRun": true,
+  "sourceDir": "docs/data-import/templates",
+  "summaries": [
+    {
+      "stage": "users",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "partners",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "donation_projects",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "donation_project_objectives",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "donation_transactions",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "volunteer_projects",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "project_positions",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "project_skills",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "sessions",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "volunteer_project_objectives",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "volunteer_applications",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "volunteer_sessions",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    }
+  ],
+  "issues": [],
+  "finishedAt": "2026-03-21T17:48:09.347Z"
+}

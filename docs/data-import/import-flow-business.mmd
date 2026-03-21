@@ -1,0 +1,39 @@
+flowchart TD
+  O[Organisation CSV Package]
+
+  subgraph Inputs[Input Files]
+    U[users.csv]
+    P[partners.csv]
+    D[donation_*]
+    V[volunteer_*]
+  end
+
+  subgraph Core[Core Records Created/Updated]
+    Users[Users]
+    Partners[Partners]
+    Donations[Donation Projects + Transactions]
+    Volunteers[Volunteer Projects + Sessions + Applications]
+  end
+
+  subgraph Rules[Import Rules]
+    R1[Required fields must be present]
+    R2[Reference links must exist\nfor cross-file IDs]
+    R3[Enum/boolean/date formats validated]
+    R4[Reject invalid rows, continue others]
+  end
+
+  Report[Import Report\nprocessed/imported/updated/rejected]
+
+  O --> Inputs
+  U --> Users
+  P --> Partners
+  D --> Donations
+  V --> Volunteers
+
+  Users --> Partners
+  Users --> Donations
+  Users --> Volunteers
+
+  Inputs --> Rules
+  Rules --> Core
+  Core --> Report

@@ -1,0 +1,2 @@
+"external_id (text, required)","volunteer_user_external_id (text, required)","session_external_id (text, required)","approved_at (YYYY-MM-DDThh:mm:ss, optional)","approved_by_user_external_id (text, optional)","has_rsvp (TRUE | FALSE, optional)","has_attended (TRUE | FALSE, optional)"
+VSE001,USR001,SES001,,,true,false
