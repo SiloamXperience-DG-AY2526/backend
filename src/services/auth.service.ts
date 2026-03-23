@@ -209,17 +209,18 @@ export async function resetPasswordService(
     throw new UnauthorizedError('Invalid credentials');
   }
 
-  if (token) {
-    const verify = await verifyToken(token);
-
-    if (!verify || verify.userId !== userId) {
-      throw new UnauthorizedError('Invalid or expired token');
-    }
+  if (!token) {
+    throw new UnauthorizedError('Token required');
   }
 
-  // First login flow
-  else if (!user.mustChangePassword) {
-    throw new UnauthorizedError('Token required');
+  const verify = await verifyToken(token);
+  if (!verify || verify.userId !== userId) {
+    throw new UnauthorizedError('Invalid or expired token');
+  }
+
+  // For first login password change, ensure the token is a first-login token
+  if (user.mustChangePassword && !verify.firstLogin) {
+    throw new ForbiddenError('Invalid token for first login password change');
   }
 
   const passwordHash = await hashPassword(newPassword);

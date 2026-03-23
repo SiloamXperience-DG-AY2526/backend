@@ -52,7 +52,19 @@ export function verifyToken(token: string): JwtPayload {
     if (!role || typeof role !== 'string') {
       throw new Error();
     }
-    return Object.freeze({ userId, role, hasOnboarded: hasOnboarded ?? false, firstLogin: firstLogin ?? false }) as JwtPayload;
+    // ensure correct shape of boolean flags
+    if (hasOnboarded !== undefined && typeof hasOnboarded !== 'boolean') {
+      throw new Error();
+    }
+    if (firstLogin !== undefined && typeof firstLogin !== 'boolean') {
+      throw new Error();
+    }
+    return Object.freeze({
+      userId,
+      role,
+      hasOnboarded: hasOnboarded ?? false,
+      firstLogin: firstLogin ?? false,
+    }) as JwtPayload;
   } catch {
     throw new UnauthorizedError('Invalid or expired token');
   }
