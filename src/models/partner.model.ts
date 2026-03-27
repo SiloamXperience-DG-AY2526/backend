@@ -583,3 +583,24 @@ export const getPartners = async (
 
   return { partners, totalCount };
 };
+
+export const deactivatePartner = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      role: true,
+    },
+  });
+
+  if (!user || user.role !== 'partner') {
+    throw new BadRequestError('Volunteer account not found');
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      isActive: false,
+    } as any,
+  });
+};

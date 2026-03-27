@@ -14,6 +14,7 @@ const generalManagerPermissions: Permission[] = [
   'volunteerProjApproval:update',
   'volunteerProjects:manage',
   'partners:view',
+  'partners:deactivate',
   'emailCampaign:create',
   'emailCampaign:update',
   'emailCampaign:read',

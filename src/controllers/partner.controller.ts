@@ -7,3 +7,12 @@ export const getPartners = async (req: Request, res: Response) => {
   const result = await partnerService.getPartners(filters);
   res.json(result);
 };
+
+export const deactivatePartner = async (req: Request, res: Response) => {
+  const { partnerId } = req.params;
+  await partnerService.deactivatePartner(partnerId);
+
+  return res.status(200).json({
+    message: 'Volunteer account deactivated successfully',
+  });
+};
