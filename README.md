@@ -51,7 +51,7 @@ A comprehensive Express.js backend built with TypeScript, featuring modern tooli
    # Format: postgresql://<username>@localhost:5432/<db_name>?schema=public
    # <username>: Run 'whoami' in terminal
    # <db_name>: Your database name (e.g., siloamxperience)
-   # Example: DATABASE_URL="postgresql://johndoe@localhost:5432/siloamxperience?schema=public"
+   # Example: DATABASE_URL="postgresql://clement@localhost:5432/siloamxperience?schema=public"
 
    # Test connection
    psql "postgresql://<username>@localhost:5432/<db_name>"
