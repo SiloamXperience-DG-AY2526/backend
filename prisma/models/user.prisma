@@ -8,6 +8,7 @@ model User {
   createdAt                 DateTime                   @default(now())
   updatedAt                 DateTime                   @updatedAt
   role                      UserRole                   @default(partner)
+  mustChangePassword        Boolean                    @default(false)
   isActive                  Boolean                    @default(true)
   managedDonationProjects   DonationProject[]          @relation("ManagedProjects")
   donorTransactions         DonationTransaction[]      @relation("donor_transactions")

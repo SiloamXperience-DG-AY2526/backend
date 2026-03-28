@@ -19,6 +19,7 @@ export async function findUserByEmailWithRoles(email: string) {
       title: true,
       createdAt: true,
       updatedAt: true,
+      mustChangePassword: true,
     },
   });
 }
@@ -36,6 +37,7 @@ export async function findUserByIdWithRoles(id: string) {
       title: true,
       createdAt: true,
       updatedAt: true,
+      mustChangePassword: true,
     },
   });
 
