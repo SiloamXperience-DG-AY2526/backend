@@ -32,7 +32,7 @@ export const CreateDonationProjectSchema = z.object({
       z.object({
         objective: z.string().min(1),
         order: z.number().int().positive(),
-      })
+      }),
     )
     .optional(),
 });
@@ -69,6 +69,7 @@ export const UpdateDonationProjectSchema = z.object({
   operationStatus: z.nativeEnum(ProjectOperationStatus).optional(),
   image: z.string().url().optional().nullable(),
   attachments: z.string().optional().nullable(),
+  managedBy: z.string().uuid().optional(),
 });
 
 export type UpdateDonationProjectInput = z.infer<
@@ -78,6 +79,7 @@ export type UpdateDonationProjectInput = z.infer<
 // Schema for getting all donation projects with filters
 export const getDonationProjectsSchema = z.object({
   type: z.nativeEnum(ProjectType).optional(),
+  search: z.string().optional(),
   page: PageType,
   limit: LimitType,
 });
@@ -95,7 +97,9 @@ export const GetProjectDonationsSchema = z.object({
   limit: LimitType,
 });
 
-export type GetProjectDonationsInput = z.infer<typeof GetProjectDonationsSchema>;
+export type GetProjectDonationsInput = z.infer<
+  typeof GetProjectDonationsSchema
+>;
 
 export const GetProjectDonorsSchema = z.object({
   page: PageType,

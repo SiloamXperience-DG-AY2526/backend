@@ -69,3 +69,7 @@ export const getPartners = async (filters: PartnerQueryType) => {
     pagination: buildPagination(pageValue, limitValue, totalCount),
   };
 };
+
+export const deactivatePartner = async (partnerId: string) => {
+  return partnerModel.deactivatePartner(partnerId);
+};

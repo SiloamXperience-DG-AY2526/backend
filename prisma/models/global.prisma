@@ -21,6 +21,7 @@ enum SubmissionStatus {
 
 enum UserRole {
   superAdmin
+  subAdmin
   generalManager
   financeManager
   partner

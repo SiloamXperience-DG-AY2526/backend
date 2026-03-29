@@ -1,10 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import { createStaffSchema, staffIdSchema } from '../schemas/staff';
-import { createStaffAccount, deactivateStaffAccount, activateStaffAccount, getAllStaffAccount } from '../services/staff.service';
+import {
+  createStaffAccount,
+  deactivateStaffAccount,
+  activateStaffAccount,
+  getAllStaffAccount,
+} from '../services/staff.service';
+import { Role } from '../authorisation/permissions/config';
 
-export async function createStaff(req: Request, res: Response, next: NextFunction) {
+export async function createStaff(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const data = createStaffSchema.parse(req.body);
+    const callerRole = req.user!.role as Role;
 
     const token = await createStaffAccount(
       data.firstName,
@@ -12,7 +23,8 @@ export async function createStaff(req: Request, res: Response, next: NextFunctio
       data.title,
       data.email,
       data.password,
-      data.role
+      data.role,
+      callerRole,
     );
 
     res.status(201).json({ token });
@@ -21,11 +33,16 @@ export async function createStaff(req: Request, res: Response, next: NextFunctio
   }
 }
 
-export async function deactivateStaff(req: Request, res: Response, next: NextFunction) {
+export async function deactivateStaff(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const data = staffIdSchema.parse(req.params);
+    const callerRole = req.user!.role as Role;
 
-    await deactivateStaffAccount(data.staffId);
+    await deactivateStaffAccount(data.staffId, callerRole);
 
     res.status(200).json({
       message: 'Staff account deactivated successfully',
@@ -35,11 +52,16 @@ export async function deactivateStaff(req: Request, res: Response, next: NextFun
   }
 }
 
-export async function activateStaff(req: Request, res: Response, next: NextFunction) {
+export async function activateStaff(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const data = staffIdSchema.parse(req.params);
+    const callerRole = req.user!.role as Role;
 
-    await activateStaffAccount(data.staffId);
+    await activateStaffAccount(data.staffId, callerRole);
 
     res.status(200).json({
       message: 'Staff account activated successfully',
@@ -49,9 +71,14 @@ export async function activateStaff(req: Request, res: Response, next: NextFunct
   }
 }
 
-export async function getAllStaff(req: Request, res: Response, next: NextFunction) {
+export async function getAllStaff(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const staff = await getAllStaffAccount();
+    const callerRole = req.user!.role as Role;
+    const staff = await getAllStaffAccount(callerRole);
 
     res.status(200).json({
       data: staff,
