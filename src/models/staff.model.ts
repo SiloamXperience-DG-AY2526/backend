@@ -18,18 +18,18 @@ export async function createStaffUser(
     throw new BadRequestError('Account already exists');
   }
 
-  const result = await prisma.$transaction(
-    async (tx: Prisma.TransactionClient) => {
-      const user = await tx.user.create({
-        data: {
-          firstName,
-          lastName,
-          title,
-          email,
-          passwordHash,
-          role,
-        },
-      });
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const user = await tx.user.create({
+      data: {
+        firstName,
+        lastName,
+        title,
+        email,
+        passwordHash,
+        role,
+        mustChangePassword: true // force password reset
+      },
+    });
 
       return user;
     },

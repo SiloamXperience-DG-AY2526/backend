@@ -237,3 +237,88 @@ export async function deleteCampaignDB(campaignId: string) {
     where: { id: campaignId },
   });
 }
+
+//financial manager review
+type TemplateType = 'thankyou' | 'receipt';
+
+function getEmailTemplateName(projectId: string, type: TemplateType) {
+  return `donationReviewEmail:${type}:${projectId}`;
+}
+
+export async function saveEmailTemplate(
+  projectId: string,
+  type: TemplateType,
+  userId: string,
+  data: {
+    senderAddress: string;
+    subject: string;
+    body: string;
+    customNote?: string | null;
+  }
+) {
+  const name = getEmailTemplateName(projectId, type);
+
+  const existing = await prisma.emailCampaign.findFirst({
+    where: { name },
+  });
+
+  if (existing) {
+    return prisma.emailCampaign.update({
+      where: { id: existing.id },
+      data: {
+        senderAddress: data.senderAddress,
+        subject: data.subject,
+        body: data.body,
+        previewText: data.customNote ?? null,
+      },
+    });
+  }
+
+  return prisma.emailCampaign.create({
+    data: {
+      name,
+      senderAddress: data.senderAddress,
+      subject: data.subject,
+      body: data.body,
+      previewText: data.customNote ?? null,
+      createdBy: userId,
+    },
+  });
+}
+
+export function getTemplate(projectId: string, type: TemplateType) {
+  const name = getEmailTemplateName(projectId, type);
+  return prisma.emailCampaign.findFirst({
+    where: { name },
+  });
+}
+
+export function getDonationTransaction(transactionId: string) {
+  return prisma.donationTransaction.findUnique({
+    where: { id: transactionId },
+    include: {
+      donor: true,
+      project: true,
+    },
+  });
+}
+
+export function updateReceipt(
+  transactionId: string,
+  receiptData: any
+) {
+  return prisma.donationTransaction.update({
+    where: { id: transactionId },
+    data: {
+      receiptStatus: 'received',
+      receipt: JSON.stringify(receiptData),
+    },
+  });
+}
+
+export function markThankYouSent(transactionId: string) {
+  return prisma.donationTransaction.update({
+    where: { id: transactionId },
+    data: { isThankYouSent: true },
+  });
+}

@@ -14,6 +14,7 @@ const generalManagerPermissions: Permission[] = [
   'volunteerProjApproval:update',
   'volunteerProjects:manage',
   'partners:view',
+  'partners:deactivate',
   'emailCampaign:create',
   'emailCampaign:update',
   'emailCampaign:read',
@@ -32,6 +33,9 @@ const financeManagerPermissions: Permission[] = [
   'proposedProjects:update:status',
   'donorDetails:view',
   'donorDetails:manage',
+  'emailCampaign:update',
+  'emailCampaign:template',
+  'emailCampaign:send',
 ];
 
 /**

@@ -40,21 +40,21 @@ export const getVolProjects = async () => {
 export const updatePassword = async (userId: string, passwordHash: string) => {
   return prisma.user.update({
     where: { id: userId },
-    data: { passwordHash },
+    data: { passwordHash, mustChangePassword: false },
   });
 };
 
 
 export const submitPeerFeedback = async (
   feedbackData: {
-        feedbackType: PartnerFeedbackType;
-        reviewerId: string;
-        revieweeId: string;
-        score: number;
-        strengths?: string | null;
-        improvements?: string | null;
-        projectId: string;
-    }
+    feedbackType: PartnerFeedbackType;
+    reviewerId: string;
+    revieweeId: string;
+    score: number;
+    strengths?: string | null;
+    improvements?: string | null;
+    projectId: string;
+  }
 ) => {
   return prisma.peerFeedback.create({
     data: {

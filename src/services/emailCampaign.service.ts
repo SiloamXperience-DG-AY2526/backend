@@ -136,3 +136,183 @@ export async function getScheduledCampaigns() {
 export async function deleteCampaign(campaignId: string) {
   return model.deleteCampaignDB(campaignId);
 }
+
+//financial manager email review
+
+
+
+function renderTemplate(template: string, vars: Record<string, string>) {
+  return template.replace(/{{(.*?)}}/g, (_, key) => {
+    return vars[key.trim()] ?? '';
+  });
+}
+
+export async function donationReviewEmailSaveTemplate(
+  userId: string,
+  projectId: string,
+  data: any
+) {
+  return model.saveEmailTemplate(projectId, data.type, userId, data);
+}
+function getDefaultTemplate(type: 'thankyou' | 'receipt') {
+  if (type === 'receipt') {
+    return {
+      subject: 'Your receipt {{receiptNumber}} — {{project}}',
+      body: `Hi {{name}},<br/>
+Thank you for your donation to {{project}}.
+Your donation was successful.<br/>
+Receipt No: {{receiptNumber}}
+Receipt Date: {{receiptDate}}
+Amount: {{amount}}
+Remarks: {{remarks}}<br/>
+With gratitude,<br/>Finance Team`,
+      senderAddress: '',
+      previewText: '',
+    };
+  }
+
+  return {
+    subject: 'Thank you {{name}} — we’ve received your donation for {{project}}',
+    body: `Hi {{name}},<br/>
+Thank you for your donation to {{project}}.<br/>
+Donation amount: {{amount}}<br/>
+We’re currently processing your payment and will update you shortly.
+Once confirmed, we’ll send your official receipt.<br/>
+Warm regards,<br/>Finance Team`,
+    senderAddress: '',
+    previewText: '',
+  };
+}
+export async function donationReviewEmailGetTemplate(
+  projectId: string,
+  type: 'thankyou' | 'receipt'
+) {
+  const tpl = await model.getTemplate(projectId, type);
+
+  // if no saved template in DB -> return default
+  if (!tpl) return getDefaultTemplate(type);
+
+  
+  return {
+    subject: tpl.subject ?? getDefaultTemplate(type).subject,
+    body: tpl.body ?? getDefaultTemplate(type).body,
+    senderAddress: tpl.senderAddress ?? '',
+    previewText: tpl.previewText ?? '',
+  };
+}
+
+/**
+ * Send Thank You (auto after donation)
+ */
+export async function donationReviewEmailSendThankYou(
+  transactionId: string
+) {
+  const tx = await model.getDonationTransaction(transactionId);
+  if (!tx) throw new BadRequestError('Transaction not found');
+
+  if (tx.isThankYouSent) return;
+
+  const tpl = await model.getTemplate(tx.projectId, 'thankyou');
+  if (!tpl) {
+    throw new BadRequestError('ThankYou template not configured');
+  }
+
+  const vars = {
+    name: `${tx.donor.firstName} ${tx.donor.lastName}`,
+    project: tx.project.title,
+    amount: tx.amount.toString(),
+  };
+
+  const subject = renderTemplate(tpl.subject!, vars);
+  const body = renderTemplate(tpl.body!, vars);
+
+  await sendEmail({
+    to: tx.donor.email,
+    subject,
+    html: body,
+    from: tpl.senderAddress,
+  });
+
+  await model.markThankYouSent(transactionId);
+}
+
+
+// Follow up for payment
+ 
+export async function donationReviewEmailFollowUp(
+  transactionId: string
+) {
+  const tx = await model.getDonationTransaction(transactionId);
+  if (!tx) throw new BadRequestError('Transaction not found');
+
+  if (tx.receiptStatus !== 'pending') return;
+
+  const tpl = await model.getTemplate(tx.projectId, 'thankyou');
+  if (!tpl) return;
+
+  const vars = {
+    name: `${tx.donor.firstName} ${tx.donor.lastName}`,
+    project: tx.project.title,
+    amount: tx.amount.toString(),
+  };
+
+  const subject = `[Reminder] ${renderTemplate(tpl.subject!, vars)}`;
+  const body = renderTemplate(tpl.body!, vars);
+
+  await sendEmail({
+    to: tx.donor.email,
+    subject,
+    html: body,
+    from: tpl.senderAddress,
+  });
+}
+
+
+// Process receipt + email receipt
+
+export async function donationReviewEmailProcessReceipt(
+  userId: string,
+  transactionId: string,
+  data: any
+) {
+  const tx = await model.getDonationTransaction(transactionId);
+  if (!tx) throw new BadRequestError('Transaction not found');
+
+  const tpl = await model.getTemplate(tx.projectId, 'receipt');
+  if (!tpl) throw new BadRequestError('Receipt template not configured');
+
+  const receiptData = {
+    receiptNumber: data.receiptNumber,
+    // scheduledAt: data.scheduledAt,
+    remarks: data.remarks ?? null,
+    processedBy: userId,
+    processedAt: data.receiptDate ? new Date(data.receiptDate) : new Date(),
+  };
+
+  await model.updateReceipt(transactionId, receiptData);
+
+  const vars = {
+    name: `${tx.donor.firstName} ${tx.donor.lastName}`,
+    project: tx.project.title,
+    amount: tx.amount.toString(),
+    receiptNumber: data.receiptNumber,
+    remarks: data.remarks ?? '',
+    receiptDate: data.receiptDate
+      ? new Date(data.receiptDate).toLocaleDateString()
+      : new Date().toLocaleDateString(),
+  };
+
+  const subject = renderTemplate(tpl.subject!, vars);
+  const body = renderTemplate(tpl.body!, vars);
+  if (data.receiptDate && !tpl.body?.includes('{{receiptDate}}')) {
+    console.warn(
+      '[Email Template Warning] receiptDate provided but not used in template'
+    );
+  }
+  await sendEmail({
+    to: tx.donor.email,
+    subject,
+    html: body,
+    from: tpl.senderAddress,
+  });
+}

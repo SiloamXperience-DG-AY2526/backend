@@ -7,6 +7,9 @@ export const emailCampaignPermissions = {
   'emailCampaign:read': nothingElse,
   'emailCampaign:test': nothingElse,
   'emailCampaign:publish': nothingElse,
-  'emailCampaign:delete': nothingElse
+  'emailCampaign:delete': nothingElse,
+
+  'emailCampaign:send': nothingElse,
+  'emailCampaign:template': nothingElse,
 
 } satisfies Record<string, PermissionHandler>;
