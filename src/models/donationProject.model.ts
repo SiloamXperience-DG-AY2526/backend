@@ -307,24 +307,24 @@ export const getDonationProjectById = async (
   const where: Prisma.DonationProjectWhereInput =
     viewerRole === UserRole.partner
       ? {
-          id: projectId,
-          submissionStatus: { not: SubmissionStatus.draft },
-          approvalStatus: ProjectApprovalStatus.approved,
-        }
+        id: projectId,
+        submissionStatus: { not: SubmissionStatus.draft },
+        approvalStatus: ProjectApprovalStatus.approved,
+      }
       : {
-          id: projectId,
-          OR: [
-            // All non-draft projects
-            { submissionStatus: { not: SubmissionStatus.draft } },
-            // Draft projects created by non-partner roles
-            {
-              AND: [
-                { submissionStatus: SubmissionStatus.draft },
-                { projectManager: { role: { not: UserRole.partner } } },
-              ],
-            },
-          ],
-        };
+        id: projectId,
+        OR: [
+          // All non-draft projects
+          { submissionStatus: { not: SubmissionStatus.draft } },
+          // Draft projects created by non-partner roles
+          {
+            AND: [
+              { submissionStatus: SubmissionStatus.draft },
+              { projectManager: { role: { not: UserRole.partner } } },
+            ],
+          },
+        ],
+      };
 
   const [project, totalRaised] = await Promise.all([
     prisma.donationProject.findFirst({
