@@ -31,6 +31,10 @@ const financeManagerPermissions: Permission[] = [
   'proposedProjects:view',
   'proposedProjects:update:status',
   'donorDetails:view',
+  'emailCampaign:update',
+  'emailCampaign:template',
+  'emailCampaign:send',
+
 ];
 
 /**

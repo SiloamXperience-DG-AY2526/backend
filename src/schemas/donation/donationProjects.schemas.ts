@@ -111,3 +111,8 @@ export const WithdrawDonationProjectSchema = z.object({
 export type WithdrawDonationProjectInput = z.infer<
   typeof WithdrawDonationProjectSchema
 >;
+
+//for email review by financial manager
+export const DonationTransactionIdSchema = z.object({
+  transactionId: z.uuid(),
+});

@@ -8,7 +8,11 @@ import {
   sendTestEmailSchema,
   EmailCampaignIdSchema,
   EmailCampaignListQuerySchema,
+  ProcessReceiptSchema,
+  SaveTemplateSchema,
+  GetTemplateQuerySchema,
 } from '../schemas/emailCampaign';
+import { DonationProjectIdSchema, DonationTransactionIdSchema } from '../schemas';
 
 export async function createCampaign(req: Request, res: Response, next: NextFunction) {
   try {
@@ -133,6 +137,97 @@ export async function deleteCampaign(req: Request, res: Response, next: NextFunc
     const { campaignId } = EmailCampaignIdSchema.parse(req.params);
 
     await service.deleteCampaign(campaignId);
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+}
+
+//finance manager email configuration
+export async function donationReviewEmailSaveTemplate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { projectId } = DonationProjectIdSchema.parse(req.params);
+    const data = SaveTemplateSchema.parse(req.body);
+
+    const result = await service.donationReviewEmailSaveTemplate(
+      req.user!.userId,
+      projectId,
+      data
+    );
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function donationReviewEmailGetTemplate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { projectId } = DonationProjectIdSchema.parse(req.params);
+    const { type } = GetTemplateQuerySchema.parse(req.query);
+
+    const tpl = await service.donationReviewEmailGetTemplate(
+      projectId,
+      type
+    );
+
+    res.json(tpl);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function donationReviewEmailSendThankYou(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { transactionId } = DonationTransactionIdSchema.parse(req.params);
+    await service.donationReviewEmailSendThankYou(transactionId);
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function donationReviewEmailFollowUp(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { transactionId } = DonationTransactionIdSchema.parse(req.params);
+    await service.donationReviewEmailFollowUp(transactionId);
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function donationReviewEmailProcessReceipt(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { transactionId } = DonationTransactionIdSchema.parse(req.params);
+    const data = ProcessReceiptSchema.parse(req.body);
+
+    await service.donationReviewEmailProcessReceipt(
+      req.user!.userId,
+      transactionId,
+      data
+    );
+
     res.sendStatus(204);
   } catch (err) {
     next(err);
