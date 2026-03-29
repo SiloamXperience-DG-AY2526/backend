@@ -10,6 +10,7 @@ import {
   EmailCampaignListQuerySchema,
   ProcessReceiptSchema,
   SaveTemplateSchema,
+  GetTemplateQuerySchema,
 } from '../schemas/emailCampaign';
 import { DonationProjectIdSchema, DonationTransactionIdSchema } from '../schemas';
 
@@ -171,11 +172,11 @@ export async function donationReviewEmailGetTemplate(
 ) {
   try {
     const { projectId } = DonationProjectIdSchema.parse(req.params);
-    const { type } = req.query;
+    const { type } = GetTemplateQuerySchema.parse(req.query);
 
     const tpl = await service.donationReviewEmailGetTemplate(
       projectId,
-      type as any
+      type
     );
 
     res.json(tpl);

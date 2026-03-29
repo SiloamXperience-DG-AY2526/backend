@@ -138,6 +138,9 @@ export async function deleteCampaign(campaignId: string) {
 }
 
 //financial manager email review
+
+
+
 function renderTemplate(template: string, vars: Record<string, string>) {
   return template.replace(/{{(.*?)}}/g, (_, key) => {
     return vars[key.trim()] ?? '';
@@ -210,7 +213,9 @@ export async function donationReviewEmailSendThankYou(
   if (tx.isThankYouSent) return;
 
   const tpl = await model.getTemplate(tx.projectId, 'thankyou');
-  if (!tpl) return;
+  if (!tpl) {
+    throw new BadRequestError('ThankYou template not configured');
+  }
 
   const vars = {
     name: `${tx.donor.firstName} ${tx.donor.lastName}`,
@@ -292,11 +297,18 @@ export async function donationReviewEmailProcessReceipt(
     amount: tx.amount.toString(),
     receiptNumber: data.receiptNumber,
     remarks: data.remarks ?? '',
+    receiptDate: data.receiptDate
+      ? new Date(data.receiptDate).toLocaleDateString()
+      : new Date().toLocaleDateString(),
   };
 
   const subject = renderTemplate(tpl.subject!, vars);
   const body = renderTemplate(tpl.body!, vars);
-
+  if (data.receiptDate && !tpl.body?.includes('{{receiptDate}}')) {
+    console.warn(
+      '[Email Template Warning] receiptDate provided but not used in template'
+    );
+  }
   await sendEmail({
     to: tx.donor.email,
     subject,

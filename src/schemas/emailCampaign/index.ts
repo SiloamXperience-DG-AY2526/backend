@@ -84,7 +84,7 @@ export const SaveTemplateSchema = z.object({
 
 export const ProcessReceiptSchema = z.object({
   receiptNumber: z.string().min(1),
-  receiptDate: z.string().optional(),
+  receiptDate: z.string().min(1),
   remarks: z.string().optional().nullable(),
 });
 export const GetTemplateQuerySchema = z.object({
