@@ -48,7 +48,11 @@ async function main() {
   console.log('Seeding demo data...');
 
   const today = new Date();
-  const anchorDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const anchorDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
 
   const usersData = [
     {
@@ -58,6 +62,14 @@ async function main() {
       lastName: 'Admin',
       title: 'System Administrator',
       role: UserRole.superAdmin,
+    },
+    {
+      email: 'subadmin@siloam.org',
+      password: 'password',
+      firstName: 'Sam',
+      lastName: 'Sub',
+      title: 'Sub Administrator',
+      role: UserRole.subAdmin,
     },
     {
       email: 'gm@siloam.org',
@@ -169,7 +181,11 @@ async function main() {
       skills: ['Teaching', 'Facilitation', 'Program Planning'],
       languages: ['English', 'Mandarin'],
       contactModes: [ContactModeType.email, ContactModeType.whatsapp],
-      interests: [InterestSlug.teaching, InterestSlug.training, InterestSlug.publicity],
+      interests: [
+        InterestSlug.teaching,
+        InterestSlug.training,
+        InterestSlug.publicity,
+      ],
       referrers: [ReferrerType.friend],
     },
     {
@@ -213,7 +229,11 @@ async function main() {
       skills: ['Coordination', 'Admin Support', 'Community Outreach'],
       languages: ['English', 'Malay'],
       contactModes: [ContactModeType.phoneCall, ContactModeType.messenger],
-      interests: [InterestSlug.fundraise, InterestSlug.publicity, InterestSlug.others],
+      interests: [
+        InterestSlug.fundraise,
+        InterestSlug.publicity,
+        InterestSlug.others,
+      ],
       referrers: [ReferrerType.event, ReferrerType.other],
       otherInterests: 'Community photography',
       otherReferrers: 'Volunteer fair',
@@ -319,7 +339,7 @@ async function main() {
   const generalManager = requireUser('gm@siloam.org');
 
   async function getOrCreateVolunteerProject(
-    data: Prisma.VolunteerProjectCreateInput
+    data: Prisma.VolunteerProjectCreateInput,
   ) {
     const existing = await prisma.volunteerProject.findFirst({
       where: { title: data.title },
@@ -551,13 +571,13 @@ async function main() {
   const aishaUser = requireUser('aisha.partner@siloam.org');
 
   const healthRegistration = healthProject.positions.find(
-    (position) => position.role === 'Registration Support'
+    (position) => position.role === 'Registration Support',
   );
   const mentorshipMentor = mentorshipProject.positions.find(
-    (position) => position.role === 'Youth Mentor'
+    (position) => position.role === 'Youth Mentor',
   );
   const warehouseSorting = warehouseProject.positions.find(
-    (position) => position.role === 'Sorting Crew'
+    (position) => position.role === 'Sorting Crew',
   );
 
   if (healthRegistration) {
@@ -681,9 +701,10 @@ async function main() {
     });
   }
 
-  const existingProjectFeedback = await prisma.volunteerProjectFeedback.findFirst({
-    where: { projectId: warehouseProject.id },
-  });
+  const existingProjectFeedback =
+    await prisma.volunteerProjectFeedback.findFirst({
+      where: { projectId: warehouseProject.id },
+    });
   const projectFeedback =
     existingProjectFeedback ||
     (await prisma.volunteerProjectFeedback.create({
@@ -745,7 +766,7 @@ async function main() {
   }
 
   async function getOrCreateDonationProject(
-    data: Prisma.DonationProjectCreateInput
+    data: Prisma.DonationProjectCreateInput,
   ) {
     const existing = await prisma.donationProject.findFirst({
       where: { title: data.title },
