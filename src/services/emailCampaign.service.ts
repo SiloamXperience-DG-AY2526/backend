@@ -170,7 +170,7 @@ With gratitude,<br/>Finance Team`,
       previewText: '',
     };
   }
- if (type === 'followup') {
+  if (type === 'followup') {
     return {
       subject: 'Reminder: Complete your donation for {{project}}',
       body: `Hi {{name}},<br/>
