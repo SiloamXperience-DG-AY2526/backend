@@ -1,24 +1,28 @@
 import * as donationProjectModel from '../models/donationProject.model';
-import {
-  GetDonationProjectsInput,
-} from '../schemas/index';
+import { GetDonationProjectsInput } from '../schemas/index';
 import { NotFoundError } from '../utils/errors';
 import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
 } from '../schemas/donation';
 import { buildPagination, calculateSkip } from './paginationHelper';
-import { Prisma, ProjectApprovalStatus, SubmissionStatus } from '@prisma/client';
+import {
+  Prisma,
+  ProjectApprovalStatus,
+  SubmissionStatus,
+} from '@prisma/client';
 
 /**
  * Helper: Map API field names to database field names
  * brickCost (API) -> brickSize (DB)
  */
 const mapApiToDb = (data: any) => {
-  const { brickCost, ...rest } = data;
+  const { brickCost, brickSize, ...rest } = data;
+  const resolvedBrickCost = brickCost ?? brickSize;
+
   return {
     ...rest,
-    ...(brickCost !== undefined && { brickSize: brickCost }),
+    ...(resolvedBrickCost !== undefined && { brickSize: resolvedBrickCost }),
   };
 };
 
@@ -49,8 +53,11 @@ const mapDbToApi = (data: any) => {
  * For partners: only approved projects
  * For admins/managers: all non-partner-draft projects
  */
-export const getDonationProjects = async (filters: GetDonationProjectsInput & { viewerRole?: string }) => {
-  const { type, page = 1, limit = 20, viewerRole } = filters;
+export const getDonationProjects = async (
+  filters: GetDonationProjectsInput & { viewerRole?: string },
+) => {
+  const { type, search, page = 1, limit = 20, viewerRole } = filters;
+  const trimmedSearch = search?.trim();
   const skip = calculateSkip(page, limit);
 
   // Build where clause filter based on viewer role
@@ -81,27 +88,44 @@ export const getDonationProjects = async (filters: GetDonationProjectsInput & { 
     };
   }
 
-  const {projectsWithTotals, totalCount} = await donationProjectModel.getDonationProjects(where, {skip, limit});
+  // Apply search filter across title, location, and about fields
+  if (trimmedSearch) {
+    where = {
+      AND: [
+        where,
+        {
+          OR: [
+            { title: { contains: trimmedSearch, mode: 'insensitive' } },
+            { location: { contains: trimmedSearch, mode: 'insensitive' } },
+            { about: { contains: trimmedSearch, mode: 'insensitive' } },
+          ],
+        },
+      ],
+    };
+  }
+
+  const { projectsWithTotals: projects, totalCount } =
+    await donationProjectModel.getDonationProjects(where, { skip, limit });
 
   return {
-    projects: mapDbToApi(projectsWithTotals),
-    pagination: buildPagination(page, limit, totalCount)
+    projects,
+    pagination: buildPagination(page, limit, totalCount),
   };
-
 };
 
 export const getProjectDonationTransactions = async (
   projectId: string,
-  pagination: { page: number; limit: number }
+  pagination: { page: number; limit: number },
 ) => {
   const { page, limit } = pagination;
   const skip = calculateSkip(page, limit);
-  
-  const { donations, totalCount } = await donationProjectModel.getProjectDonationTransactions(
-    projectId,
-    { skip, limit }
-  );
-  
+
+  const { donations, totalCount } =
+    await donationProjectModel.getProjectDonationTransactions(projectId, {
+      skip,
+      limit,
+    });
+
   return {
     donations,
     pagination: buildPagination(page, limit, totalCount),
@@ -110,14 +134,14 @@ export const getProjectDonationTransactions = async (
 
 export const getProjectDonors = async (
   projectId: string,
-  pagination: { page: number; limit: number }
+  pagination: { page: number; limit: number },
 ) => {
   const { page, limit } = pagination;
   const skip = calculateSkip(page, limit);
 
   const { donors, totalCount } = await donationProjectModel.getProjectDonors(
     projectId,
-    { skip, limit }
+    { skip, limit },
   );
 
   return {
@@ -129,35 +153,44 @@ export const getProjectDonors = async (
 // Get donor summary for project owners (without amounts)
 export const getProjectDonorsSummary = async (
   projectId: string,
-  userId: string
+  userId: string,
 ) => {
   return donationProjectModel.getProjectDonorsSummary(projectId, userId);
 };
 
 export const getMyDonationProjects = async (managerId: string) => {
-  const projects = await donationProjectModel.getDonationProjectsByManager(managerId);
-  return mapDbToApi(projects);
+  const projects =
+    await donationProjectModel.getDonationProjectsByManager(managerId);
+  return projects;
 };
 
 export const getMyDonationProjectDetails = async (
   projectId: string,
-  managerId: string
+  managerId: string,
 ) => {
   const project = await donationProjectModel.getMyDonationProject(
     projectId,
-    managerId
+    managerId,
   );
 
   if (!project) {
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
-  return mapDbToApi(project);
+  return {
+    ...project,
+    project: mapDbToApi(project.project),
+  };
 };
 
 //finance manager
-export const getDonationProjectDetails = async (projectId: string) => {
-  const project = await donationProjectModel.getDonationProjectById(projectId);
-  console.log(project);
+export const getDonationProjectDetails = async (
+  projectId: string,
+  viewerRole?: string,
+) => {
+  const project = await donationProjectModel.getDonationProjectById(
+    projectId,
+    viewerRole,
+  );
   if (!project.project) {
     throw new NotFoundError(`Donation Project ${projectId} Not Found!`);
   }
@@ -170,12 +203,12 @@ export const getDonationProjectDetails = async (projectId: string) => {
 export const updateDonationProject = async (
   projectId: string,
   managerId: string,
-  data: UpdateDonationProjectInput
+  data: UpdateDonationProjectInput,
 ) => {
   const updatedProject = await donationProjectModel.updateDonationProject(
     projectId,
     managerId,
-    mapApiToDb(data)
+    mapApiToDb(data),
   );
 
   if (!updatedProject) {
@@ -187,7 +220,7 @@ export const updateDonationProject = async (
 
 export const updateDonationProjectById = async (
   projectId: string,
-  data: UpdateDonationProjectInput
+  data: UpdateDonationProjectInput,
 ) => {
   const updatedProject = await donationProjectModel.updateDonationProjectById(
     projectId,
@@ -203,9 +236,12 @@ export const updateDonationProjectById = async (
 
 export const createDonationProject = async (
   managerId: string,
-  data: CreateDonationProjectInput
+  data: CreateDonationProjectInput,
 ) => {
-  const project = await donationProjectModel.createDonationProject(managerId, mapApiToDb(data));
+  const project = await donationProjectModel.createDonationProject(
+    managerId,
+    mapApiToDb(data),
+  );
   return mapDbToApi(project);
 };
 
@@ -217,10 +253,13 @@ export const updateProposedProjectStatus = async (data: {
   projectId: string;
   status: ProjectApprovalStatus;
 }) => {
-  const updatedProposedProjectStatus = await donationProjectModel.updateProposedProjectStatus(data);
-  
+  const updatedProposedProjectStatus =
+    await donationProjectModel.updateProposedProjectStatus(data);
+
   if (!updatedProposedProjectStatus) {
-    throw new NotFoundError(`Proposed Donation Project ${data.projectId} Not Found!`);
+    throw new NotFoundError(
+      `Proposed Donation Project ${data.projectId} Not Found!`,
+    );
   }
 
   return mapDbToApi(updatedProposedProjectStatus);
@@ -233,12 +272,12 @@ export const updateProposedProjectStatus = async (data: {
 export const withdrawDonationProject = async (
   projectId: string,
   managerId: string,
-  reason?: string
+  reason?: string,
 ) => {
   const withdrawnProject = await donationProjectModel.withdrawDonationProject(
     projectId,
     managerId,
-    reason
+    reason,
   );
 
   if (!withdrawnProject) {
@@ -249,11 +288,11 @@ export const withdrawDonationProject = async (
 };
 export const duplicateDonationProject = async (
   projectId: string,
-  newManagerId: string
+  newManagerId: string,
 ) => {
   const duplicated = await donationProjectModel.duplicateDonationProject(
     projectId,
-    newManagerId
+    newManagerId,
   );
 
   if (!duplicated) {

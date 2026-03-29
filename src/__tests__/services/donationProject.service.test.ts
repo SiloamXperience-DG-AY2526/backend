@@ -11,6 +11,139 @@ describe('donationProjectService', () => {
     jest.clearAllMocks();
   });
 
+  describe('getMyDonationProjectDetails', () => {
+    it('maps nested project brickSize to brickCost and keeps totalRaised unchanged', async () => {
+      const projectId = 'project-uuid-1';
+      const managerId = 'manager-uuid-1';
+      const modelResult = {
+        project: {
+          id: projectId,
+          title: 'Project A',
+          brickSize: '5000',
+        },
+        totalRaised: 15000,
+      } as any;
+
+      mockedModel.getMyDonationProject.mockResolvedValue(modelResult);
+
+      const result = await donationProjectService.getMyDonationProjectDetails(
+        projectId,
+        managerId,
+      );
+
+      expect(mockedModel.getMyDonationProject).toHaveBeenCalledWith(
+        projectId,
+        managerId,
+      );
+      expect(result.totalRaised).toBe(15000);
+      expect((result as any).project.brickCost).toBe('5000');
+      expect((result as any).project.brickSize).toBeUndefined();
+    });
+  });
+
+  describe('getDonationProjectDetails', () => {
+    it('passes viewerRole to model and maps nested project brickSize to brickCost', async () => {
+      const projectId = 'project-uuid-public';
+      mockedModel.getDonationProjectById.mockResolvedValue({
+        project: {
+          id: projectId,
+          brickSize: '3000',
+        },
+        totalRaised: 2000,
+      } as any);
+
+      const result = await donationProjectService.getDonationProjectDetails(
+        projectId,
+        'partner',
+      );
+
+      expect(mockedModel.getDonationProjectById).toHaveBeenCalledWith(
+        projectId,
+        'partner',
+      );
+      expect(result).toMatchObject({
+        totalRaised: 2000,
+        project: {
+          id: projectId,
+          brickCost: '3000',
+        },
+      });
+      expect((result as any).project.brickSize).toBeUndefined();
+    });
+  });
+
+  describe('createDonationProject', () => {
+    it('maps brickCost to brickSize for create and returns brickCost in response', async () => {
+      const managerId = 'manager-uuid-1';
+      const input = {
+        title: 'Project A',
+        location: 'Yangon',
+        about: 'About',
+        objectives: 'Objectives',
+        type: 'brick' as const,
+        startDate: new Date('2026-01-01'),
+        endDate: new Date('2026-12-31'),
+        brickCost: '1000',
+      } as any;
+
+      mockedModel.createDonationProject.mockResolvedValue({
+        id: 'project-uuid-1',
+        ...input,
+        brickCost: undefined,
+        brickSize: '1000',
+      } as any);
+
+      const result = await donationProjectService.createDonationProject(
+        managerId,
+        input,
+      );
+
+      expect(mockedModel.createDonationProject).toHaveBeenCalledWith(
+        managerId,
+        expect.objectContaining({ brickSize: '1000' }),
+      );
+      expect(mockedModel.createDonationProject).toHaveBeenCalledWith(
+        managerId,
+        expect.not.objectContaining({ brickCost: expect.anything() }),
+      );
+
+      expect(result).toMatchObject({
+        id: 'project-uuid-1',
+        brickCost: '1000',
+      });
+      expect((result as any).brickSize).toBeUndefined();
+    });
+  });
+
+  describe('updateDonationProject', () => {
+    it('maps brickCost to brickSize for partner-owned update flow', async () => {
+      const projectId = 'project-uuid-1';
+      const managerId = 'manager-uuid-1';
+      const payload = { brickCost: '2500' } as any;
+
+      mockedModel.updateDonationProject.mockResolvedValue({
+        id: projectId,
+        brickSize: '2500',
+      } as any);
+
+      const result = await donationProjectService.updateDonationProject(
+        projectId,
+        managerId,
+        payload,
+      );
+
+      expect(mockedModel.updateDonationProject).toHaveBeenCalledWith(
+        projectId,
+        managerId,
+        expect.objectContaining({ brickSize: '2500' }),
+      );
+      expect(result).toMatchObject({
+        id: projectId,
+        brickCost: '2500',
+      });
+    });
+  });
+
   describe('duplicateDonationProject', () => {
     const mockProjectId = 'project-uuid-123';
     const mockNewManagerId = 'manager-uuid-456';

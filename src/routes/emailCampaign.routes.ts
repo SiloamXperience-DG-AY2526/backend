@@ -10,9 +10,49 @@ import {
   sendTestEmailSchema,
   EmailCampaignIdSchema,
   EmailCampaignListQuerySchema,
+  SaveTemplateSchema,
+  ProcessReceiptSchema,
+  GetTemplateQuerySchema,
 } from '../schemas/emailCampaign';
+import { DonationProjectIdSchema, DonationTransactionIdSchema } from '../schemas';
 
 const router = Router();
+
+//email for financial manager review
+router.put(
+  '/templates/:projectId',
+  requirePermission('emailCampaign:template'),
+  validateRequest({ params: DonationProjectIdSchema, body: SaveTemplateSchema }),
+  controller.donationReviewEmailSaveTemplate
+);
+
+router.get(
+  '/templates/:projectId',
+  requirePermission('emailCampaign:template'),
+  validateRequest({ params: DonationProjectIdSchema, query: GetTemplateQuerySchema }),
+  controller.donationReviewEmailGetTemplate
+);
+
+router.post(
+  '/transactions/:transactionId/thank-you',
+  requirePermission('emailCampaign:send'),
+  validateRequest({ params: DonationTransactionIdSchema }),
+  controller.donationReviewEmailSendThankYou
+);
+
+router.post(
+  '/transactions/:transactionId/follow-up',
+  requirePermission('emailCampaign:send'),
+  validateRequest({ params: DonationTransactionIdSchema }),
+  controller.donationReviewEmailFollowUp
+);
+
+router.post(
+  '/transactions/:transactionId/process-receipt',
+  requirePermission('emailCampaign:send'),
+  validateRequest({ params: DonationTransactionIdSchema, body: ProcessReceiptSchema }),
+  controller.donationReviewEmailProcessReceipt
+);
 
 // Create draft campaign
 router.post(
@@ -102,5 +142,7 @@ router.delete(
   requirePermission('emailCampaign:delete'),
   controller.deleteCampaign
 );
+
+
 
 export default router;

@@ -1,6 +1,10 @@
 import { buildPagination, calculateSkip } from './paginationHelper';
 import { JwtPayload } from '../utils/jwt';
-import { DonorDetailQueryType, DonorQueryType } from '../schemas';
+import {
+  DonorDetailQueryType,
+  DonorQueryType,
+  UpdateDonorInput,
+} from '../schemas';
 import { Prisma, SubmissionStatus } from '@prisma/client';
 import { DonorPrivateSummarySelect } from '../models/projectionSchemas/donor.projection';
 import * as donorModel from '../models/donor.model';
@@ -15,31 +19,44 @@ import { DonationHistoryProjection } from '../models/projectionSchemas/donation.
  */
 export const getDonors = async (
   _userPayload: JwtPayload,
-  filters: DonorQueryType
+  filters: DonorQueryType,
 ) => {
-  const { page, limit } = filters;
+  const { page, limit, search } = filters;
   const skip = calculateSkip(page, limit);
 
   const select: Prisma.PartnerSelect = DonorPrivateSummarySelect;
   const where: Prisma.PartnerWhereInput = {};
 
-  const { donors, totalCount } = await donorModel.getDonors(select, where, {skip, limit});
-  
-  const userIds = donors.map(d => d.user.id).filter((id): id is string => id !== undefined && id !== null);
-  
+  if (search && search.trim()) {
+    where.user = {
+      OR: [
+        { firstName: { contains: search.trim(), mode: 'insensitive' } },
+        { lastName: { contains: search.trim(), mode: 'insensitive' } },
+      ],
+    };
+  }
+
+  const { donors, totalCount } = await donorModel.getDonors(select, where, {
+    skip,
+    limit,
+  });
+
+  const userIds = donors
+    .map((d) => d.user.id)
+    .filter((id): id is string => id !== undefined && id !== null);
 
   const donations = await donationModel.getCumulativeDonations(userIds);
-  const donorsWithTotals = donors.map(donor => {
-    const donation = donations.find(d => d.donorId === donor.user.id);
+  const donorsWithTotals = donors.map((donor) => {
+    const donation = donations.find((d) => d.donorId === donor.user.id);
     return {
       ...donor,
       totalDonations: donation?._sum.amount ?? 0,
     };
-  });  
+  });
 
   return {
     donor: donorsWithTotals,
-    pagination: buildPagination(page, limit, totalCount)
+    pagination: buildPagination(page, limit, totalCount),
   };
 };
 
@@ -55,27 +72,47 @@ export const getDonorDetails = async (
 
   //build donor query
   const selectDonor: Prisma.PartnerSelect = DonorPrivateSummarySelect;
-  const whereDonor: Prisma.PartnerWhereUniqueInput = DonorDetailsWhereOfId(donorId);
+  const whereDonor: Prisma.PartnerWhereUniqueInput =
+    DonorDetailsWhereOfId(donorId);
 
-  const donorDetails = await donorModel.getDonorDetails(selectDonor, whereDonor);
+  const donorDetails = await donorModel.getDonorDetails(
+    selectDonor,
+    whereDonor,
+  );
   //build donation history query
-  const selectHistory: Prisma.DonationTransactionSelect = DonationHistoryProjection;
+  const selectHistory: Prisma.DonationTransactionSelect =
+    DonationHistoryProjection;
   const whereHistory: Prisma.DonationTransactionWhereInput = {
     ...DonationWhereOfUser(donorId),
     NOT: {
       submissionStatus: SubmissionStatus.draft,
-    }
+    },
   };
 
-  const {donations, totalCount} = await donationModel.getDonationHistory(whereHistory, selectHistory, {skip, limit});
+  const { donations, totalCount } = await donationModel.getDonationHistory(
+    whereHistory,
+    selectHistory,
+    { skip, limit },
+  );
 
   const donationHistory = {
     donations,
-    pagination: buildPagination(page, limit, totalCount)
+    pagination: buildPagination(page, limit, totalCount),
   };
 
   return {
     donorDetails,
-    donationHistory
+    donationHistory,
   };
+};
+
+/**
+ * Service: Update donor
+ */
+export const updateDonor = async (
+  _userPayload: JwtPayload,
+  donorId: string,
+  data: UpdateDonorInput,
+) => {
+  return donorModel.updateDonorById(donorId, data);
 };

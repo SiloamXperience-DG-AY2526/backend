@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import * as donationProjectService from '../services/donationProject.service';
 import { getUserIdFromRequest } from '../utils/user';
-import {
-  getDonationProjectsSchema,
-} from '../schemas/index';
+import { getDonationProjectsSchema } from '../schemas/index';
 
 /**
  * Controller: Get all donation projects
@@ -12,31 +10,36 @@ import {
 export const getDonationProjects = async (req: Request, res: Response) => {
   const filters = getDonationProjectsSchema.parse({
     type: req.query.type,
+    search: req.query.search,
     page: req.query.page,
     limit: req.query.limit,
   });
 
   // Pass viewer role to filter appropriately
   const viewerRole = req.user?.role;
-  const result = await donationProjectService.getDonationProjects({ ...filters, viewerRole });
+  const result = await donationProjectService.getDonationProjects({
+    ...filters,
+    viewerRole,
+  });
   res.json(result);
 };
 
 export const getMyDonationProjects = async (req: Request, res: Response) => {
   const managerId = getUserIdFromRequest(req);
-  const projects = await donationProjectService.getMyDonationProjects(managerId);
+  const projects =
+    await donationProjectService.getMyDonationProjects(managerId);
   res.json(projects);
 };
 
 export const getMyDonationProjectDetails = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { projectId } = req.params;
   const managerId = getUserIdFromRequest(req);
   const project = await donationProjectService.getMyDonationProjectDetails(
     projectId,
-    managerId
+    managerId,
   );
   res.json(project);
 };
@@ -44,56 +47,52 @@ export const getMyDonationProjectDetails = async (
 //finance manager view
 export const getDonationProjectDetails = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { projectId } = req.params;
+  const viewerRole = req.user?.role;
   const project = await donationProjectService.getDonationProjectDetails(
-    projectId
+    projectId,
+    viewerRole,
   );
   res.json(project);
 };
 
 export const getProjectDonationTransactions = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { projectId } = req.params;
   const { page, limit } = req.query;
-  
+
   const result = await donationProjectService.getProjectDonationTransactions(
     projectId,
-    { page: Number(page) || 1, limit: Number(limit) || 10 }
+    { page: Number(page) || 1, limit: Number(limit) || 10 },
   );
 
   res.json(result);
 };
 
-export const getProjectDonors = async (
-  req: Request,
-  res: Response
-) => {
+export const getProjectDonors = async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const { page, limit } = req.query;
 
-  const result = await donationProjectService.getProjectDonors(
-    projectId,
-    { page: Number(page) || 1, limit: Number(limit) || 10 }
-  );
+  const result = await donationProjectService.getProjectDonors(projectId, {
+    page: Number(page) || 1,
+    limit: Number(limit) || 10,
+  });
 
   res.json(result);
 };
 
 // Get donor summary for project owners (without amounts)
-export const getProjectDonorsSummary = async (
-  req: Request,
-  res: Response
-) => {
+export const getProjectDonorsSummary = async (req: Request, res: Response) => {
   const { projectId } = req.params;
   const userId = getUserIdFromRequest(req);
 
   const result = await donationProjectService.getProjectDonorsSummary(
     projectId,
-    userId
+    userId,
   );
 
   res.json(result);
@@ -103,7 +102,7 @@ export const createDonationProject = async (req: Request, res: Response) => {
   const managerId = getUserIdFromRequest(req);
   const project = await donationProjectService.createDonationProject(
     managerId,
-    req.body
+    req.body,
   );
   res.status(201).json(project);
 };
@@ -114,19 +113,19 @@ export const updateDonationProject = async (req: Request, res: Response) => {
   const updatedProject = await donationProjectService.updateDonationProject(
     projectId,
     managerId,
-    req.body
+    req.body,
   );
   res.json(updatedProject);
 };
 
 export const updateDonationProjectById = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { projectId } = req.params;
   const updatedProject = await donationProjectService.updateDonationProjectById(
     projectId,
-    req.body
+    req.body,
   );
   res.json(updatedProject);
 };
@@ -139,7 +138,7 @@ export const getProposedProjects = async (req: Request, res: Response) => {
 
 export const updateProposedProjectStatus = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { projectId } = req.params;
   const { status } = req.body;
@@ -163,7 +162,7 @@ export const withdrawDonationProject = async (req: Request, res: Response) => {
   const withdrawnProject = await donationProjectService.withdrawDonationProject(
     projectId,
     managerId,
-    reason
+    reason,
   );
 
   res.json({
@@ -177,7 +176,7 @@ export const duplicateDonationProject = async (req: Request, res: Response) => {
   const managerId = getUserIdFromRequest(req);
   const duplicated = await donationProjectService.duplicateDonationProject(
     projectId,
-    managerId
+    managerId,
   );
   res.status(201).json({
     status: 'success',

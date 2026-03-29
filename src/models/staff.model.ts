@@ -1,8 +1,8 @@
-import { Prisma } from '@prisma/client';
-import type { UserRole } from '@prisma/client';
-import { BadRequestError } from '../utils/errors';
+import { Prisma, UserRole } from '@prisma/client';
+import { BadRequestError, ForbiddenError } from '../utils/errors';
 import { prisma } from '../prisma/client';
 import { mapStaffToResponse } from '../schemas/staff';
+import { Role } from '../authorisation/permissions/config';
 
 export async function createStaffUser(
   firstName: string,
@@ -10,29 +10,31 @@ export async function createStaffUser(
   title: string,
   email: string,
   passwordHash: string,
-  role: UserRole
+  role: UserRole,
 ) {
-
   // Check existing user
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     throw new BadRequestError('Account already exists');
   }
 
-  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const user = await tx.user.create({
-      data: {
-        firstName,
-        lastName,
-        title,
-        email,
-        passwordHash,
-        role
-      },
-    });
+  const result = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      const user = await tx.user.create({
+        data: {
+          firstName,
+          lastName,
+          title,
+          email,
+          passwordHash,
+          role,
+          mustChangePassword: true, // force password reset
+        },
+      });
 
-    return user;
-  });
+      return user;
+    },
+  );
 
   return result;
 }
@@ -50,12 +52,19 @@ export async function findStaffIdByEmail(email: string): Promise<string> {
   return user.id;
 }
 
-// Get all active and non active staff
-export async function getAllStaff() {
+// Get all staff visible to the caller.
+// superAdmin sees subAdmins + generalManagers + financeManagers.
+// subAdmin sees only generalManagers + financeManagers.
+export async function getAllStaff(callerRole: Role) {
+  const visibleRoles: UserRole[] =
+    callerRole === UserRole.superAdmin
+      ? [UserRole.subAdmin, UserRole.generalManager, UserRole.financeManager]
+      : [UserRole.generalManager, UserRole.financeManager];
+
   const staff = await prisma.user.findMany({
     where: {
       role: {
-        in: ['generalManager', 'financeManager'],
+        in: visibleRoles,
       },
     },
     include: {
@@ -74,16 +83,22 @@ export async function getAllStaff() {
 }
 
 // Deactivate staff by userId
-export async function deactivateStaff(userId: string) {
+export async function deactivateStaff(userId: string, callerRole: Role) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
 
-  if (
-    !user ||
-    user.role === 'partner'
-  ) {
+  if (!user || user.role === 'partner') {
     throw new BadRequestError('Staff account not found');
+  }
+
+  if (
+    callerRole === UserRole.subAdmin &&
+    (user.role === UserRole.superAdmin || user.role === UserRole.subAdmin)
+  ) {
+    throw new ForbiddenError(
+      'Sub-admin cannot deactivate super admin or sub admin accounts',
+    );
   }
 
   return prisma.user.update({
@@ -95,16 +110,22 @@ export async function deactivateStaff(userId: string) {
 }
 
 // Activate staff by userId
-export async function activateStaff(userId: string) {
+export async function activateStaff(userId: string, callerRole: Role) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
 
-  if (
-    !user ||
-    user.role === 'partner'
-  ) {
+  if (!user || user.role === 'partner') {
     throw new BadRequestError('Staff account not found');
+  }
+
+  if (
+    callerRole === UserRole.subAdmin &&
+    (user.role === UserRole.superAdmin || user.role === UserRole.subAdmin)
+  ) {
+    throw new ForbiddenError(
+      'Sub-admin cannot activate super admin or sub admin accounts',
+    );
   }
 
   return prisma.user.update({

@@ -19,6 +19,8 @@ export const CreateDonationProjectSchema = z.object({
     .union([z.number().positive(), z.string()])
     .optional()
     .nullable(),
+  brickCost: z.union([z.number().positive(), z.string()]).optional().nullable(),
+  // Deprecated: use `brickCost` instead. Kept for backward compatibility.
   brickSize: z.union([z.number().positive(), z.string()]).optional().nullable(),
   deadline: preprocessDate,
   type: z.nativeEnum(ProjectType),
@@ -32,10 +34,17 @@ export const CreateDonationProjectSchema = z.object({
       z.object({
         objective: z.string().min(1),
         order: z.number().int().positive(),
-      })
+      }),
     )
     .optional(),
-});
+}).transform(({ brickCost, brickSize, ...rest }) => ({
+  ...rest,
+  ...(brickCost !== undefined
+    ? { brickCost }
+    : brickSize !== undefined
+      ? { brickCost: brickSize }
+      : {}),
+}));
 
 export type CreateDonationProjectInput = z.infer<
   typeof CreateDonationProjectSchema
@@ -69,6 +78,7 @@ export const UpdateDonationProjectSchema = z.object({
   operationStatus: z.nativeEnum(ProjectOperationStatus).optional(),
   image: z.string().url().optional().nullable(),
   attachments: z.string().optional().nullable(),
+  managedBy: z.string().uuid().optional(),
 });
 
 export type UpdateDonationProjectInput = z.infer<
@@ -78,6 +88,7 @@ export type UpdateDonationProjectInput = z.infer<
 // Schema for getting all donation projects with filters
 export const getDonationProjectsSchema = z.object({
   type: z.nativeEnum(ProjectType).optional(),
+  search: z.string().optional(),
   page: PageType,
   limit: LimitType,
 });
@@ -95,7 +106,9 @@ export const GetProjectDonationsSchema = z.object({
   limit: LimitType,
 });
 
-export type GetProjectDonationsInput = z.infer<typeof GetProjectDonationsSchema>;
+export type GetProjectDonationsInput = z.infer<
+  typeof GetProjectDonationsSchema
+>;
 
 export const GetProjectDonorsSchema = z.object({
   page: PageType,
@@ -111,3 +124,8 @@ export const WithdrawDonationProjectSchema = z.object({
 export type WithdrawDonationProjectInput = z.infer<
   typeof WithdrawDonationProjectSchema
 >;
+
+//for email review by financial manager
+export const DonationTransactionIdSchema = z.object({
+  transactionId: z.uuid(),
+});

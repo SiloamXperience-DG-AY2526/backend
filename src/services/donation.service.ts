@@ -13,21 +13,29 @@ import { DonationHistoryProjection } from '../models/projectionSchemas/donation.
  * Helper: Map database field names to API field names
  * brickSize (DB) -> brickCost (API)
  */
+const isPlainObject = (value: any): value is Record<string, any> => {
+  if (value === null || typeof value !== 'object') return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+};
+
 const mapDbToApi = (data: any): any => {
   if (!data) return data;
   if (Array.isArray(data)) {
     return data.map(item => mapDbToApi(item));
   }
-  
+
+  // Only recurse into plain objects; pass through Date/Decimal/class instances.
+  if (!isPlainObject(data)) {
+    return data;
+  }
+
   const result: any = {};
   for (const key in data) {
     if (key === 'brickSize') {
       result.brickCost = data[key];
-    } else if (key === 'project' && data[key]) {
-      // Recursively map nested project objects
-      result[key] = mapDbToApi(data[key]);
-    } else if (typeof data[key] === 'object' && data[key] !== null && !Array.isArray(data[key])) {
-      // Recursively map other nested objects
+    } else if (isPlainObject(data[key]) || Array.isArray(data[key])) {
+      // Recursively map nested plain objects/arrays for field-name translation.
       result[key] = mapDbToApi(data[key]);
     } else {
       result[key] = data[key];
