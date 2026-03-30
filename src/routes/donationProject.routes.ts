@@ -57,11 +57,11 @@ router.get(
 );
 
 // GET details for any donation project 
-// schema validated above
-// permission check: financeManager and above
+// No permission check: approved projects are public (partners need this to donate)
+// Access control is handled in the service layer (only approved projects are returned to partners)
 router.get(
   '/:projectId',
-  requirePermission('donationProjectDetails:view'),
+  validateRequest({ params: DonationProjectIdSchema }),
   donationProjectController.getDonationProjectDetails
 );
 

@@ -19,6 +19,8 @@ export const CreateDonationProjectSchema = z.object({
     .union([z.number().positive(), z.string()])
     .optional()
     .nullable(),
+  brickCost: z.union([z.number().positive(), z.string()]).optional().nullable(),
+  // Deprecated: use `brickCost` instead. Kept for backward compatibility.
   brickSize: z.union([z.number().positive(), z.string()]).optional().nullable(),
   deadline: preprocessDate,
   type: z.nativeEnum(ProjectType),
@@ -35,7 +37,14 @@ export const CreateDonationProjectSchema = z.object({
       }),
     )
     .optional(),
-});
+}).transform(({ brickCost, brickSize, ...rest }) => ({
+  ...rest,
+  ...(brickCost !== undefined
+    ? { brickCost }
+    : brickSize !== undefined
+      ? { brickCost: brickSize }
+      : {}),
+}));
 
 export type CreateDonationProjectInput = z.infer<
   typeof CreateDonationProjectSchema
@@ -58,7 +67,7 @@ export const UpdateDonationProjectSchema = z.object({
     .union([z.number().positive(), z.string()])
     .optional()
     .nullable(),
-  brickSize: z.union([z.number().positive(), z.string()]).optional().nullable(),
+  brickCost: z.union([z.number().positive(), z.string()]).optional().nullable(),
   deadline: preprocessDate,
   type: z.nativeEnum(ProjectType).optional(),
   startDate: preprocessDate,

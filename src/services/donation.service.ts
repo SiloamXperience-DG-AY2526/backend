@@ -10,6 +10,41 @@ import { buildPagination, calculateSkip } from './paginationHelper';
 import { DonationHistoryProjection } from '../models/projectionSchemas/donation.projection';
 
 /**
+ * Helper: Map database field names to API field names
+ * brickSize (DB) -> brickCost (API)
+ */
+const isPlainObject = (value: any): value is Record<string, any> => {
+  if (value === null || typeof value !== 'object') return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+};
+
+const mapDbToApi = (data: any): any => {
+  if (!data) return data;
+  if (Array.isArray(data)) {
+    return data.map(item => mapDbToApi(item));
+  }
+
+  // Only recurse into plain objects; pass through Date/Decimal/class instances.
+  if (!isPlainObject(data)) {
+    return data;
+  }
+
+  const result: any = {};
+  for (const key in data) {
+    if (key === 'brickSize') {
+      result.brickCost = data[key];
+    } else if (isPlainObject(data[key]) || Array.isArray(data[key])) {
+      // Recursively map nested plain objects/arrays for field-name translation.
+      result[key] = mapDbToApi(data[key]);
+    } else {
+      result[key] = data[key];
+    }
+  }
+  return result;
+};
+
+/**
  * Service: Get user's donation history
  * Returns all donations made by a specific user with status filtering
  */
@@ -30,7 +65,7 @@ export const getMyDonationHistory = async (
   const { donations, totalCount } = await donationModel.getDonationHistory(where, select, {skip, limit});
 
   return {
-    donations,
+    donations: mapDbToApi(donations),
     pagination: buildPagination(page, limit, totalCount)
   };
 };
@@ -46,7 +81,7 @@ export const getDonationDetail = async (donationId: string, userId: string) => {
     throw new NotFoundError(`Donation ${donationId} not found or access denied`);
   }
 
-  return donation;
+  return mapDbToApi(donation);
 };
 
 /**
@@ -65,7 +100,7 @@ export const submitDonationApplication = async (
   // TODO: Send automated email to partner with payment details (QR code/bank account)
   // TODO: Send automated email to finance manager about new donation application
 
-  return donation;
+  return mapDbToApi(donation);
 };
 
 /**
@@ -73,7 +108,7 @@ export const submitDonationApplication = async (
  * Returns statistics and featured projects for the donation homepage
  */
 export const getDonationHomepageData = async () => {
-  return await donationModel.getDonationHomepageData();
+  return mapDbToApi(await donationModel.getDonationHomepageData());
 };
 
 export const updateDonationReceiptStatus = async (

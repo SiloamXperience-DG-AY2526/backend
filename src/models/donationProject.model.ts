@@ -4,7 +4,12 @@ import {
   UpdateDonationProjectInput,
   CreateDonationProjectInput,
 } from '../schemas/donation';
-import { SubmissionStatus, ProjectApprovalStatus, ProjectType } from '@prisma/client';
+import {
+  SubmissionStatus,
+  ProjectApprovalStatus,
+  ProjectType,
+  UserRole,
+} from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { Pagination } from './types';
 import { DonationProjectPublicSelect } from './projectionSchemas/donationProject.projections';
@@ -295,10 +300,18 @@ export const getMyDonationProject = async (
   };
 };
 
-export const getDonationProjectById = async (projectId: string) => {
-  const [project, totalRaised] = await Promise.all([
-    prisma.donationProject.findFirst({
-      where: {
+export const getDonationProjectById = async (
+  projectId: string,
+  viewerRole?: string,
+) => {
+  const where: Prisma.DonationProjectWhereInput =
+    viewerRole === UserRole.partner
+      ? {
+        id: projectId,
+        submissionStatus: { not: SubmissionStatus.draft },
+        approvalStatus: ProjectApprovalStatus.approved,
+      }
+      : {
         id: projectId,
         OR: [
           // All non-draft projects
@@ -307,11 +320,15 @@ export const getDonationProjectById = async (projectId: string) => {
           {
             AND: [
               { submissionStatus: SubmissionStatus.draft },
-              { projectManager: { role: { not: 'partner' } } },
+              { projectManager: { role: { not: UserRole.partner } } },
             ],
           },
         ],
-      },
+      };
+
+  const [project, totalRaised] = await Promise.all([
+    prisma.donationProject.findFirst({
+      where,
       include: {
         projectManager: {
           select: PMPublicSelect,

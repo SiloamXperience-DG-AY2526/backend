@@ -50,8 +50,11 @@ export const getDonationProjectDetails = async (
   res: Response,
 ) => {
   const { projectId } = req.params;
-  const project =
-    await donationProjectService.getDonationProjectDetails(projectId);
+  const viewerRole = req.user?.role;
+  const project = await donationProjectService.getDonationProjectDetails(
+    projectId,
+    viewerRole,
+  );
   res.json(project);
 };
 
