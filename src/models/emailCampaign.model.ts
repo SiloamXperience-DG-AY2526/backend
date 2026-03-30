@@ -239,7 +239,7 @@ export async function deleteCampaignDB(campaignId: string) {
 }
 
 //financial manager review
-type TemplateType = 'thankyou' | 'receipt';
+type TemplateType = 'thankyou' | 'receipt' | 'followup';
 
 function getEmailTemplateName(projectId: string, type: TemplateType) {
   return `donationReviewEmail:${type}:${projectId}`;

@@ -154,7 +154,7 @@ export async function donationReviewEmailSaveTemplate(
 ) {
   return model.saveEmailTemplate(projectId, data.type, userId, data);
 }
-function getDefaultTemplate(type: 'thankyou' | 'receipt') {
+function getDefaultTemplate(type: 'thankyou' | 'receipt' | 'followup') {
   if (type === 'receipt') {
     return {
       subject: 'Your receipt {{receiptNumber}} — {{project}}',
@@ -170,7 +170,20 @@ With gratitude,<br/>Finance Team`,
       previewText: '',
     };
   }
-
+  if (type === 'followup') {
+    return {
+      subject: 'Reminder: Complete your donation for {{project}}',
+      body: `Hi {{name}},<br/>
+We noticed that your donation to {{project}} is still pending.<br/>
+Amount: {{amount}}<br/><br/>
+Please complete your payment at your earliest convenience.<br/>
+If you have already made the payment, kindly ignore this message.<br/><br/>
+Thank you for your support.<br/>
+Finance Team`,
+      senderAddress: '',
+      previewText: '',
+    };
+  }
   return {
     subject: 'Thank you {{name}} — we’ve received your donation for {{project}}',
     body: `Hi {{name}},<br/>
@@ -185,7 +198,7 @@ Warm regards,<br/>Finance Team`,
 }
 export async function donationReviewEmailGetTemplate(
   projectId: string,
-  type: 'thankyou' | 'receipt'
+  type: 'thankyou' | 'receipt' | 'followup'
 ) {
   const tpl = await model.getTemplate(projectId, type);
 
@@ -247,8 +260,10 @@ export async function donationReviewEmailFollowUp(
 
   if (tx.receiptStatus !== 'pending') return;
 
-  const tpl = await model.getTemplate(tx.projectId, 'thankyou');
-  if (!tpl) return;
+  const tpl = await model.getTemplate(tx.projectId, 'followup');
+  if (!tpl) {
+    throw new BadRequestError('Follow-up template not configured');
+  }
 
   const vars = {
     name: `${tx.donor.firstName} ${tx.donor.lastName}`,
@@ -256,7 +271,7 @@ export async function donationReviewEmailFollowUp(
     amount: tx.amount.toString(),
   };
 
-  const subject = `[Reminder] ${renderTemplate(tpl.subject!, vars)}`;
+  const subject = renderTemplate(tpl.subject!, vars);
   const body = renderTemplate(tpl.body!, vars);
 
   await sendEmail({
@@ -266,7 +281,6 @@ export async function donationReviewEmailFollowUp(
     from: tpl.senderAddress,
   });
 }
-
 
 // Process receipt + email receipt
 
