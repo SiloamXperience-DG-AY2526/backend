@@ -406,13 +406,16 @@ export const getAvailableVolunteerActivitiesModel = async ({
 }: GetAvailableVolunteerActivitiesInput): Promise<PaginatedVolunteerActivities> => {
   if (page < 1 || limit < 1) throw new Error('INVALID_PAGINATION');
 
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const whereClause = {
-    operationStatus: 'ongoing' as const,
-    startDate: { gte: tomorrow },
+  const whereClause: Prisma.VolunteerProjectWhereInput = {
+    submissionStatus: 'submitted',
+    approvalStatus: 'approved',
+    operationStatus: {
+      in: ['ongoing'],
+    },
+    endDate: { gte: today },
     ...(search
       ? {
           title: {
