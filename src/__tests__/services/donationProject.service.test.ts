@@ -11,6 +11,37 @@ describe('donationProjectService', () => {
     jest.clearAllMocks();
   });
 
+  describe('getDonationProjects', () => {
+    it('maps list project brickSize to brickCost', async () => {
+      mockedModel.getDonationProjects.mockResolvedValue({
+        projectsWithTotals: [
+          {
+            id: 'project-uuid-list',
+            brickSize: '50',
+            totalRaised: '1250',
+          },
+        ],
+        totalCount: 1,
+      } as any);
+
+      const result = await donationProjectService.getDonationProjects({
+        viewerRole: 'partner',
+        page: 1,
+        limit: 10,
+      } as any);
+
+      expect(result.projects).toHaveLength(1);
+      expect((result.projects[0] as any).brickCost).toBe('50');
+      expect((result.projects[0] as any).brickSize).toBeUndefined();
+      expect(result.pagination).toMatchObject({
+        page: 1,
+        limit: 10,
+        totalCount: 1,
+        totalPages: 1,
+      });
+    });
+  });
+
   describe('getMyDonationProjectDetails', () => {
     it('maps nested project brickSize to brickCost and keeps totalRaised unchanged', async () => {
       const projectId = 'project-uuid-1';

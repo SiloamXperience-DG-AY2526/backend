@@ -108,7 +108,7 @@ export const getDonationProjects = async (
     await donationProjectModel.getDonationProjects(where, { skip, limit });
 
   return {
-    projects,
+    projects: mapDbToApi(projects),
     pagination: buildPagination(page, limit, totalCount),
   };
 };
