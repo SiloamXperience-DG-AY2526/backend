@@ -17,7 +17,8 @@
     "seed:users": "ts-node prisma/seed.ts",
     "seed:volunteers": "ts-node prisma/volunteerSeedTest.ts",
     "seed:donor": "ts-node prisma/donorSeedTest.ts",
-    "seed:reset": "npx prisma migrate reset --force && npm run seed"
+    "seed:reset": "npx prisma migrate reset --force && npm run seed",
+    "import:data": "ts-node prisma/import/index.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/demoSeed.ts"

@@ -1,0 +1,74 @@
+flowchart LR
+  classDef csv fill:#eef7ff,stroke:#2b6cb0,stroke-width:1px,color:#1a365d;
+  classDef model fill:#f0fff4,stroke:#2f855a,stroke-width:1px,color:#1c4532;
+  classDef link fill:#fffaf0,stroke:#b7791f,stroke-width:1px,color:#744210;
+
+  subgraph CSV_Files[CSV Templates]
+    UCSV[users.csv]:::csv
+    PCSV[partners.csv]:::csv
+    DPCSV[donation_projects.csv]:::csv
+    DPOCSV[donation_project_objectives.csv]:::csv
+    DTCV[donation_transactions.csv]:::csv
+    VPCSV[volunteer_projects.csv]:::csv
+    PPCSV[project_positions.csv]:::csv
+    PSCSV[project_skills.csv]:::csv
+    SCSV[sessions.csv]:::csv
+    VPOCSV[volunteer_project_objectives.csv]:::csv
+    VACSV[volunteer_applications.csv]:::csv
+    VSCV[volunteer_sessions.csv]:::csv
+  end
+
+  subgraph Core_Models[Imported Components]
+    U[Users]
+    P[Partners]
+    DP[Donation Projects]
+    DPO[Donation Project Objectives]
+    DT[Donation Transactions]
+    VP[Volunteer Projects]
+    PP[Project Positions]
+    PS[Project Skills]
+    S[Sessions]
+    VPO[Volunteer Project Objectives]
+    VA[Volunteer Applications]
+    VS[Volunteer Sessions]
+  end
+
+  UCSV --> U
+  PCSV --> P
+  DPCSV --> DP
+  DPOCSV --> DPO
+  DTCV --> DT
+  VPCSV --> VP
+  PPCSV --> PP
+  PSCSV --> PS
+  SCSV --> S
+  VPOCSV --> VPO
+  VACSV --> VA
+  VSCV --> VS
+
+  U -- user_external_id --> P
+
+  U -- managed_by_user_external_id --> DP
+  DP -- donation_project_external_id --> DPO
+
+  U -- donor_user_external_id --> DT
+  DP -- project_external_id --> DT
+
+  U -- managed_by_user_external_id --> VP
+  U -. approved_by_user_external_id (optional) .-> VP
+
+  VP -- volunteer_project_external_id --> PP
+  PP -- project_position_external_id --> PS
+  VP -- volunteer_project_external_id --> S
+  VP -- volunteer_project_external_id --> VPO
+
+  U -- volunteer_user_external_id --> VA
+  PP -- project_position_external_id --> VA
+  U -. approved_by_user_external_id (optional) .-> VA
+
+  U -- volunteer_user_external_id --> VS
+  S -- session_external_id --> VS
+  U -. approved_by_user_external_id (optional) .-> VS
+
+  P --- L1[Multi-value relations:\nskills, languages, contact_modes, interests, referrers]:::link
+  P --- L2[Conditional group:\ntrip_full_name + trip_passport_number + trip_passport_expiry]:::link

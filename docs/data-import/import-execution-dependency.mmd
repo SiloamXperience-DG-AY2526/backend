@@ -1,0 +1,52 @@
+flowchart LR
+  classDef stage fill:#eef7ff,stroke:#2b6cb0,stroke-width:1px,color:#1a365d;
+  classDef ok fill:#f0fff4,stroke:#2f855a,stroke-width:1px,color:#1c4532;
+  classDef note fill:#fffaf0,stroke:#b7791f,stroke-width:1px,color:#744210;
+
+  subgraph ORDER[Importer Execute Order]
+    S1[1. users.csv]:::stage
+    S2[2. partners.csv]:::stage
+    S3[3. donation_projects.csv]:::stage
+    S4[4. donation_project_objectives.csv]:::stage
+    S5[5. donation_transactions.csv]:::stage
+    S6[6. volunteer_projects.csv]:::stage
+    S7[7. project_positions.csv]:::stage
+    S8[8. project_skills.csv]:::stage
+    S9[9. sessions.csv]:::stage
+    S10[10. volunteer_project_objectives.csv]:::stage
+    S11[11. volunteer_applications.csv]:::stage
+    S12[12. volunteer_sessions.csv]:::stage
+  end
+
+  S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8 --> S9 --> S10 --> S11 --> S12
+
+  %% Dependency edges (must point from earlier stage to later stage)
+  S1 -- user_external_id --> S2
+
+  S1 -- managed_by_user_external_id --> S3
+  S3 -- donation_project_external_id --> S4
+
+  S1 -- donor_user_external_id --> S5
+  S3 -- project_external_id --> S5
+
+  S1 -- managed_by_user_external_id --> S6
+  S1 -. approved_by_user_external_id (optional) .-> S6
+
+  S6 -- volunteer_project_external_id --> S7
+  S7 -- project_position_external_id --> S8
+  S6 -- volunteer_project_external_id --> S9
+  S6 -- volunteer_project_external_id --> S10
+
+  S1 -- volunteer_user_external_id --> S11
+  S7 -- project_position_external_id --> S11
+  S1 -. approved_by_user_external_id (optional) .-> S11
+
+  S1 -- volunteer_user_external_id --> S12
+  S9 -- session_external_id --> S12
+  S1 -. approved_by_user_external_id (optional) .-> S12
+
+  Proof[Validation: all dependency arrows go left-to-right\n(parent stage number < child stage number)]:::ok
+  DAG[No backward dependency edges detected\n=> order is a valid topological order]:::ok
+
+  S1 --> Proof
+  S12 --> DAG
