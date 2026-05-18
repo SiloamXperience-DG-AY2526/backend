@@ -6,7 +6,11 @@ import {
   ProposeVolunteerProjectInput,
 } from '../schemas/project';
 import { NotFoundError } from '../utils/errors';
-import { ProjectApprovalStatus, ProjectOperationStatus } from '@prisma/client';
+import {
+  Prisma,
+  ProjectApprovalStatus,
+  ProjectOperationStatus,
+} from '@prisma/client';
 
 const pmPublicInfo = {
   select: {
@@ -16,6 +20,95 @@ const pmPublicInfo = {
     lastName: true,
   },
 } as const;
+
+const syncProjectPositions = async (
+  tx: Prisma.TransactionClient,
+  projectId: string,
+  positions: NonNullable<UpdateVolunteerProjectInput['positions']>,
+) => {
+  const existingPositions = await tx.projectPosition.findMany({
+    where: { projectId },
+    select: { id: true },
+  });
+
+  const incomingIds = new Set(
+    positions
+      .map((position) => position.id)
+      .filter((id): id is string => Boolean(id)),
+  );
+
+  const positionIdsToDelete = existingPositions
+    .map((position) => position.id)
+    .filter((id) => !incomingIds.has(id));
+
+  if (positionIdsToDelete.length) {
+    const referencedPositionIds = new Set(
+      (
+        await tx.volunteerProjectPosition.findMany({
+          where: { positionId: { in: positionIdsToDelete } },
+          select: { positionId: true },
+          distinct: ['positionId'],
+        })
+      ).map((row) => row.positionId),
+    );
+
+    const deletablePositionIds = positionIdsToDelete.filter(
+      (id) => !referencedPositionIds.has(id),
+    );
+
+    if (deletablePositionIds.length) {
+      await tx.projectSkill.deleteMany({
+        where: { projectPositionId: { in: deletablePositionIds } },
+      });
+
+      await tx.projectPosition.deleteMany({
+        where: { id: { in: deletablePositionIds } },
+      });
+    }
+  }
+
+  for (const position of positions) {
+    let positionId: string;
+
+    if (position.id) {
+      const updatedPosition = await tx.projectPosition.update({
+        where: { id: position.id },
+        data: {
+          role: position.role,
+          description: position.description,
+          ...(typeof position.totalSlots === 'number'
+            ? { totalSlots: position.totalSlots }
+            : {}),
+        },
+      });
+      positionId = updatedPosition.id;
+    } else {
+      const createdPosition = await tx.projectPosition.create({
+        data: {
+          projectId,
+          role: position.role,
+          description: position.description,
+          totalSlots: position.totalSlots ?? 1,
+        },
+      });
+      positionId = createdPosition.id;
+    }
+
+    await tx.projectSkill.deleteMany({
+      where: { projectPositionId: positionId },
+    });
+
+    if (position.skills?.length) {
+      await tx.projectSkill.createMany({
+        data: position.skills.map((skill, index) => ({
+          projectPositionId: positionId,
+          skill,
+          order: index + 1,
+        })),
+      });
+    }
+  }
+};
 
 export const getVolunteerProjectsByManager = async (managerId: string) => {
   const projects = await prisma.volunteerProject.findMany({
@@ -35,7 +128,7 @@ export const getVolunteerProjectsByManager = async (managerId: string) => {
 
 export const getVolunteerProjectById = async (
   projectId: string,
-  managerId: string
+  managerId: string,
 ) => {
   const project = await prisma.volunteerProject.findFirst({
     where: {
@@ -62,7 +155,7 @@ export const getVolunteerProjectById = async (
 // Get project applications for project owner
 export const getProjectApplicationsModel = async (
   projectId: string,
-  ownerId: string
+  ownerId: string,
 ) => {
   // First verify the project belongs to this owner
   const project = await prisma.volunteerProject.findFirst({
@@ -115,91 +208,104 @@ export const getProjectApplicationsModel = async (
 export const updateVolunteerProject = async (
   projectId: string,
   managerId: string,
-  data: UpdateVolunteerProjectInput
+  data: UpdateVolunteerProjectInput,
 ) => {
-  // First verify the project belongs to the manager
-  const existingProject = await prisma.volunteerProject.findFirst({
-    where: {
-      id: projectId,
-      managedById: managerId,
-    },
-  });
-
-  if (!existingProject) {
-    return null;
-  }
-
-  const updateData: UpdateVolunteerProjectInput = {
-    ...data,
-  };
-
-  if (updateData.submissionStatus === 'submitted') {
-    updateData.approvalStatus = 'pending';
-    updateData.operationStatus = 'notStarted';
-  }
-
-  const updatedProject = await prisma.volunteerProject.update({
-    where: {
-      id: projectId,
-    },
-    data: {
-      ...updateData,
-    },
-    include: {
-      managedBy: pmPublicInfo,
-      objectivesList: {
-        orderBy: { order: 'asc' },
+  return prisma.$transaction(async (tx) => {
+    const existingProject = await tx.volunteerProject.findFirst({
+      where: {
+        id: projectId,
+        managedById: managerId,
       },
-    },
-  });
+    });
 
-  return updatedProject;
+    if (!existingProject) {
+      return null;
+    }
+
+    const { positions, ...restData } = data;
+    const updateData: Omit<UpdateVolunteerProjectInput, 'positions'> = {
+      ...restData,
+    };
+
+    if (updateData.submissionStatus === 'submitted') {
+      updateData.approvalStatus = 'pending';
+      updateData.operationStatus = 'notStarted';
+    }
+
+    const updatedProject = await tx.volunteerProject.update({
+      where: {
+        id: projectId,
+      },
+      data: {
+        ...updateData,
+      },
+      include: {
+        managedBy: pmPublicInfo,
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (positions) {
+      await syncProjectPositions(tx, projectId, positions);
+    }
+
+    return updatedProject;
+  });
 };
 
 export const updateVolunteerProjectById = async (
   projectId: string,
-  data: UpdateVolunteerProjectInput
+  data: UpdateVolunteerProjectInput,
 ) => {
-  const existingProject = await prisma.volunteerProject.findFirst({
-    where: {
-      id: projectId,
-    },
-  });
-
-  if (!existingProject) {
-    return null;
-  }
-
-  const updateData: UpdateVolunteerProjectInput = {
-    ...data,
-  };
-
-  if (updateData.submissionStatus === 'submitted') {
-    updateData.approvalStatus = 'pending';
-    updateData.operationStatus = 'notStarted';
-  }
-
-  const updatedProject = await prisma.volunteerProject.update({
-    where: {
-      id: projectId,
-    },
-    data: {
-      ...updateData,
-    },
-    include: {
-      managedBy: pmPublicInfo,
-      objectivesList: {
-        orderBy: { order: 'asc' },
+  return prisma.$transaction(async (tx) => {
+    const existingProject = await tx.volunteerProject.findFirst({
+      where: {
+        id: projectId,
       },
-    },
-  });
+    });
 
-  return updatedProject;
+    if (!existingProject) {
+      return null;
+    }
+
+    const { positions, ...restData } = data;
+    const updateData: Omit<UpdateVolunteerProjectInput, 'positions'> = {
+      ...restData,
+    };
+
+    if (updateData.submissionStatus === 'submitted') {
+      updateData.approvalStatus = 'pending';
+      updateData.operationStatus = 'notStarted';
+    }
+
+    const updatedProject = await tx.volunteerProject.update({
+      where: {
+        id: projectId,
+      },
+      data: {
+        ...updateData,
+      },
+      include: {
+        managedBy: pmPublicInfo,
+        objectivesList: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (positions) {
+      await syncProjectPositions(tx, projectId, positions);
+    }
+
+    return updatedProject;
+  });
 };
 
 export const createVolunteerProject = async (
   managerId: string,
-  data: CreateVolunteerProjectInput
+  data: CreateVolunteerProjectInput,
 ) => {
   const { objectivesList, submissionStatus, ...projectData } = data;
   const resolvedSubmissionStatus = submissionStatus ?? 'draft';
@@ -212,11 +318,11 @@ export const createVolunteerProject = async (
       approvalStatus: 'pending', // Awaiting approval
       objectivesList: objectivesList
         ? {
-          create: objectivesList.map((obj) => ({
-            objective: obj.objective,
-            order: obj.order,
-          })),
-        }
+            create: objectivesList.map((obj) => ({
+              objective: obj.objective,
+              order: obj.order,
+            })),
+          }
         : undefined,
     },
     include: {
@@ -232,41 +338,41 @@ export const createVolunteerProject = async (
 
 //partner apis
 type PaginatedVolunteerActivities = {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    data: Array<{
-        id: string;
-        title: string;
-        location: string;
-        startDate: Date;
-        endDate: Date;
-        startTime: Date;
-        endTime: Date;
-        operationStatus: string;
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  data: Array<{
+    id: string;
+    title: string;
+    location: string;
+    startDate: Date;
+    endDate: Date;
+    startTime: Date;
+    endTime: Date;
+    operationStatus: string;
 
-        positions: Array<{
-            id: string;
-            role: string;
-            description: string;
-            totalSlots: number;
-            slotsFilled: number;
-            slotsAvailable: number;
-        }>;
-
-        sessions: Array<{
-            id: string;
-            name: string;
-            sessionDate: Date;
-            startTime: Date;
-            endTime: Date;
-
-            totalSlots: number;
-            slotsFilled: number;
-            slotsAvailable: number;
-        }>;
+    positions: Array<{
+      id: string;
+      role: string;
+      description: string;
+      totalSlots: number;
+      slotsFilled: number;
+      slotsAvailable: number;
     }>;
+
+    sessions: Array<{
+      id: string;
+      name: string;
+      sessionDate: Date;
+      startTime: Date;
+      endTime: Date;
+
+      totalSlots: number;
+      slotsFilled: number;
+      slotsAvailable: number;
+    }>;
+  }>;
 };
 
 type PaginatedVolunteerProjects = {
@@ -300,20 +406,23 @@ export const getAvailableVolunteerActivitiesModel = async ({
 }: GetAvailableVolunteerActivitiesInput): Promise<PaginatedVolunteerActivities> => {
   if (page < 1 || limit < 1) throw new Error('INVALID_PAGINATION');
 
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const whereClause = {
-    operationStatus: 'ongoing' as const,
-    startDate: { gte: tomorrow },
+  const whereClause: Prisma.VolunteerProjectWhereInput = {
+    submissionStatus: 'submitted',
+    approvalStatus: 'approved',
+    operationStatus: {
+      in: ['ongoing'],
+    },
+    endDate: { gte: today },
     ...(search
       ? {
-        title: {
-          contains: search,
-          mode: 'insensitive' as const,
-        },
-      }
+          title: {
+            contains: search,
+            mode: 'insensitive' as const,
+          },
+        }
       : {}),
   };
 
@@ -368,15 +477,14 @@ export const getAvailableVolunteerActivitiesModel = async ({
       };
     });
 
-
     const projectTotalSlots = positions.reduce(
       (sum, pos) => sum + pos.totalSlots,
-      0
+      0,
     );
 
     const projectAvailableSlots = positions.reduce(
       (sum, pos) => sum + pos.slotsAvailable,
-      0
+      0,
     );
 
     //session
@@ -389,12 +497,12 @@ export const getAvailableVolunteerActivitiesModel = async ({
 
     const sessions = p.sessions.map((s) => {
       const sessionFilled = s.volunteerSessions.filter((vs) =>
-        approvedVolunteerIds.has(vs.volunteerId)
+        approvedVolunteerIds.has(vs.volunteerId),
       ).length;
 
       const sessionAvailable = Math.max(
         projectAvailableSlots - sessionFilled,
-        0
+        0,
       );
 
       return {
@@ -502,11 +610,11 @@ export const getAllVolunteerProjectsModel = async ({
   const data = projects.map((p) => {
     const totalSlots = p.positions.reduce(
       (sum, pos) => sum + pos.totalSlots,
-      0
+      0,
     );
     const filledSlots = p.positions.reduce(
       (sum, pos) => sum + pos.signups.length,
-      0
+      0,
     );
 
     return {
@@ -587,9 +695,9 @@ export const updateVolunteerProposalModel = async ({
   userId,
   payload,
 }: {
-    projectId: string;
-    userId: string;
-    payload: any;
+  projectId: string;
+  userId: string;
+  payload: any;
 }) => {
   return prisma.$transaction(async (tx) => {
     const project = await tx.volunteerProject.findUnique({
@@ -631,7 +739,6 @@ export const updateVolunteerProposalModel = async ({
         ...projectData,
       },
     });
-
 
     if (positions) {
       for (const pos of positions) {
@@ -693,8 +800,8 @@ export const withdrawVolunteerProposalModel = async ({
   projectId,
   userId,
 }: {
-    projectId: string;
-    userId: string;
+  projectId: string;
+  userId: string;
 }) => {
   return prisma.$transaction(async (tx) => {
     const existing = await tx.volunteerProject.findUnique({
@@ -735,7 +842,7 @@ const FILLED_STATUSES = ['approved', 'active', 'inactive'] as const;
 export const getVolunteerProjectDetailModel = async ({
   projectId,
 }: {
-    projectId: string;
+  projectId: string;
 }) => {
   const p = await prisma.volunteerProject.findUnique({
     where: { id: projectId },
@@ -785,7 +892,6 @@ export const getVolunteerProjectDetailModel = async ({
           },
           signups: {
             where: {
-             
               status: { in: [...FILLED_STATUSES] },
             },
             select: { id: true }, // just count
@@ -877,19 +983,19 @@ export const submitVolunteerFeedbackModel = async ({
   ratings,
   feedback,
 }: {
-    projectId: string;
-    userId: string;
-    ratings: {
-        overall: number;
-        management: number;
-        planning: number;
-        facilities: number;
-    };
-    feedback: {
-        experience: string;
-        improvement: string;
-        comments?: string | null;
-    };
+  projectId: string;
+  userId: string;
+  ratings: {
+    overall: number;
+    management: number;
+    planning: number;
+    facilities: number;
+  };
+  feedback: {
+    experience: string;
+    improvement: string;
+    comments?: string | null;
+  };
 }) => {
   return prisma.$transaction(async (tx) => {
     // check project exists
@@ -964,14 +1070,12 @@ export const submitVolunteerFeedbackModel = async ({
   });
 };
 
-
-
 export const updateVolProjectStatus = async (
   projectId: string,
   data: {
-        approvalStatus: ProjectApprovalStatus;
-        approvedById?: string | null;
-    }
+    approvalStatus: ProjectApprovalStatus;
+    approvedById?: string | null;
+  },
 ) => {
   // When approved, automatically set operationStatus to 'ongoing'
   const updateData: {
@@ -989,7 +1093,7 @@ export const updateVolProjectStatus = async (
     data: updateData,
     include: {
       managedBy: true,
-      approvedBy: true
+      approvedBy: true,
     },
   });
 };
@@ -999,14 +1103,14 @@ export const getVolProject = async (projectId: string) => {
     where: { id: projectId },
     include: {
       managedBy: true,
-      approvedBy: true
+      approvedBy: true,
     },
   });
 };
 
 export const duplicateVolunteerProject = async (
   projectId: string,
-  newManagerId: string
+  newManagerId: string,
 ) => {
   return prisma.$transaction(async (tx) => {
     const existing = await tx.volunteerProject.findUnique({
@@ -1079,11 +1183,11 @@ export const duplicateVolunteerProject = async (
         approvedById: null,
         objectivesList: objectivesList.length
           ? {
-            create: objectivesList.map((obj) => ({
-              objective: obj.objective,
-              order: obj.order,
-            })),
-          }
+              create: objectivesList.map((obj) => ({
+                objective: obj.objective,
+                order: obj.order,
+              })),
+            }
           : undefined,
       },
     });
@@ -1148,7 +1252,6 @@ export const duplicateVolunteerProject = async (
   });
 };
 
-
 export const viewMyProposedProjectsModel = async (input: {
   userId: string;
   filters?: { approvalStatus?: ProjectApprovalStatus };
@@ -1192,12 +1295,12 @@ export const viewMyProposedProjectsModel = async (input: {
   return projects.map((p) => {
     const totalCapacity = p.positions.reduce(
       (sum, pos) => sum + (pos.totalSlots ?? 0),
-      0
+      0,
     );
 
     const acceptedCount = p.positions.reduce(
       (sum, pos) => sum + pos.signups.length,
-      0
+      0,
     );
 
     return {
@@ -1251,12 +1354,12 @@ export const getPartnerProposedProjectsModel = async (partnerId: string) => {
   return projects.map((p) => {
     const totalCapacity = p.positions.reduce(
       (sum, pos) => sum + (pos.totalSlots ?? 0),
-      0
+      0,
     );
 
     const acceptedCount = p.positions.reduce(
       (sum, pos) => sum + pos.signups.length,
-      0
+      0,
     );
 
     return {
@@ -1275,7 +1378,6 @@ export const getPartnerProposedProjectsModel = async (partnerId: string) => {
   });
 };
 
-
 export const updateMyProposedProjectStatusModel = async (input: {
   userId: string;
   projectId: string;
@@ -1283,14 +1385,12 @@ export const updateMyProposedProjectStatusModel = async (input: {
 }) => {
   const { userId, projectId, approvalStatus } = input;
 
-
   const existing = await prisma.volunteerProject.findFirst({
     where: { id: projectId, managedById: userId },
     select: { id: true },
   });
 
   if (!existing) {
- 
     throw new Error('PROJECT_NOT_FOUND_OR_FORBIDDEN');
   }
 

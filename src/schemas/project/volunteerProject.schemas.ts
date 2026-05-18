@@ -38,7 +38,7 @@ export const CreateVolunteerProjectSchema = z.object({
       z.object({
         objective: z.string().min(1),
         order: z.number().int().positive(),
-      })
+      }),
     )
     .optional(),
 });
@@ -74,6 +74,17 @@ export const UpdateVolunteerProjectSchema = z.object({
   approvalMessage: z.string().optional().nullable(),
   image: z.string().url().optional().nullable(),
   attachments: z.string().optional().nullable(),
+  positions: z
+    .array(
+      z.object({
+        id: z.uuid().optional(),
+        role: z.string().min(1),
+        description: z.string().min(1),
+        totalSlots: z.number().int().min(1).optional(),
+        skills: z.array(z.string()).optional(),
+      }),
+    )
+    .optional(),
 });
 
 export type UpdateVolunteerProjectInput = z.infer<
@@ -82,13 +93,13 @@ export type UpdateVolunteerProjectInput = z.infer<
 
 // Query params
 export const MyProjectApplicationsQuerySchema = z.object({
-  status: z
-    .enum(VolunteerProjectPositionStatus)
-    .optional(),
+  status: z.enum(VolunteerProjectPositionStatus).optional(),
 });
-export type MyProjectApplicationsQueryType = z.infer<typeof MyProjectApplicationsQuerySchema>;
+export type MyProjectApplicationsQueryType = z.infer<
+  typeof MyProjectApplicationsQuerySchema
+>;
 export type MyProjectApplicationsInput = {
-    userId: string, 
-    projectId: string,
-    filters: MyProjectApplicationsQueryType,
-}
+  userId: string;
+  projectId: string;
+  filters: MyProjectApplicationsQueryType;
+};
