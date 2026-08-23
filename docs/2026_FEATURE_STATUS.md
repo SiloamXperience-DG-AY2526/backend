@@ -2,6 +2,8 @@
 
 Last audited: **23 August 2026** against `main` in both the backend and frontend repositories, the supplied February timeline, the earlier requirements text, current GitHub issues, and merged/open pull requests.
 
+Note: This was done with the assistance of Codex (ChatGPT).
+
 This is a source and history audit, not a full end-to-end acceptance test. Dependencies were not installed in the provided workspace, so lint, tests, and production builds must still be run after `npm ci`.
 
 ## Status key
