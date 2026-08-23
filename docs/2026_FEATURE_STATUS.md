@@ -14,7 +14,7 @@ This is a source and history audit, not a full end-to-end acceptance test. Depen
 | Pending | No complete implementation was found on `main` |
 | External / verify | Outside these two repositories or cannot be confirmed from source |
 
-## February 2026 timeline
+## Features from last milestone
 
 | Category | Feature | Frontend | Backend | Overall status and evidence |
 | --- | --- | --- | --- | --- |
@@ -33,10 +33,8 @@ This is a source and history audit, not a full end-to-end acceptance test. Depen
 | Authentication | Force first-login password change for staff | Implemented | Implemented | `mustChangePassword`, first-login token, redirect, update form, and migration exist. Frontend issue #58 was closed on 23 August 2026. |
 | Infrastructure | Continue AWS setup | External / verify | External / verify | No infrastructure-as-code or deployment configuration was found in these repositories. |
 | Security/compliance | Data security and Singapore/Cambodia compliance | Partial | Partial | Authentication and role permissions exist, but this audit is not a legal/security assessment. Token revocation remains open in backend issue #115. |
-| Continuity | Support by another DG team for one more AY | External / verify | External / verify | Programme decision, not a code feature. |
 | Data management | Decide project export/removal and auto-backup | Pending | Pending | No project export or automated backup implementation was found. |
 | Infrastructure | Check AWS limits and upgrade point | External / verify | External / verify | Requires the live AWS account and usage data. |
-| Design | Coordinate required design changes | Partial | Not applicable | Many screens exist; final design acceptance still needs stakeholder review. |
 
 ## Other implemented features found on `main`
 
