@@ -33,10 +33,9 @@ This is a source and history audit, not a full end-to-end acceptance test. Depen
 | Homepage numbers | Staff can manually edit volunteer and donor numbers | Pending | Pending | Current dashboards calculate values from data; no manual override model, route, or form was found. Keep backend issues [#90](https://github.com/SiloamXperience-DG-AY2526/backend/issues/90) and [#99](https://github.com/SiloamXperience-DG-AY2526/backend/issues/99) open. |
 | Authentication | Forgot/reset password for users and staff | Implemented | Implemented | Request email, reset form, token validation, and backend routes exist. Frontend issue #51 was closed on 23 August 2026. |
 | Authentication | Force first-login password change for staff | Implemented | Implemented | `mustChangePassword`, first-login token, redirect, update form, and migration exist. Frontend issue #58 was closed on 23 August 2026. |
-| Infrastructure | Continue AWS setup | External / verify | External / verify | No infrastructure-as-code or deployment configuration was found in these repositories. |
+| Deployment | Staging environment | Available | Available | Staging uses Vercel, Supabase, and Render. |
 | Security/compliance | Data security and Singapore/Cambodia compliance | Partial | Partial | Authentication and role permissions exist, but this audit is not a legal/security assessment. Token revocation remains open in backend issue #115. |
 | Data management | Decide project export/removal and auto-backup | Pending | Pending | No project export or automated backup implementation was found. |
-| Infrastructure | Check AWS limits and upgrade point | External / verify | External / verify | Requires the live AWS account and usage data. |
 
 ## Other implemented features found on `main`
 
