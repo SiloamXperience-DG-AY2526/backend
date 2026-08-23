@@ -19,8 +19,7 @@ This is a source and history audit, not a full end-to-end acceptance test. Depen
 | Category | Feature | Frontend | Backend | Overall status and evidence |
 | --- | --- | --- | --- | --- |
 | Bug fixing | Fix bugs in each assigned area | Several merged fixes | Several merged fixes | Ongoing. The issue audit below separates completed fixes from remaining work. |
-| Handover | Feature documentation and video walkthroughs | Pending | Pending | READMEs now cover developer setup; user-facing videos are still required. |
-| Data management | Import partner data templates and parser | Not required yet | PR open | [Backend issue #88](https://github.com/SiloamXperience-DG-AY2526/backend/issues/88); implementation is in [backend PR #145](https://github.com/SiloamXperience-DG-AY2526/backend/pull/145), not `main`. Password handling still needs a decision. |
+| Data management | Import partner data templates and parser | Pending | PR open | [Backend issue #88](https://github.com/SiloamXperience-DG-AY2526/backend/issues/88); implementation is in [backend PR #145](https://github.com/SiloamXperience-DG-AY2526/backend/pull/145), not `main`. Password handling still needs a decision. |
 | Data management | Export partner data | Pending | Pending | [Backend issue #87](https://github.com/SiloamXperience-DG-AY2526/backend/issues/87). No export route or UI was found. |
 | Role management | Add sub-admin role | Implemented | Implemented | Role, layouts, sidebar, staff-management view, Prisma enum/migration, hierarchy, and permissions are on `main` via backend PR #141 and frontend PR #55. |
 | Finance emails | Configure thank-you and receipt templates | Implemented | Implemented | Finance-manager configuration UI and email-template endpoints are present. |
