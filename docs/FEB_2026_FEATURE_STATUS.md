@@ -32,7 +32,6 @@ This is a source and history audit, not a full end-to-end acceptance test. Depen
 | Authentication | Forgot/reset password for users and staff | Implemented | Implemented | Request email, reset form, token validation, and backend routes exist. Frontend issue #51 was closed on 23 August 2026. |
 | Authentication | Force first-login password change for staff | Implemented | Implemented | `mustChangePassword`, first-login token, redirect, update form, and migration exist. Frontend issue #58 was closed on 23 August 2026. |
 | Infrastructure | Continue AWS setup | External / verify | External / verify | No infrastructure-as-code or deployment configuration was found in these repositories. |
-| Handover | Handover without a domain by March | External / verify | External / verify | Operational decision; document the temporary hosting URL and DNS handover separately. |
 | Security/compliance | Data security and Singapore/Cambodia compliance | Partial | Partial | Authentication and role permissions exist, but this audit is not a legal/security assessment. Token revocation remains open in backend issue #115. |
 | Continuity | Support by another DG team for one more AY | External / verify | External / verify | Programme decision, not a code feature. |
 | Data management | Decide project export/removal and auto-backup | Pending | Pending | No project export or automated backup implementation was found. |
