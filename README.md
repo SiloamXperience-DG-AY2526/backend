@@ -178,4 +178,4 @@ Create or reference a GitHub issue in the PR description using `Fixes #<issue-nu
 
 ## Current handover note
 
-Partner data import is not on `main`. It is being developed in [backend PR #145](https://github.com/SiloamXperience-DG-AY2526/backend/pull/145) and should be associated with [backend issue #88](https://github.com/SiloamXperience-DG-AY2526/backend/issues/88). Review the unresolved password-import decision before merging it.
+Partner data import is not on `main`. It is being developed in [backend PR #145](https://github.com/SiloamXperience-DG-AY2526/backend/pull/145) and is linked from [backend issue #88](https://github.com/SiloamXperience-DG-AY2526/backend/issues/88). Review the unresolved password-import decision before merging it.
