@@ -1,0 +1,2 @@
+"external_id (text, required)","first_name (text, required)","last_name (text, required)","email (email, required)","password_plain (text, conditional)","password_hash (text, conditional)","title (text, optional)","role (enum: superAdmin | subAdmin | generalManager | financeManager | partner, optional_default_partner)","is_active (TRUE | FALSE, optional_default_true)"
+USR001,Jane,Doe,jane.doe@example.org,TempPassword!123,,Ms,partner,true

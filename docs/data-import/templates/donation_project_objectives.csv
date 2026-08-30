@@ -1,0 +1,2 @@
+"external_id (text, required)","donation_project_external_id (text, required)","objective (text, required)","order (positive_integer, required)"
+DOBJ001,DPR001,Build phase 1,1

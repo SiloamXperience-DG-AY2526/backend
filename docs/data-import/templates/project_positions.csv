@@ -1,0 +1,2 @@
+"external_id (text, required)","volunteer_project_external_id (text, required)","role (text, required)","description (text, required)","total_slots (positive_integer, required)"
+POS001,VPR001,Facilitator,Lead small group activities,10

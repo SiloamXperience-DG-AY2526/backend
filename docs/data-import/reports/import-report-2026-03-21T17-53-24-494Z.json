@@ -1,0 +1,114 @@
+{
+  "startedAt": "2026-03-21T17:53:24.470Z",
+  "dryRun": true,
+  "sourceDir": "docs/data-import/templates-dup-test",
+  "summaries": [
+    {
+      "stage": "users",
+      "processed": 2,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 1,
+      "skipped": 0
+    },
+    {
+      "stage": "partners",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "donation_projects",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "donation_project_objectives",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "donation_transactions",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "volunteer_projects",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "project_positions",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "project_skills",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "sessions",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "volunteer_project_objectives",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "volunteer_applications",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    },
+    {
+      "stage": "volunteer_sessions",
+      "processed": 1,
+      "imported": 1,
+      "updated": 0,
+      "rejected": 0,
+      "skipped": 0
+    }
+  ],
+  "issues": [
+    {
+      "stage": "users",
+      "rowNumber": 3,
+      "code": "DUPLICATE_EXTERNAL_ID",
+      "message": "Duplicate external_id: USR001",
+      "field": "external_id",
+      "externalId": "USR001"
+    }
+  ],
+  "finishedAt": "2026-03-21T17:53:24.494Z"
+}

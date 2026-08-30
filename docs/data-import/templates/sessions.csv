@@ -1,0 +1,2 @@
+"external_id (text, required)","volunteer_project_external_id (text, required)","session_date (YYYY-MM-DD, required)","name (text, required)","start_time (YYYY-MM-DDThh:mm:ss, required)","end_time (YYYY-MM-DDThh:mm:ss, required)"
+SES001,VPR001,2026-07-06,Session 1,2026-07-06T09:00:00Z,2026-07-06T12:00:00Z

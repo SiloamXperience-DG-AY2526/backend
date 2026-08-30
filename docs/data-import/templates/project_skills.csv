@@ -1,0 +1,2 @@
+"external_id (text, required)","project_position_external_id (text, required)","skill (text, required)","order (positive_integer, required)"
+PSK001,POS001,Communication,1
